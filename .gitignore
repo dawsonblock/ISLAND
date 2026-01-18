@@ -1,0 +1,23 @@
+# Visual Studio 2019
+.vs/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Unreal Engine
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+Script/
+.idea/
+*.xcodeproj
+*.xcworkspace
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.user
+*.sla
