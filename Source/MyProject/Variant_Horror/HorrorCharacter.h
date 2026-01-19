@@ -27,9 +27,7 @@ class MYPROJECT_API AHorrorCharacter : public AMyProjectCharacter
 	
 protected:
 
-	/** Fire weapon input action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* SprintAction;
+	/* SprintAction inherited from AMyProjectCharacter */
 
 	/** If true, we're sprinting */
 	bool bSprinting = false;

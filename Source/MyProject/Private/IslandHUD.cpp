@@ -1,4 +1,5 @@
 #include "IslandHUD.h"
+#include "Engine/Canvas.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "IslandDirectorSubsystem.h"
@@ -108,15 +109,7 @@ void AIslandHUD::DrawHUD()
 			yy += BarHeight + 10.0f;
 		}
 	}
-}
 
-void AIslandHUD::ShowTutorialMessage(const FString& Message, float Duration)
-{
-	CurrentTutorialMessage = Message;
-	if (UWorld* World = GetWorld())
-	{
-		TutorialMessageExpireTime = World->GetTimeSeconds() + Duration;
-	}
 	if (GM && GM->Extraction)
 	{
 		const bool bActive = GM->Extraction->bActive;
@@ -157,5 +150,14 @@ void AIslandHUD::ShowTutorialMessage(const FString& Message, float Duration)
 				}
 			}
 		}
+	}
+}
+
+void AIslandHUD::ShowTutorialMessage(const FString& Message, float Duration)
+{
+	CurrentTutorialMessage = Message;
+	if (UWorld* World = GetWorld())
+	{
+		TutorialMessageExpireTime = World->GetTimeSeconds() + Duration;
 	}
 }

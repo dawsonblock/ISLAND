@@ -56,7 +56,3 @@ private:
 	
 	EIslandIntensityState CurrentIntensity = EIslandIntensityState::Passive;
 };
-
-	FTimerHandle SpawnTimer;
-	TObjectPtr<AIslandRadioTower> CachedTower;
-};
