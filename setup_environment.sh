@@ -1,4 +1,4 @@
-#!/bin/bash
+Just remembered about it too#!/bin/bash
 
 # Island Survival System - Environment Setup Script
 # Run this script to set up your environment for building Unreal Engine projects from VS Code
