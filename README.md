@@ -1,95 +1,346 @@
-# ISLAND - Survival Horror Game
+<div align="center">
 
-An Unreal Engine 5.5 survival horror game featuring AI-driven NPC dialogue and dynamic game pacing.
+# 🏝️ ISLAND
 
-## Features
+### Autonomous NPC Intelligence for Unreal Engine 5.5
 
-- **Subsystem-First Architecture** - Decoupled core systems from GameModes
-- **Alert System** - Dynamic threat level that influences gameplay
-- **Radio Tower Extraction** - Multi-stage objective system
-- **Two Game Variants** - Horror (stealth) and Shooter (action)
-- **🆕 RFSN AI Integration** - LLM-driven NPC dialogue and Director pacing
+[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.5-0E1128?style=for-the-badge&logo=unrealengine)](https://unrealengine.com)
+[![C++](https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=cplusplus)](https://isocpp.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
----
+**A bounded decision system where LLMs are deliberately demoted to renderers.**
 
-## RFSN NPC AI Integration
-
-ISLAND integrates **RFSN (Reactive Finite State Network)** for intelligent NPC conversations and AI-driven game pacing.
-
-### Key Components
-
-| Component | Purpose |
-|-----------|---------|
-| `RfsnNpcClientComponent` | HTTP SSE client for NPC dialogue |
-| `RfsnDirectorBridge` | AI pacing → IslandDirectorSubsystem |
-| `RfsnDialogueManager` | Coordinates player-NPC conversations |
-| `RfsnChoiceWidget` | Multiple-choice player responses |
-| `RfsnConversationLog` | Dialogue history tracking |
-| `RfsnQuestBridge` | Dialogue actions → Quest objectives |
-
-### Quick Start
-
-1. **Start RFSN Server:**
-
-   ```bash
-   cd RFSN_NPC_AI/Python
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   python -m uvicorn orchestrator:app --port 8000
-   ```
-
-2. **Build Project** in Unreal Engine 5.5
-
-3. **Create Dialogue Key:**
-   - Create `IA_Dialogue` Input Action
-   - Assign to `DialogueAction` on your character
-
-4. **Place RFSN NPCs:**
-   - Use `RfsnSampleMerchant` or `RfsnSampleGuard`
-   - Or add `URfsnNpcClientComponent` to any actor
-
-5. **Test:**
-   - Walk near NPC
-   - Press dialogue key
-   - Watch subtitles at bottom of screen!
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/dialogue/stream` | POST | Stream NPC dialogue (SSE) |
-| `/api/director/control` | POST | Get pacing commands |
-| `/api/health` | GET | Server health check |
+[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [API Reference](#-api-reference)
 
 ---
 
-## Project Structure
+</div>
+
+## 🎯 What This Is
+
+ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where:
+
+- **Action selection happens before language** — the LLM never invents goals
+- **State drives intent** — mood, relationship, and affinity determine behavior
+- **Learning is scoped and reversible** — per-state isolation, bounded rewards, explicit bans
+- **The Unity contract is practical** — observation in, decision out, execution report back
+
+This architecture puts ISLAND ahead of most "AI NPC" implementations by separating reasoning from speech generation.
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🧠 Core Intelligence
+
+- **RFSN Integration** — Local LLM + TTS orchestrator
+- **Bandit Learner** — UCB1-based behavioral learning
+- **Temporal Memory** — Anticipatory context scoring
+- **Expanded Action Lattice** — Nuanced intent modifiers
+
+</td>
+<td width="50%">
+
+### 🎮 Game Systems
+
+- **Faction System** — Group reputation with propagation
+- **Relationship Persistence** — SaveGame integration
+- **NPC Conversations** — Multi-NPC dialogue
+- **Director Control** — Pacing and tension management
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🎨 Presentation
+
+- **Dialogue Camera** — Focus, over-shoulder, two-shot
+- **NPC Look-At** — Smooth rotation to player
+- **Audio Attenuation** — Distance + occlusion
+- **Ambient Chatter** — Idle contextual dialogue
+
+</td>
+<td>
+
+### 🛠️ Developer Tools
+
+- **Console Commands** — 10 debug commands
+- **Blueprint Library** — Static helper functions
+- **Mock Server** — Offline testing
+- **Performance Metrics** — Latency tracking
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         GAME LAYER                              │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐ │
+│  │ Player Input │ │ NPC Trigger  │ │ Director Bridge          │ │
+│  └──────┬───────┘ └──────┬───────┘ └────────────┬─────────────┘ │
+└─────────┼────────────────┼──────────────────────┼───────────────┘
+          │                │                      │
+          ▼                ▼                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      DECISION LAYER                             │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                   Temporal Memory                          │ │
+│  │   State-Action-Outcome Traces → Context Similarity Bias   │ │
+│  └───────────────────────────┬────────────────────────────────┘ │
+│                              │                                  │
+│  ┌───────────────────────────▼────────────────────────────────┐ │
+│  │                   Action Lattice                           │ │
+│  │   Base Action + Intensity + Compliance + Motive → Hint    │ │
+│  └───────────────────────────┬────────────────────────────────┘ │
+│                              │                                  │
+│  ┌───────────────────────────▼────────────────────────────────┐ │
+│  │                   Bandit Selector                          │ │
+│  │   UCB1 Scoring + Bias Application → Selected Action       │ │
+│  └───────────────────────────┬────────────────────────────────┘ │
+└──────────────────────────────┼──────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      RENDER LAYER (LLM)                         │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │   Action Hint + NPC State + Context → Natural Language    │ │
+│  │   (LLM cannot invent goals, shift tone, or leak structure) │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **Action before Language** | LLM renders intent, doesn't decide it |
+| **Per-state Bandit Isolation** | Learning doesn't leak across contexts |
+| **Bounded Rewards** | Prevents runaway optimization |
+| **Temporal Memory** | "This feels like last time" anticipation |
+| **Expanded Action Lattice** | Nuance via action space, not prompts |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Unreal Engine 5.5+
+- Python 3.10+ (for RFSN server)
+- [Ollama](https://ollama.ai) with `llama3.2`
+
+### 1. Clone
+
+```bash
+git clone https://github.com/dawsonblock/ISLAND.git
+cd ISLAND
+```
+
+### 2. Start RFSN Server
+
+```bash
+cd RFSN_NPC_AI/Python
+pip install -r requirements.txt
+python orchestrator.py
+```
+
+Or use the mock server for offline testing:
+
+```bash
+python mock_server.py
+```
+
+### 3. Open in Unreal
+
+```
+1. Open MyProject.uproject
+2. Build (Ctrl+Shift+B)
+3. Place RfsnSampleMerchant or RfsnSampleGuard in level
+4. Create IA_Dialogue input action
+5. Play and interact
+```
+
+---
+
+## 📖 Documentation
+
+### Core Components
+
+| Component | Type | Description |
+|-----------|------|-------------|
+| `URfsnNpcClientComponent` | ActorComponent | HTTP SSE client for RFSN |
+| `URfsnDialogueManager` | WorldSubsystem | Manages active dialogues |
+| `URfsnTemporalMemory` | ActorComponent | State-action-outcome memory |
+| `URfsnActionLattice` | Static Library | Expanded action construction |
+
+### Subsystems
+
+| Subsystem | Scope | Description |
+|-----------|-------|-------------|
+| `URfsnDialogueManager` | World | Active dialogue management |
+| `URfsnRelationshipManager` | GameInstance | Persistent relationships |
+| `URfsnFactionSystem` | GameInstance | Group reputation |
+| `URfsnNpcConversation` | World | NPC-to-NPC dialogue |
+| `URfsnHttpPool` | GameInstance | Connection pooling |
+| `URfsnMetrics` | GameInstance | Performance tracking |
+
+### Console Commands
+
+```
+RfsnDebug         Toggle debug HUD
+RfsnTalk          Talk to nearest NPC
+RfsnSay <msg>     Send custom message
+RfsnListNpcs      List all RFSN NPCs
+RfsnSetMood       Change NPC mood
+RfsnMockMode      Toggle offline mode
+RfsnDumpLog       Show conversation history
+RfsnClearLog      Clear history
+RfsnServerStatus  Check server connection
+RfsnReload        Reload NPC configs
+```
+
+---
+
+## 📚 API Reference
+
+### Temporal Memory
+
+```cpp
+// Record outcome after player response
+Memory->RecordOutcome(Action, Outcome, Mood, Relationship, Affinity, PlayerSignal);
+
+// Get biases before selection
+TArray<FRfsnActionBias> Biases = Memory->GetActionBiases(Mood, Rel, Affinity, Signal);
+
+// Check for hesitation trigger
+if (Memory->HasNegativeMemory(Mood, Rel, Affinity)) {
+    // Apply caution
+}
+```
+
+### Action Lattice
+
+```cpp
+// Build nuanced action
+FRfsnExpandedAction Action = URfsnActionLattice::BuildAction(
+    BaseAction, Affinity, Bias, bHasNegativeMemory);
+
+// Or use factory methods
+FRfsnExpandedAction::Hesitant(ERfsnNpcAction::Help);
+FRfsnExpandedAction::Reluctant(ERfsnNpcAction::Trade);
+FRfsnExpandedAction::Conflicted(ERfsnNpcAction::Help, ERfsnNpcAction::Attack);
+
+// Render for LLM
+FString Hint = Action.ToPromptHint();
+// → "hesitantly Help, only partially (guarded)"
+```
+
+### Faction System
+
+```cpp
+// Get/modify reputation
+float Rep = FactionSys->GetReputation("bandits");
+FactionSys->ModifyReputation("bandits", -10.0f); // Also affects allies/enemies
+
+// Check tier
+FString Tier = FactionSys->GetReputationTier("bandits");
+// → "Hostile", "Unfriendly", "Neutral", "Friendly", "Allied"
+```
+
+### NPC Conversation
+
+```cpp
+// Start NPC-to-NPC dialogue
+FString ConvId = ConvMgr->StartDialogue(NpcA, NpcB, "the weather");
+
+// Group discussion
+ConvMgr->StartGroupDiscussion({Npc1, Npc2, Npc3}, "survival plans");
+
+// Player interrupts
+ConvMgr->PlayerJoinConversation(ConvId);
+```
+
+---
+
+## 🗂️ Project Structure
 
 ```
 ISLAND/
 ├── Source/MyProject/
-│   ├── Public/           # Headers
-│   ├── Private/          # Implementations
-│   ├── Variant_Horror/   # Horror game mode
-│   └── Variant_Shooter/  # Shooter game mode
-├── RFSN_NPC_AI/          # Python AI backend
-│   └── Python/           # FastAPI server
-├── SETUP_INSTRUCTIONS.md # Full setup guide
-└── RFSN_BLUEPRINT_GUIDE.md # Blueprint integration
+│   ├── Public/                     # Headers
+│   │   ├── RfsnNpcClientComponent.h
+│   │   ├── RfsnTemporalMemory.h
+│   │   ├── RfsnActionLattice.h
+│   │   ├── RfsnFactionSystem.h
+│   │   └── ... (40+ headers)
+│   ├── Private/                    # Implementations
+│   └── MyProjectPCH.h              # Shared PCH
+├── RFSN_NPC_AI/
+│   └── Python/
+│       ├── orchestrator.py         # Main server
+│       └── mock_server.py          # Offline testing
+├── Content/                        # UE assets
+├── SETUP_INSTRUCTIONS.md           # Detailed setup guide
+├── RFSN_BLUEPRINT_GUIDE.md         # Blueprint integration
+└── README.md                       # This file
 ```
 
-## Documentation
+---
 
-- [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md) - Complete setup guide
-- [RFSN_BLUEPRINT_GUIDE.md](RFSN_BLUEPRINT_GUIDE.md) - Blueprint NPC setup
-- [ISLAND_SYSTEM_REFERENCE.md](ISLAND_SYSTEM_REFERENCE.md) - Architecture overview
+## 📊 Statistics
 
-## Requirements
+| Metric | Count |
+|--------|-------|
+| C++ Classes | 44+ |
+| Subsystems | 7 |
+| Console Commands | 10 |
+| Default Factions | 5 |
+| Sample NPCs | 2 |
+| Lines of Code | ~10,000+ |
 
-- Unreal Engine 5.5
-- Python 3.10+ (for RFSN server)
-- macOS, Windows, or Linux
+---
 
-## License
+## 🔧 Build Optimization
 
-MIT
+The project includes aggressive compile-time optimizations:
+
+- **Unity Builds** — 2-3x faster full rebuilds
+- **Shared PCH** — Common headers pre-compiled
+- **Forward Declarations** — Minimal header parsing
+- **IWYU Enforcement** — Clean include graphs
+- **Shipping-only Optimization** — Fast iteration in dev
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**Built with 🏝️ by [dawsonblock](https://github.com/dawsonblock)**
+
+</div>
