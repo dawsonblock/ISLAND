@@ -25,6 +25,7 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
 - **State drives intent** — mood, relationship, and affinity determine behavior
 - **Learning is scoped and reversible** — per-state isolation, bounded rewards, explicit bans
 - **75+ C++ components** — comprehensive NPC AI framework
+- **Dual-Model TTS** — Chatterbox Full/Turbo routing based on narrative weight
 
 ---
 
@@ -83,6 +84,30 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
 <tr>
 <td>
 
+### 🎤 Voice & Audio (NEW)
+
+- **Chatterbox TTS** — Dual-model voice routing
+- **Voice Router** — Auto-selects Full vs Turbo
+- **Instant Barks** — Masks 2s latency with pre-recorded audio
+- **Emotion-to-Voice** — Arousal/valence → style mapping
+- **Audio Attenuation** — 3D spatial dialogue
+
+</td>
+<td>
+
+### ⚡ Performance (NEW)
+
+- **Latency Optimizations** — Gemini-analyzed architecture
+- **Pipeline Reordering** — Action before generation
+- **User-Centric Rewards** — Fixes echo chamber bug
+- **Clause Tokenizer** — Faster TTS chunking
+- **Aggressive Pruning** — Context limit = 4
+
+</td>
+</tr>
+<tr>
+<td>
+
 ### 🔒 Behavior & Stealth
 
 - **NPC Awareness** — Detection, FOV, hearing
@@ -133,10 +158,13 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      RENDER LAYER (LLM)                         │
+│                      RENDER LAYER (LLM + TTS)                   │
 │  ┌────────────────────────────────────────────────────────────┐ │
 │  │   Action Hint + NPC State + Context → Natural Language    │ │
-│  │   + Voice Modulation + Lip Sync + Facial Animation        │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │   Voice Router: Intensity=Low→Turbo | High→Chatterbox-Full│ │
+│  │   + Instant Barks + Lip Sync + Facial Animation           │ │
 │  └────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -150,6 +178,7 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
 - Unreal Engine 5.5+
 - Python 3.10+ (for RFSN server)
 - [Ollama](https://ollama.ai) with `llama3.2`
+- (Optional) Chatterbox TTS for dual-model voice
 
 ### 1. Clone & Setup
 
@@ -161,7 +190,14 @@ pip install -r requirements.txt
 python orchestrator.py  # Or: python mock_server.py
 ```
 
-### 2. Open in Unreal
+### 2. Start Chatterbox TTS (Optional)
+
+```bash
+pip install chatterbox-tts fastapi uvicorn
+python chatterbox_server.py --port 8001
+```
+
+### 3. Open in Unreal
 
 1. Open `MyProject.uproject`
 2. Build (Ctrl+Shift+B)
@@ -182,6 +218,15 @@ python orchestrator.py  # Or: python mock_server.py
 | `URfsnActionLattice` | Expanded action construction |
 | `URfsnEmotionBlend` | VAD emotion model with facial animation |
 | `URfsnBackstoryGenerator` | LLM-driven procedural backstories |
+
+### Voice & Audio (NEW)
+
+| Component | Description |
+|-----------|-------------|
+| `URfsnVoiceRouter` | Routes TTS to Chatterbox Full or Turbo |
+| `URfsnInstantBark` | Plays barks immediately for latency masking |
+| `URfsnTtsAudioComponent` | Procedural audio playback |
+| `URfsnAudioSettings` | 3D attenuation and occlusion |
 
 ### Social & Memory
 
@@ -223,6 +268,32 @@ python orchestrator.py  # Or: python mock_server.py
 ---
 
 ## 📚 API Reference
+
+### Voice Router (NEW)
+
+```cpp
+// Auto-route based on emotion intensity
+VoiceRouter->SynthesizeAuto(Text, ERfsnVoiceIntensity::High);
+// High → Chatterbox Full, Low → Turbo
+
+// Force specific backends
+VoiceRouter->SynthesizeBark("Hey there!");        // Always Turbo
+VoiceRouter->SynthesizeStoryCritical("I remember everything...");  // Always Full
+
+// Get intensity from emotion blend
+ERfsnVoiceIntensity Intensity = VoiceRouter->GetIntensityFromEmotion();
+```
+
+### Instant Barks (NEW)
+
+```cpp
+// Play bark immediately on action
+InstantBark->PlayBarkFromAction("greet");  // "Hey there!"
+InstantBark->PlayBarkFromAction("threaten");  // "You asked for it!"
+
+// Barks play while LLM generates, masking 2s latency
+// 12 categories with 3+ barks each
+```
 
 ### Emotion Blending
 
@@ -307,14 +378,16 @@ GroupConv->PlayerSpeak("What do you think?");
 
 | Metric | Count |
 |--------|-------|
-| **C++ Classes** | 75+ |
-| **Subsystems** | 10+ |
+| **C++ Classes** | 80+ |
+| **Python Modules** | 25+ |
+| **Subsystems** | 12+ |
 | **Console Commands** | 10 |
 | **Default Factions** | 5 |
+| **Bark Categories** | 12 |
 | **Bark Triggers** | 15 |
 | **Weather Types** | 9 |
 | **Emotion States** | 8 |
-| **Lines of Code** | 30,000+ |
+| **Lines of Code** | 35,000+ |
 
 ---
 
@@ -323,19 +396,45 @@ GroupConv->PlayerSpeak("What do you think?");
 ```
 ISLAND/
 ├── Source/MyProject/
-│   ├── Public/                     # 75+ Headers
+│   ├── Public/                     # 80+ Headers
 │   │   ├── Rfsn*.h                 # All RFSN components
+│   │   ├── RfsnVoiceRouter.h       # TTS routing
+│   │   ├── RfsnInstantBark.h       # Latency masking
 │   │   └── RfsnForwardDeclarations.h
 │   ├── Private/                    # Implementations
 │   └── MyProjectPCH.h              # Shared PCH
 ├── RFSN_NPC_AI/
 │   └── Python/
 │       ├── orchestrator.py         # Main server
+│       ├── chatterbox_server.py    # Dual-model TTS
+│       ├── latency_optimizations.py # Gemini optimizations
 │       └── mock_server.py          # Offline testing
 ├── Content/                        # UE assets
 ├── SETUP_INSTRUCTIONS.md           # Detailed setup
 ├── RFSN_BLUEPRINT_GUIDE.md         # Blueprint guide
 └── README.md                       # This file
+```
+
+---
+
+## ⚡ Latency Optimization (Gemini Analysis)
+
+This project implements optimizations from a deep analysis by Gemini:
+
+| Optimization | Effect | Implementation |
+|--------------|--------|----------------|
+| **Instant Barks** | Masks ~2000ms perceived latency | Play generic bark immediately, stream unique response |
+| **Pipeline Reordering** | Saves ~200ms | Yield action before memory retrieval |
+| **User-Centric Rewards** | Fixes echo chamber | Analyze user input, not NPC emotion |
+| **Clause Tokenizer** | Faster TTS | Split on clauses, not sentences |
+| **Context Pruning** | Saves ~300ms | Limit history to 4 turns |
+
+### Before vs After
+
+```
+BEFORE: Player speaks → [2000ms] → NPC responds
+AFTER:  Player speaks → [50ms] → "Hmm..." → [1800ms] → Full response streams
+                         ↑ Instant bark masks wait time
 ```
 
 ---
