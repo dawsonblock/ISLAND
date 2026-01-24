@@ -1275,6 +1275,105 @@ async def tune_performance(settings: PerformanceSettings):
     return {"status": "updated", "new_settings": current_conf}
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# ISLAND DIRECTOR INTEGRATION
+# Provides game pacing commands for Unreal Engine's IslandDirectorSubsystem
+# ═══════════════════════════════════════════════════════════════════════════
+
+class DirectorGameState(BaseModel):
+    """Game state from Unreal Engine's IslandDirectorSubsystem"""
+    alert_level: float = 0.0  # 0-100 threat level
+    intensity: float = 0.0  # 0-1 normalized intensity
+    can_use_tower: bool = True
+    can_transmit: bool = False
+    intensity_state: str = "passive"  # passive, alerted, hostile, overwhelmed
+
+class DirectorResponse(BaseModel):
+    """Response with pacing command for the game"""
+    command: str  # spawn_horde, respite, escalate, maintain
+    alert_modifier: float = 0.0  # Change to apply to alert level
+    reasoning: str = ""
+
+@app.post("/api/director/control")
+async def director_control(game_state: DirectorGameState):
+    """
+    AI Director control endpoint for Unreal Engine.
+    Returns pacing commands based on current game state.
+    
+    Integration with IslandDirectorSubsystem:
+    - Receives current alert_level, intensity_state
+    - Returns command and alert_modifier
+    - Used by RfsnDirectorBridge component
+    """
+    
+    # Decision logic based on intensity state
+    intensity = game_state.intensity_state.lower()
+    alert = game_state.alert_level
+    
+    # Pacing decision tree
+    if intensity == "passive":
+        if alert < 20:
+            # Build tension slowly
+            return DirectorResponse(
+                command="escalate",
+                alert_modifier=5.0,
+                reasoning="Building tension from passive state"
+            )
+        elif alert < 40:
+            return DirectorResponse(
+                command="maintain",
+                alert_modifier=0.0,
+                reasoning="Letting tension build naturally"
+            )
+        else:
+            return DirectorResponse(
+                command="spawn_horde",
+                alert_modifier=20.0,
+                reasoning="High alert in passive - triggering event"
+            )
+    
+    elif intensity == "alerted":
+        if alert > 60:
+            return DirectorResponse(
+                command="spawn_horde",
+                alert_modifier=15.0,
+                reasoning="Player alerted with high threat - escalating"
+            )
+        else:
+            return DirectorResponse(
+                command="maintain",
+                alert_modifier=2.0,
+                reasoning="Maintaining alerted state"
+            )
+    
+    elif intensity == "hostile":
+        if alert > 80:
+            return DirectorResponse(
+                command="maintain",
+                alert_modifier=-5.0,
+                reasoning="Very high threat during combat - slight relief"
+            )
+        else:
+            return DirectorResponse(
+                command="escalate",
+                alert_modifier=10.0,
+                reasoning="Pushing combat intensity"
+            )
+    
+    elif intensity == "overwhelmed":
+        # Give the player a break
+        return DirectorResponse(
+            command="respite",
+            alert_modifier=-15.0,
+            reasoning="Player overwhelmed - providing respite"
+        )
+    
+    # Default: maintain current state
+    return DirectorResponse(
+        command="maintain",
+        alert_modifier=0.0,
+        reasoning="Default state maintenance"
+    )
 
 # Mount Dashboard (Must be after API routes to avoid masking)
 DASHBOARD_DIR = Path(__file__).parent.parent / "Dashboard"

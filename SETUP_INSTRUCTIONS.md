@@ -5,17 +5,20 @@
 1. **Set the UE_PATH environment variable**
 
    Open Terminal and run:
+
    ```bash
    echo 'export UE_PATH="/Users/Shared/Epic Games/UE_5.3"' >> ~/.zshrc
    source ~/.zshrc
    ```
-   
+
    *Replace UE_5.3 with your actual Unreal Engine version folder name*
 
 2. **Verify the environment variable**
+
    ```bash
    echo $UE_PATH
    ```
+
    Should print your Unreal Engine path.
 
 ## Building from VS Code
@@ -147,7 +150,7 @@ void AMyProjectCharacter::OnInteract()
      - Extract Window (default: 60s)
      - Cooldown (default: 120s)
      - Pulse Interval (default: 3s)
-   
+
    - Select the Extraction Zone
    - In Details panel, adjust:
      - Hold Time (default: 3s)
@@ -168,7 +171,7 @@ void AMyProjectCharacter::OnInteract()
    - Extract Window → Extraction zone becomes active
    - Cooldown → Tower resets
 
-3. **Extraction**: 
+3. **Extraction**:
    - Only active during Extract Window
    - Stand in zone for 3 seconds
    - Must be alive and not downed
@@ -218,3 +221,85 @@ void AMyProjectCharacter::OnInteract()
 - Add sound effects for pulses and state changes
 - Implement stamina/health systems
 - Add loot and progression systems
+
+---
+
+## RFSN NPC AI Integration
+
+The project includes **RFSN (Reactive Finite State Network)** for LLM-driven NPC dialogue and Director pacing.
+
+### Prerequisites
+
+1. **Python 3.10+** with virtual environment
+2. **RFSN dependencies** installed
+
+### Starting RFSN Server
+
+```bash
+cd RFSN_NPC_AI/Python
+python -m venv .venv
+source .venv/bin/activate  # Mac/Linux
+pip install -r requirements.txt
+python -m uvicorn orchestrator:app --port 8000
+```
+
+### RFSN Components
+
+| Component | Description |
+|-----------|-------------|
+| `RfsnNpcClientComponent` | HTTP SSE client for NPC dialogue |
+| `RfsnDirectorBridge` | Connects RFSN → IslandDirectorSubsystem |
+| `RfsnDialogueWidget` | Typewriter dialogue display |
+| `RfsnNpcDialogueTrigger` | Proximity/interact dialogue triggers |
+| `RfsnTtsAudioComponent` | TTS audio playback |
+| `RfsnPlayerInputWidget` | Player dialogue text input |
+
+### Using RFSN in NPCs
+
+1. **Add component to NPC:**
+
+```cpp
+#include "RfsnNpcClientComponent.h"
+
+// In header
+UPROPERTY(VisibleAnywhere)
+TObjectPtr<URfsnNpcClientComponent> RfsnClient;
+
+// In constructor
+RfsnClient = CreateDefaultSubobject<URfsnNpcClientComponent>(TEXT("RfsnClient"));
+```
+
+1. **Configure in BeginPlay:**
+
+```cpp
+RfsnClient->NpcName = TEXT("Guard");
+RfsnClient->Mood = TEXT("Neutral");
+RfsnClient->OnNpcActionReceived.AddDynamic(this, &AMyNPC::OnRfsnAction);
+```
+
+1. **Trigger dialogue:**
+
+```cpp
+RfsnClient->SendPlayerUtterance(TEXT("Hello there!"));
+```
+
+### Director Integration
+
+Add `URfsnDirectorBridge` to influence game pacing:
+
+```cpp
+UPROPERTY(VisibleAnywhere)
+TObjectPtr<URfsnDirectorBridge> DirectorBridge;
+
+// Enable auto-polling
+DirectorBridge->bAutoPolling = true;
+DirectorBridge->PollInterval = 10.0f;
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/dialogue/stream` | POST | Stream NPC dialogue (SSE) |
+| `/api/director/control` | POST | Get pacing commands |
+| `/api/health` | GET | Server health check |
