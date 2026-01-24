@@ -60,6 +60,9 @@ class URfsnNpcAwareness;
 class URfsnDynamicPricing;
 class URfsnWeatherReactions;
 class URfsnQuestIntegration;
+class URfsnGroupConversation;
+class URfsnNpcBarks;
+class URfsnRelationshipDecay;
 
 // Configuration
 class URfsnNpcConfig;
