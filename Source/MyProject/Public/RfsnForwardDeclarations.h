@@ -50,6 +50,11 @@ class URfsnActionLattice;
 class URfsnNpcPortrait;
 class URfsnReputationHud;
 
+// Advanced Systems
+class URfsnWitnessSystem;
+class URfsnLipSync;
+class URfsnNpcSchedule;
+
 // Configuration
 class URfsnNpcConfig;
 
