@@ -69,6 +69,12 @@ from action_scorer import ActionScorer, UtilityFunction
 from llm_action_prompts import render_action_block
 import re
 
+# Import latency optimizations (Gemini recommendations)
+from latency_optimizations import (
+    InstantBarkSystem, UserCentricRewardSystem, OptimizedPipeline,
+    ClauseTokenizer, BarkCategory, create_user_reward_system
+)
+
 # Configuration
 CONFIG_PATH = Path(__file__).parent.parent / "config.json"
 MEMORY_DIR = Path(__file__).parent.parent / "memory"
@@ -145,6 +151,12 @@ structured_logger: Optional[StructuredLogger] = None
 metrics_collector: Optional[MetricsCollector] = None
 event_recorder: Optional[EventRecorder] = None
 state_machine: Optional[StateMachine] = None
+
+# Latency optimization instances (Gemini recommendations)
+instant_bark_system: Optional[InstantBarkSystem] = None
+user_reward_system: Optional[UserCentricRewardSystem] = None
+optimized_pipeline: Optional[OptimizedPipeline] = None
+clause_tokenizer: Optional[ClauseTokenizer] = None
 
 
 @app.on_event("startup")
@@ -379,6 +391,13 @@ async def startup_event():
         npc_action_bandit=npc_action_bandit
     ))
     logger.info("Runtime state initialized atomically")
+
+    # Initialize latency optimizations (Gemini recommendations)
+    global instant_bark_system, user_reward_system, clause_tokenizer
+    instant_bark_system = InstantBarkSystem()
+    user_reward_system = UserCentricRewardSystem()
+    clause_tokenizer = ClauseTokenizer()
+    logger.info("Latency optimizations initialized (InstantBark, UserReward, ClauseTokenizer)")
 
     # Generate initial API Key if missing
     if not API_KEYS_PATH.exists():
@@ -831,12 +850,39 @@ async def stream_dialogue(request: DialogueRequest):
             return filtered_text
 
         try:
+            # Get instant bark for latency masking (Gemini recommendation)
+            instant_bark_text = ""
+            instant_bark_duration = 500
+            if instant_bark_system and selected_npc_action:
+                from latency_optimizations import BarkCategory
+                # Map NPC action to bark category
+                action_to_bark = {
+                    "greet": BarkCategory.GREET,
+                    "threaten": BarkCategory.THREATEN,
+                    "attack": BarkCategory.COMBAT,
+                    "agree": BarkCategory.AGREE,
+                    "disagree": BarkCategory.DISAGREE,
+                    "help": BarkCategory.HELP,
+                    "trade": BarkCategory.TRADE,
+                    "offer": BarkCategory.TRADE,
+                    "farewell": BarkCategory.FAREWELL,
+                    "talk": BarkCategory.IDLE,
+                }
+                bark_cat = action_to_bark.get(selected_npc_action.value.lower(), BarkCategory.IDLE)
+                bark = instant_bark_system.get_bark(npc_name, bark_cat)
+                instant_bark_text = bark.text
+                instant_bark_duration = bark.duration_ms
+                logger.debug(f"InstantBark: '{bark.text}' ({bark.duration_ms}ms) for action {selected_npc_action.value}")
+
             # Emit metadata event first (before any content)
+            # Includes instant_bark for client-side latency masking
             metadata_event = {
                 "player_signal": player_signal.value,
                 "bandit_key": bandit_key,
                 "npc_action": selected_npc_action.value if selected_npc_action else None,
                 "action_mode": action_mode.name if action_mode else None,
+                "instant_bark": instant_bark_text,
+                "bark_duration_ms": instant_bark_duration,
             }
             yield f"data: {json.dumps(metadata_event)}\n\n"
             
@@ -947,9 +993,24 @@ async def stream_dialogue(request: DialogueRequest):
                     emotion_info = multi_manager.process_response(npc_name, stored_text)
                     logger.info(f"NPC {npc_name} emotion: {emotion_info['emotion']['primary']}")
                     
-                    # Micro-reward: Positive emotion
-                    if emotion_info['emotion']['primary'] in ("joy", "trust", "anticipation"):
-                        reward_accumulator.add(0.10, "positive_emotion")
+                    # User-centric reward (Gemini recommendation)
+                    # Analyze USER's input for sentiment, not NPC's emotion
+                    if user_reward_system:
+                        user_sentiment = user_reward_system.analyze_user_input(request.user_input)
+                        
+                        # Hard punish for explicit negative triggers ("shut up", etc.)
+                        if user_sentiment.is_explicit_negative:
+                            reward_accumulator.add(-1.0, "user_explicit_negative")
+                            logger.warning(f"User explicit negative: {user_sentiment.triggers_found}")
+                        elif user_sentiment.sentiment > 0.5:
+                            reward_accumulator.add(user_sentiment.sentiment * 0.2, "user_positive")
+                        elif user_sentiment.sentiment < -0.3:
+                            reward_accumulator.add(user_sentiment.sentiment * 0.3, "user_negative")
+                        # Note: Neutral/continuation does NOT reward (fixes echo chamber)
+                    else:
+                        # Fallback to old emotion-based reward (less reliable)
+                        if emotion_info['emotion']['primary'] in ("joy", "trust", "anticipation"):
+                            reward_accumulator.add(0.10, "positive_emotion")
             
             # Explicit End-of-Stream Flush (Patch v8.9)
             if streaming_engine and streaming_engine.voice:
