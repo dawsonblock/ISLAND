@@ -114,7 +114,7 @@ async def dialogue_stream(request: Request):
     """Mock dialogue streaming endpoint."""
     try:
         body = await request.json()
-    except:
+    except Exception:
         body = {}
     
     player_message = body.get("player_utterance", "Hello")
@@ -131,19 +131,19 @@ async def director_control(request: Request):
     """Mock director control endpoint."""
     try:
         body = await request.json()
-    except:
+    except Exception:
         body = {}
     
     alert_level = body.get("alert_level", 0)
     intensity = body.get("intensity", 0.5)
     
-    # Simple mock logic
+    # Simple mock logic - use intensity to modify decisions
     if alert_level > 80:
         command = "respite"
-        modifier = -15
+        modifier = int(-15 * intensity)
     elif alert_level < 30:
         command = "escalate"
-        modifier = 10
+        modifier = int(10 * intensity)
     else:
         command = "maintain"
         modifier = 0
@@ -151,6 +151,7 @@ async def director_control(request: Request):
     return {
         "command": command,
         "alert_modifier": modifier,
+        "intensity": intensity,
         "timestamp": datetime.now().isoformat()
     }
 

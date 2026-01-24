@@ -11,22 +11,35 @@
 UENUM(BlueprintType)
 enum class ERfsnNpcAction : uint8
 {
+	// Common actions
 	Greet,
 	Warn,
 	Idle,
 	Flee,
 	Attack,
+
+	// Trade/Commerce
 	Trade,
+	Offer,
+
+	// Communication
 	Talk,
 	Apologize,
 	Threaten,
+	Explain,
+	Answer,
+	Inquire,
+
+	// Assistance
 	Help,
 	Request,
+
+	// Responses
 	Agree,
 	Disagree,
-	Ignore,
-	Inquire,
-	Explain
+	Accept,
+	Refuse,
+	Ignore
 };
 
 USTRUCT(BlueprintType)
@@ -68,7 +81,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRfsnNpcActionReceived, ERfsnNpcAc
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRfsnDialogueComplete);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRfsnError, const FString&, ErrorMessage);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class MYPROJECT_API URfsnNpcClientComponent : public UActorComponent
 {
 	GENERATED_BODY()
