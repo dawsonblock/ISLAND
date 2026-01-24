@@ -106,6 +106,41 @@ void AIslandHUD::DrawHUD() {
              TextScale);
   }
 
+  // NPC Dialogue Subtitles (bottom of screen)
+  if (!CurrentDialogueSentence.IsEmpty() &&
+      World->GetTimeSeconds() < DialogueExpireTime) {
+    float ScreenW = Canvas->ClipX;
+    float ScreenH = Canvas->ClipY;
+    float TextScale = 1.2f;
+
+    // Format: "NpcName: Sentence"
+    FString DialogueText = FString::Printf(
+        TEXT("%s: %s"), *CurrentDialogueNpcName, *CurrentDialogueSentence);
+
+    float TextW, TextH;
+    GetTextSize(DialogueText, TextW, TextH, NULL, TextScale);
+
+    // Center horizontally, 15% from bottom
+    float MsgX = (ScreenW - TextW) / 2.0f;
+    float MsgY = ScreenH * 0.85f;
+
+    // Clamp width for long sentences
+    float MaxWidth = ScreenW * 0.8f;
+    if (TextW > MaxWidth) {
+      TextScale = TextScale * (MaxWidth / TextW);
+      GetTextSize(DialogueText, TextW, TextH, NULL, TextScale);
+      MsgX = (ScreenW - TextW) / 2.0f;
+    }
+
+    // Dark background box
+    DrawRect(FLinearColor(0, 0, 0, 0.7f), MsgX - 15, MsgY - 8, TextW + 30,
+             TextH + 16);
+
+    // NPC name in cyan, rest in white
+    DrawText(DialogueText, FLinearColor(0.2f, 0.9f, 1.0f, 1.0f), MsgX, MsgY,
+             NULL, TextScale);
+  }
+
   AIslandGameMode *GM = Cast<AIslandGameMode>(World->GetAuthGameMode());
 
   // Tower State & Transmit Progress
