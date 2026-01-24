@@ -57,6 +57,9 @@ class URfsnNpcSchedule;
 class URfsnNpcMemory;
 class URfsnNpcNeeds;
 class URfsnNpcAwareness;
+class URfsnDynamicPricing;
+class URfsnWeatherReactions;
+class URfsnQuestIntegration;
 
 // Configuration
 class URfsnNpcConfig;
