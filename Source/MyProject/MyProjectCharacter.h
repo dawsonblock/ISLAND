@@ -20,94 +20,100 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
  *  A basic first person character
  */
 UCLASS(abstract)
-class AMyProjectCharacter : public ACharacter
-{
-	GENERATED_BODY()
+class AMyProjectCharacter : public ACharacter {
+  GENERATED_BODY()
 
-	/** Pawn mesh: first person view (arms; seen only by self) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* FirstPersonMesh;
+  /** Pawn mesh: first person view (arms; seen only by self) */
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
+            meta = (AllowPrivateAccess = "true"))
+  USkeletalMeshComponent *FirstPersonMesh;
 
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstPersonCameraComponent;
-
-protected:
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	class UInputAction* LookAction;
-
-	/** Mouse Look Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	class UInputAction* MouseLookAction;
-
-	/** Sprint Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	class UInputAction* SprintAction;
-
-	/** Vitality Component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vitality", meta = (AllowPrivateAccess = "true"))
-	UIslandVitalityComponent* VitalityComponent;
-	
-public:
-	AMyProjectCharacter();
-
-	virtual void Tick(float DeltaTime) override;
+  /** First person camera */
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
+            meta = (AllowPrivateAccess = "true"))
+  UCameraComponent *FirstPersonCameraComponent;
 
 protected:
+  /** Jump Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  UInputAction *JumpAction;
 
-	/** Called from Input Actions for movement input */
-	void MoveInput(const FInputActionValue& Value);
+  /** Move Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  UInputAction *MoveAction;
 
-	/** Called from Input Actions for looking input */
-	void LookInput(const FInputActionValue& Value);
+  /** Look Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  class UInputAction *LookAction;
 
-	/** Handles aim inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoAim(float Yaw, float Pitch);
+  /** Mouse Look Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  class UInputAction *MouseLookAction;
 
-	/** Handles move inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoMove(float Right, float Forward);
+  /** Sprint Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  class UInputAction *SprintAction;
 
-	/** Handles jump start inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoJumpStart();
+  /** Dialogue/Talk Input Action */
+  UPROPERTY(EditAnywhere, Category = "Input")
+  class UInputAction *DialogueAction;
 
-	/** Handles jump end inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoJumpEnd();
-
-	/** Handles sprint start inputs */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoSprintStart();
-
-	/** Handles sprint end inputs */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoSprintEnd();
-
-protected:
-
-	/** Set up input action bindings */
-	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	
+  /** Vitality Component */
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vitality",
+            meta = (AllowPrivateAccess = "true"))
+  UIslandVitalityComponent *VitalityComponent;
 
 public:
+  AMyProjectCharacter();
 
-	/** Returns the first person mesh **/
-	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
+  virtual void Tick(float DeltaTime) override;
 
-	/** Returns first person camera component **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+protected:
+  /** Called from Input Actions for movement input */
+  void MoveInput(const FInputActionValue &Value);
 
+  /** Called from Input Actions for looking input */
+  void LookInput(const FInputActionValue &Value);
+
+  /** Handles aim inputs from either controls or UI interfaces */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoAim(float Yaw, float Pitch);
+
+  /** Handles move inputs from either controls or UI interfaces */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoMove(float Right, float Forward);
+
+  /** Handles jump start inputs from either controls or UI interfaces */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoJumpStart();
+
+  /** Handles jump end inputs from either controls or UI interfaces */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoJumpEnd();
+
+  /** Handles sprint start inputs */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoSprintStart();
+
+  /** Handles sprint end inputs */
+  UFUNCTION(BlueprintCallable, Category = "Input")
+  virtual void DoSprintEnd();
+
+  /** Try to start dialogue with nearest NPC */
+  UFUNCTION(BlueprintCallable, Category = "RFSN")
+  virtual void TryStartDialogue();
+
+protected:
+  /** Set up input action bindings */
+  virtual void
+  SetupPlayerInputComponent(UInputComponent *InputComponent) override;
+
+public:
+  /** Returns the first person mesh **/
+  USkeletalMeshComponent *GetFirstPersonMesh() const { return FirstPersonMesh; }
+
+  /** Returns first person camera component **/
+  UCameraComponent *GetFirstPersonCameraComponent() const {
+    return FirstPersonCameraComponent;
+  }
 };
-

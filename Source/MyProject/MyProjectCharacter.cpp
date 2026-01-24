@@ -6,154 +6,186 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Public/IslandVitalityComponent.h"
+#include "InputActionValue.h"
 #include "MyProject.h"
+#include "Public/IslandVitalityComponent.h"
+#include "RfsnDialogueManager.h"
 
-AMyProjectCharacter::AMyProjectCharacter()
-{
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-	
-	// Create the first person mesh that will be viewed only by this character's owner
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("First Person Mesh"));
+AMyProjectCharacter::AMyProjectCharacter() {
+  // Set size for collision capsule
+  GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
-	FirstPersonMesh->SetupAttachment(GetMesh());
-	FirstPersonMesh->SetOnlyOwnerSee(true);
-	FirstPersonMesh->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
-	FirstPersonMesh->SetCollisionProfileName(FName("NoCollision"));
+  // Create the first person mesh that will be viewed only by this character's
+  // owner
+  FirstPersonMesh =
+      CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("First Person Mesh"));
 
-	// Create the Camera Component	
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("First Person Camera"));
-	FirstPersonCameraComponent->SetupAttachment(FirstPersonMesh, FName("head"));
-	FirstPersonCameraComponent->SetRelativeLocationAndRotation(FVector(-2.8f, 5.89f, 0.0f), FRotator(0.0f, 90.0f, -90.0f));
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-	FirstPersonCameraComponent->bEnableFirstPersonFieldOfView = true;
-	FirstPersonCameraComponent->bEnableFirstPersonScale = true;
-	FirstPersonCameraComponent->FirstPersonFieldOfView = 70.0f;
-	FirstPersonCameraComponent->FirstPersonScale = 0.6f;
+  FirstPersonMesh->SetupAttachment(GetMesh());
+  FirstPersonMesh->SetOnlyOwnerSee(true);
+  FirstPersonMesh->FirstPersonPrimitiveType =
+      EFirstPersonPrimitiveType::FirstPerson;
+  FirstPersonMesh->SetCollisionProfileName(FName("NoCollision"));
 
-	// configure the character comps
-	GetMesh()->SetOwnerNoSee(true);
-	GetMesh()->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::WorldSpaceRepresentation;
+  // Create the Camera Component
+  FirstPersonCameraComponent =
+      CreateDefaultSubobject<UCameraComponent>(TEXT("First Person Camera"));
+  FirstPersonCameraComponent->SetupAttachment(FirstPersonMesh, FName("head"));
+  FirstPersonCameraComponent->SetRelativeLocationAndRotation(
+      FVector(-2.8f, 5.89f, 0.0f), FRotator(0.0f, 90.0f, -90.0f));
+  FirstPersonCameraComponent->bUsePawnControlRotation = true;
+  FirstPersonCameraComponent->bEnableFirstPersonFieldOfView = true;
+  FirstPersonCameraComponent->bEnableFirstPersonScale = true;
+  FirstPersonCameraComponent->FirstPersonFieldOfView = 70.0f;
+  FirstPersonCameraComponent->FirstPersonScale = 0.6f;
 
-	GetCapsuleComponent()->SetCapsuleSize(34.0f, 96.0f);
+  // configure the character comps
+  GetMesh()->SetOwnerNoSee(true);
+  GetMesh()->FirstPersonPrimitiveType =
+      EFirstPersonPrimitiveType::WorldSpaceRepresentation;
 
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
-	GetCharacterMovement()->AirControl = 0.5f;
+  GetCapsuleComponent()->SetCapsuleSize(34.0f, 96.0f);
 
-	VitalityComponent = CreateDefaultSubobject<UIslandVitalityComponent>(TEXT("VitalityComponent"));
+  GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+  GetCharacterMovement()->AirControl = 0.5f;
+
+  VitalityComponent = CreateDefaultSubobject<UIslandVitalityComponent>(
+      TEXT("VitalityComponent"));
 }
 
-void AMyProjectCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+void AMyProjectCharacter::Tick(float DeltaTime) {
+  Super::Tick(DeltaTime);
 
-	// Handle stamina drain during sprint
-	if (GetCharacterMovement()->MaxWalkSpeed > 600.0f && GetVelocity().Size() > 0.0f)
-	{
-		VitalityComponent->ModifyStamina(-20.0f * DeltaTime);
-		
-		if (VitalityComponent->GetStaminaNormalized() <= 0.0f)
-		{
-			DoSprintEnd();
-		}
-	}
-	else
-	{
-		// Regenerate stamina
-		VitalityComponent->ModifyStamina(10.0f * DeltaTime);
-	}
+  // Handle stamina drain during sprint
+  if (GetCharacterMovement()->MaxWalkSpeed > 600.0f &&
+      GetVelocity().Size() > 0.0f) {
+    VitalityComponent->ModifyStamina(-20.0f * DeltaTime);
+
+    if (VitalityComponent->GetStaminaNormalized() <= 0.0f) {
+      DoSprintEnd();
+    }
+  } else {
+    // Regenerate stamina
+    VitalityComponent->ModifyStamina(10.0f * DeltaTime);
+  }
 }
 
-void AMyProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{	
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyProjectCharacter::DoJumpStart);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMyProjectCharacter::DoJumpEnd);
+void AMyProjectCharacter::SetupPlayerInputComponent(
+    UInputComponent *PlayerInputComponent) {
+  // Set up action bindings
+  if (UEnhancedInputComponent *EnhancedInputComponent =
+          Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+    // Jumping
+    EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this,
+                                       &AMyProjectCharacter::DoJumpStart);
+    EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed,
+                                       this, &AMyProjectCharacter::DoJumpEnd);
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyProjectCharacter::MoveInput);
+    // Moving
+    EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered,
+                                       this, &AMyProjectCharacter::MoveInput);
 
-		// Looking/Aiming
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyProjectCharacter::LookInput);
-		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AMyProjectCharacter::LookInput);
+    // Looking/Aiming
+    EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered,
+                                       this, &AMyProjectCharacter::LookInput);
+    EnhancedInputComponent->BindAction(MouseLookAction,
+                                       ETriggerEvent::Triggered, this,
+                                       &AMyProjectCharacter::LookInput);
 
-		// Sprinting
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMyProjectCharacter::DoSprintStart);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMyProjectCharacter::DoSprintEnd);
-	}
-	else
-	{
-		UE_LOG(LogMyProject, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
+    // Sprinting
+    EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started,
+                                       this,
+                                       &AMyProjectCharacter::DoSprintStart);
+    EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed,
+                                       this, &AMyProjectCharacter::DoSprintEnd);
+
+    // Dialogue
+    if (DialogueAction) {
+      EnhancedInputComponent->BindAction(
+          DialogueAction, ETriggerEvent::Started, this,
+          &AMyProjectCharacter::TryStartDialogue);
+    }
+  } else {
+    UE_LOG(
+        LogMyProject, Error,
+        TEXT("'%s' Failed to find an Enhanced Input Component! This template "
+             "is built to use the Enhanced Input system. If you intend to use "
+             "the legacy system, then you will need to update this C++ file."),
+        *GetNameSafe(this));
+  }
 }
 
+void AMyProjectCharacter::MoveInput(const FInputActionValue &Value) {
+  // get the Vector2D move axis
+  FVector2D MovementVector = Value.Get<FVector2D>();
 
-void AMyProjectCharacter::MoveInput(const FInputActionValue& Value)
-{
-	// get the Vector2D move axis
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	// pass the axis values to the move input
-	DoMove(MovementVector.X, MovementVector.Y);
-
+  // pass the axis values to the move input
+  DoMove(MovementVector.X, MovementVector.Y);
 }
 
-void AMyProjectCharacter::LookInput(const FInputActionValue& Value)
-{
-	// get the Vector2D look axis
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+void AMyProjectCharacter::LookInput(const FInputActionValue &Value) {
+  // get the Vector2D look axis
+  FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	// pass the axis values to the aim input
-	DoAim(LookAxisVector.X, LookAxisVector.Y);
-
+  // pass the axis values to the aim input
+  DoAim(LookAxisVector.X, LookAxisVector.Y);
 }
 
-void AMyProjectCharacter::DoAim(float Yaw, float Pitch)
-{
-	if (GetController())
-	{
-		// pass the rotation inputs
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
+void AMyProjectCharacter::DoAim(float Yaw, float Pitch) {
+  if (GetController()) {
+    // pass the rotation inputs
+    AddControllerYawInput(Yaw);
+    AddControllerPitchInput(Pitch);
+  }
 }
 
-void AMyProjectCharacter::DoMove(float Right, float Forward)
-{
-	if (GetController())
-	{
-		// pass the move inputs
-		AddMovementInput(GetActorRightVector(), Right);
-		AddMovementInput(GetActorForwardVector(), Forward);
-	}
+void AMyProjectCharacter::DoMove(float Right, float Forward) {
+  if (GetController()) {
+    // pass the move inputs
+    AddMovementInput(GetActorRightVector(), Right);
+    AddMovementInput(GetActorForwardVector(), Forward);
+  }
 }
 
-void AMyProjectCharacter::DoJumpStart()
-{
-	// pass Jump to the character
-	Jump();
+void AMyProjectCharacter::DoJumpStart() {
+  // pass Jump to the character
+  Jump();
 }
 
-void AMyProjectCharacter::DoJumpEnd()
-{
-	// pass StopJumping to the character
-	StopJumping();
+void AMyProjectCharacter::DoJumpEnd() {
+  // pass StopJumping to the character
+  StopJumping();
 }
-void AMyProjectCharacter::DoSprintStart()
-{
-	if (VitalityComponent && VitalityComponent->GetStaminaNormalized() > 0.1f)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
-	}
+void AMyProjectCharacter::DoSprintStart() {
+  if (VitalityComponent && VitalityComponent->GetStaminaNormalized() > 0.1f) {
+    GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
+  }
 }
 
-void AMyProjectCharacter::DoSprintEnd()
-{
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+void AMyProjectCharacter::DoSprintEnd() {
+  GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+}
+
+void AMyProjectCharacter::TryStartDialogue() {
+  UWorld *World = GetWorld();
+  if (!World) {
+    return;
+  }
+
+  URfsnDialogueManager *DialogueManager =
+      World->GetSubsystem<URfsnDialogueManager>();
+  if (!DialogueManager) {
+    return;
+  }
+
+  // Find nearest RFSN NPC
+  AActor *NearestNpc =
+      DialogueManager->FindNearestRfsnNpc(GetActorLocation(), 300.0f);
+  if (NearestNpc) {
+    DialogueManager->StartDialogue(NearestNpc);
+    // Send a default greeting
+    DialogueManager->SendPlayerMessage(TEXT("Hello."));
+  } else {
+    UE_LOG(LogTemp, Warning, TEXT("No RFSN NPC in range"));
+  }
 }
