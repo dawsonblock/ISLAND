@@ -250,6 +250,63 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Emotion|Animation")
 	void ApplyToSkeletalMesh(USkeletalMeshComponent* Mesh);
 
+	// ─────────────────────────────────────────────────────────────
+	// Emotional Contagion
+	// ─────────────────────────────────────────────────────────────
+
+	/** Enable emotional influence from nearby NPCs */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Emotion|Contagion")
+	bool bEnableContagion = true;
+
+	/** Max distance to be affected by other NPCs' emotions */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Emotion|Contagion",
+	          meta = (ClampMin = "0", ClampMax = "2000"))
+	float ContagionRadius = 500.0f;
+
+	/** How strongly this NPC is affected by others (0 = immune, 1 = highly susceptible) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Emotion|Contagion", meta = (ClampMin = "0", ClampMax = "1"))
+	float ContagionSusceptibility = 0.3f;
+
+	/** How strongly this NPC's emotions affect others */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Emotion|Contagion", meta = (ClampMin = "0", ClampMax = "1"))
+	float ContagionInfluence = 0.5f;
+
+	/** Manually trigger contagion check */
+	UFUNCTION(BlueprintCallable, Category = "Emotion|Contagion")
+	void ApplyContagionFromNearby();
+
+	// ─────────────────────────────────────────────────────────────
+	// Voice Modulation (for TTS)
+	// ─────────────────────────────────────────────────────────────
+
+	/** Get pitch modifier based on emotion (0.8 - 1.2 range) */
+	UFUNCTION(BlueprintPure, Category = "Emotion|Voice")
+	float GetVoicePitchModifier() const;
+
+	/** Get speed modifier based on emotion (0.8 - 1.2 range) */
+	UFUNCTION(BlueprintPure, Category = "Emotion|Voice")
+	float GetVoiceSpeedModifier() const;
+
+	/** Get volume modifier based on emotion (0.7 - 1.3 range) */
+	UFUNCTION(BlueprintPure, Category = "Emotion|Voice")
+	float GetVoiceVolumeModifier() const;
+
+	// ─────────────────────────────────────────────────────────────
+	// Persistence
+	// ─────────────────────────────────────────────────────────────
+
+	/** Save current emotion state */
+	UFUNCTION(BlueprintCallable, Category = "Emotion|Persistence")
+	void SaveEmotionState();
+
+	/** Load saved emotion state */
+	UFUNCTION(BlueprintCallable, Category = "Emotion|Persistence")
+	bool LoadEmotionState();
+
+	/** Get NPC ID for saving (from sibling RfsnNpcClientComponent) */
+	UFUNCTION(BlueprintPure, Category = "Emotion|Persistence")
+	FString GetNpcId() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,

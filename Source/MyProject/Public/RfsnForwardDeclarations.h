@@ -46,6 +46,10 @@ class URfsnBackstoryGenerator;
 class URfsnTemporalMemory;
 class URfsnActionLattice;
 
+// UI Components
+class URfsnNpcPortrait;
+class URfsnReputationHud;
+
 // Configuration
 class URfsnNpcConfig;
 

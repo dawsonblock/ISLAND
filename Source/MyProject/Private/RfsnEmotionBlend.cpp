@@ -2,6 +2,7 @@
 
 #include "RfsnEmotionBlend.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "EngineUtils.h"
 #include "RfsnLogging.h"
 
 // ─────────────────────────────────────────────────────────────
@@ -464,4 +465,237 @@ FString URfsnEmotionBlend::EmotionToString(ERfsnCoreEmotion Emotion)
 	default:
 		return TEXT("Neutral");
 	}
+}
+
+// ─────────────────────────────────────────────────────────────
+// Emotional Contagion Implementation
+// ─────────────────────────────────────────────────────────────
+
+void URfsnEmotionBlend::ApplyContagionFromNearby()
+{
+	if (!bEnableContagion || ContagionSusceptibility <= 0.0f)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	FVector MyLocation = GetOwner()->GetActorLocation();
+	FRfsnEmotionAxis AggregatedEmotion;
+	float TotalInfluence = 0.0f;
+	int32 NearbyCount = 0;
+
+	// Find all actors with EmotionBlend in range
+	for (TActorIterator<AActor> It(World); It; ++It)
+	{
+		AActor* OtherActor = *It;
+		if (OtherActor == GetOwner())
+		{
+			continue;
+		}
+
+		URfsnEmotionBlend* OtherEmotion = OtherActor->FindComponentByClass<URfsnEmotionBlend>();
+		if (!OtherEmotion)
+		{
+			continue;
+		}
+
+		float Distance = FVector::Dist(MyLocation, OtherActor->GetActorLocation());
+		if (Distance > ContagionRadius)
+		{
+			continue;
+		}
+
+		// Calculate influence based on distance and other NPC's influence strength
+		float DistanceFactor = 1.0f - (Distance / ContagionRadius);
+		float Influence = DistanceFactor * OtherEmotion->ContagionInfluence;
+
+		// Accumulate weighted emotion
+		AggregatedEmotion.Valence += OtherEmotion->CurrentEmotion.Valence * Influence;
+		AggregatedEmotion.Arousal += OtherEmotion->CurrentEmotion.Arousal * Influence;
+		AggregatedEmotion.Dominance += OtherEmotion->CurrentEmotion.Dominance * Influence;
+		TotalInfluence += Influence;
+		NearbyCount++;
+	}
+
+	// Apply averaged emotional influence
+	if (NearbyCount > 0 && TotalInfluence > 0.0f)
+	{
+		AggregatedEmotion.Valence /= TotalInfluence;
+		AggregatedEmotion.Arousal /= TotalInfluence;
+		AggregatedEmotion.Dominance /= TotalInfluence;
+
+		// Blend toward aggregated emotion based on susceptibility
+		float BlendAmount = ContagionSusceptibility * FMath::Min(TotalInfluence, 1.0f) * 0.1f;
+		ApplyStimulusVAD(FMath::Lerp(CurrentEmotion.Valence, AggregatedEmotion.Valence, BlendAmount),
+		                 FMath::Lerp(CurrentEmotion.Arousal, AggregatedEmotion.Arousal, BlendAmount),
+		                 FMath::Lerp(CurrentEmotion.Dominance, AggregatedEmotion.Dominance, BlendAmount));
+
+		RFSN_LOG(TEXT("Contagion: %s influenced by %d NPCs (blend: %.2f)"), *GetOwner()->GetName(), NearbyCount,
+		         BlendAmount);
+	}
+}
+
+// ─────────────────────────────────────────────────────────────
+// Voice Modulation Implementation
+// ─────────────────────────────────────────────────────────────
+
+float URfsnEmotionBlend::GetVoicePitchModifier() const
+{
+	// Arousal raises pitch, low valence also raises pitch slightly
+	float BasePitch = 1.0f;
+
+	// High arousal = higher pitch
+	BasePitch += CurrentEmotion.Arousal * 0.15f;
+
+	// Negative emotions slightly raise pitch (tension)
+	if (CurrentEmotion.Valence < 0)
+	{
+		BasePitch += FMath::Abs(CurrentEmotion.Valence) * 0.05f;
+	}
+
+	// Sadness lowers pitch
+	if (DominantEmotion == ERfsnCoreEmotion::Sadness)
+	{
+		BasePitch -= 0.1f;
+	}
+
+	return FMath::Clamp(BasePitch, 0.8f, 1.2f);
+}
+
+float URfsnEmotionBlend::GetVoiceSpeedModifier() const
+{
+	// Arousal increases speed, sadness/trust slow it down
+	float BaseSpeed = 1.0f;
+
+	// High arousal = faster speech
+	BaseSpeed += CurrentEmotion.Arousal * 0.15f;
+
+	// Fear makes speech fast and rushed
+	if (DominantEmotion == ERfsnCoreEmotion::Fear)
+	{
+		BaseSpeed += 0.1f;
+	}
+
+	// Sadness slows speech
+	if (DominantEmotion == ERfsnCoreEmotion::Sadness)
+	{
+		BaseSpeed -= 0.15f;
+	}
+
+	// Trust is calm and measured
+	if (DominantEmotion == ERfsnCoreEmotion::Trust)
+	{
+		BaseSpeed -= 0.1f;
+	}
+
+	return FMath::Clamp(BaseSpeed, 0.8f, 1.2f);
+}
+
+float URfsnEmotionBlend::GetVoiceVolumeModifier() const
+{
+	// Dominance and arousal increase volume
+	float BaseVolume = 1.0f;
+
+	// High dominance = louder
+	BaseVolume += CurrentEmotion.Dominance * 0.15f;
+
+	// High arousal = louder
+	BaseVolume += CurrentEmotion.Arousal * 0.1f;
+
+	// Anger is loud
+	if (DominantEmotion == ERfsnCoreEmotion::Anger)
+	{
+		BaseVolume += 0.2f;
+	}
+
+	// Fear and sadness are quieter
+	if (DominantEmotion == ERfsnCoreEmotion::Fear || DominantEmotion == ERfsnCoreEmotion::Sadness)
+	{
+		BaseVolume -= 0.15f;
+	}
+
+	return FMath::Clamp(BaseVolume, 0.7f, 1.3f);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Persistence Implementation
+// ─────────────────────────────────────────────────────────────
+
+#include "RfsnNpcClientComponent.h"
+#include "Misc/FileHelper.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+
+FString URfsnEmotionBlend::GetNpcId() const
+{
+	if (URfsnNpcClientComponent* Client = GetOwner()->FindComponentByClass<URfsnNpcClientComponent>())
+	{
+		return Client->NpcId;
+	}
+	return GetOwner()->GetName();
+}
+
+void URfsnEmotionBlend::SaveEmotionState()
+{
+	FString NpcId = GetNpcId();
+	FString SavePath = FPaths::ProjectSavedDir() / TEXT("Emotions") / FString::Printf(TEXT("Emotion_%s.json"), *NpcId);
+
+	TSharedRef<FJsonObject> JsonObj = MakeShared<FJsonObject>();
+	JsonObj->SetNumberField(TEXT("valence"), CurrentEmotion.Valence);
+	JsonObj->SetNumberField(TEXT("arousal"), CurrentEmotion.Arousal);
+	JsonObj->SetNumberField(TEXT("dominance"), CurrentEmotion.Dominance);
+	JsonObj->SetNumberField(TEXT("target_valence"), TargetEmotion.Valence);
+	JsonObj->SetNumberField(TEXT("target_arousal"), TargetEmotion.Arousal);
+	JsonObj->SetNumberField(TEXT("target_dominance"), TargetEmotion.Dominance);
+	JsonObj->SetStringField(TEXT("dominant_emotion"), EmotionToString(DominantEmotion));
+
+	FString OutputString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+	FJsonSerializer::Serialize(JsonObj, Writer);
+
+	// Ensure directory exists
+	IFileManager::Get().MakeDirectory(*FPaths::GetPath(SavePath), true);
+	FFileHelper::SaveStringToFile(OutputString, *SavePath);
+
+	RFSN_LOG(TEXT("Saved emotion state for %s"), *NpcId);
+}
+
+bool URfsnEmotionBlend::LoadEmotionState()
+{
+	FString NpcId = GetNpcId();
+	FString SavePath = FPaths::ProjectSavedDir() / TEXT("Emotions") / FString::Printf(TEXT("Emotion_%s.json"), *NpcId);
+
+	FString JsonString;
+	if (!FFileHelper::LoadFileToString(JsonString, *SavePath))
+	{
+		return false;
+	}
+
+	TSharedPtr<FJsonObject> JsonObj;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
+	if (!FJsonSerializer::Deserialize(Reader, JsonObj) || !JsonObj.IsValid())
+	{
+		return false;
+	}
+
+	CurrentEmotion.Valence = JsonObj->GetNumberField(TEXT("valence"));
+	CurrentEmotion.Arousal = JsonObj->GetNumberField(TEXT("arousal"));
+	CurrentEmotion.Dominance = JsonObj->GetNumberField(TEXT("dominance"));
+	TargetEmotion.Valence = JsonObj->GetNumberField(TEXT("target_valence"));
+	TargetEmotion.Arousal = JsonObj->GetNumberField(TEXT("target_arousal"));
+	TargetEmotion.Dominance = JsonObj->GetNumberField(TEXT("target_dominance"));
+
+	FString EmotionStr = JsonObj->GetStringField(TEXT("dominant_emotion"));
+	DominantEmotion = StringToEmotion(EmotionStr);
+
+	UpdateFacialExpression();
+
+	RFSN_LOG(TEXT("Loaded emotion state for %s: %s"), *NpcId, *EmotionStr);
+	return true;
 }
