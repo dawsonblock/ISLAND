@@ -2,6 +2,8 @@
 // HTTP SSE streaming client for RFSN Orchestrator
 
 #include "RfsnNpcClientComponent.h"
+#include "RfsnBackstoryGenerator.h"
+#include "RfsnEmotionBlend.h"
 #include "RfsnRelationshipManager.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
@@ -54,13 +56,37 @@ void URfsnNpcClientComponent::SendPlayerUtterance(const FString& PlayerText)
 	// Cancel any existing stream
 	CancelDialogue();
 
+	// Trigger first interaction for backstory generation
+	if (URfsnBackstoryGenerator* BackstoryGen = GetOwner()->FindComponentByClass<URfsnBackstoryGenerator>())
+	{
+		BackstoryGen->OnFirstInteraction();
+	}
+
+	// Get mood from emotion blend if available, otherwise use string
+	FString CurrentMood = Mood;
+	FString DialogueTone = TEXT("");
+	if (URfsnEmotionBlend* EmotionBlend = GetOwner()->FindComponentByClass<URfsnEmotionBlend>())
+	{
+		CurrentMood = EmotionBlend->ToMoodString();
+		DialogueTone = EmotionBlend->ToDialogueTone();
+	}
+
+	// Get backstory context if available
+	FString BackstoryContext = TEXT("");
+	if (URfsnBackstoryGenerator* BackstoryGen = GetOwner()->FindComponentByClass<URfsnBackstoryGenerator>())
+	{
+		BackstoryContext = BackstoryGen->GetShortContext();
+	}
+
 	// Build JSON payload matching RFSN DialogueRequest schema
 	TSharedPtr<FJsonObject> NpcState = MakeShareable(new FJsonObject());
 	NpcState->SetStringField(TEXT("npc_name"), NpcName);
 	NpcState->SetStringField(TEXT("npc_id"), NpcId);
 	NpcState->SetNumberField(TEXT("affinity"), Affinity);
-	NpcState->SetStringField(TEXT("mood"), Mood);
+	NpcState->SetStringField(TEXT("mood"), CurrentMood);
 	NpcState->SetStringField(TEXT("relationship"), Relationship);
+	NpcState->SetStringField(TEXT("dialogue_tone"), DialogueTone);
+	NpcState->SetStringField(TEXT("backstory_context"), BackstoryContext);
 
 	TSharedPtr<FJsonObject> Payload = MakeShareable(new FJsonObject());
 	Payload->SetStringField(TEXT("user_input"), PlayerText);
@@ -256,6 +282,24 @@ void URfsnNpcClientComponent::ParseSentenceEvent(const FString& JsonData)
 
 	if (!Sentence.Sentence.IsEmpty())
 	{
+		// Apply emotional stimulus from sentence tone (if detected)
+		if (URfsnEmotionBlend* EmotionBlend = GetOwner()->FindComponentByClass<URfsnEmotionBlend>())
+		{
+			// Simple sentiment analysis based on NPC action
+			if (LastNpcAction == ERfsnNpcAction::Attack || LastNpcAction == ERfsnNpcAction::Threaten)
+			{
+				EmotionBlend->ApplyStimulus(TEXT("Anger"), 0.5f);
+			}
+			else if (LastNpcAction == ERfsnNpcAction::Flee)
+			{
+				EmotionBlend->ApplyStimulus(TEXT("Fear"), 0.5f);
+			}
+			else if (LastNpcAction == ERfsnNpcAction::Greet || LastNpcAction == ERfsnNpcAction::Help)
+			{
+				EmotionBlend->ApplyStimulus(TEXT("Joy"), 0.3f);
+			}
+		}
+
 		UE_LOG(LogTemp, Log, TEXT("[%s] %s"), *NpcName, *Sentence.Sentence);
 		OnSentenceReceived.Broadcast(Sentence);
 	}

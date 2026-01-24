@@ -1375,6 +1375,161 @@ async def director_control(game_state: DirectorGameState):
         reasoning="Default state maintenance"
     )
 
+
+# ─────────────────────────────────────────────────────────────
+# Backstory Generation (Procedural NPC histories)
+# ─────────────────────────────────────────────────────────────
+
+class BackstoryRequest(BaseModel):
+    npc_id: str
+    npc_name: str = "Unknown"
+    faction_id: str = "survivors"
+    personality_traits: List[str] = []
+    hint: str = ""
+    occupation: str = ""
+    current_mood: str = "Neutral"
+    summary_paragraphs: int = 2
+
+
+class BackstoryElement(BaseModel):
+    type: str
+    description: str
+    importance: float = 0.5
+    public: bool = True
+    tags: List[str] = []
+
+
+class BackstoryResponse(BaseModel):
+    npc_id: str
+    summary: str
+    occupation: str
+    faction_history: str
+    personal_goal: str
+    fear: str
+    secret: str
+    trait: str
+    version: int = 1
+    elements: List[BackstoryElement] = []
+
+
+# Faction descriptions for context
+FACTION_DESCRIPTIONS = {
+    "survivors": "A loose collective of ordinary people trying to survive on the island. They value cooperation, resourcefulness, and protecting their own.",
+    "bandits": "Ruthless scavengers who take what they want by force. They respect strength and cunning above all else.",
+    "military": "Remnants of a military force that maintained order before the collapse. They value discipline, hierarchy, and completing the mission.",
+    "merchants": "Traders who keep the economy alive by bartering goods between settlements. They value profit, reputation, and reliable partnerships.",
+    "cultists": "A mysterious group with strange beliefs about the island. They value devotion, secrecy, and serving their enigmatic leaders."
+}
+
+
+@app.post("/api/backstory/generate", dependencies=[Depends(optional_auth)])
+async def generate_backstory(request: BackstoryRequest):
+    """Generate a procedural backstory for an NPC using LLM"""
+    global streaming_engine
+    
+    if not streaming_engine or not streaming_engine.ollama_client:
+        raise HTTPException(status_code=503, detail="LLM not available")
+    
+    # Build faction context
+    faction_desc = FACTION_DESCRIPTIONS.get(
+        request.faction_id.lower(), 
+        "A group of people with shared interests and goals."
+    )
+    
+    # Build personality trait string
+    traits_str = ", ".join(request.personality_traits) if request.personality_traits else "cautious and observant"
+    
+    # Build the prompt
+    prompt = f"""Generate a backstory for an NPC character named "{request.npc_name}" with the following details:
+
+Faction: {request.faction_id.title()} - {faction_desc}
+Personality Traits: {traits_str}
+Current Occupation: {request.occupation if request.occupation else "to be determined"}
+Current Mood: {request.current_mood}
+{f'Designer Hint: {request.hint}' if request.hint else ''}
+
+Create a {request.summary_paragraphs}-paragraph backstory summary that:
+1. Explains their life before joining the faction
+2. Describes how they came to join the faction
+3. Includes a personal goal, a deep fear, and a secret shame
+4. Has a distinguishing personality trait or quirk
+
+Respond in this JSON format exactly:
+{{
+    "summary": "Two paragraphs of backstory...",
+    "occupation": "Their current role",
+    "faction_history": "How they joined the faction",
+    "personal_goal": "What they want most",
+    "fear": "What they fear most",
+    "secret": "A hidden shame or secret",
+    "trait": "A distinguishing personality trait",
+    "elements": [
+        {{"type": "origin", "description": "Where they came from", "importance": 0.8, "public": true, "tags": ["history"]}},
+        {{"type": "trauma", "description": "A defining negative experience", "importance": 0.7, "public": false, "tags": ["backstory", "secret"]}},
+        {{"type": "skill", "description": "A notable skill or talent", "importance": 0.6, "public": true, "tags": ["ability"]}}
+    ]
+}}"""
+
+    try:
+        # Generate backstory using Ollama
+        response = await streaming_engine.ollama_client.generate(
+            prompt=prompt,
+            system="You are a creative writer generating NPC backstories for a survival game. Be concise but evocative. Always respond with valid JSON only, no markdown.",
+            max_tokens=1000,
+            temperature=0.8
+        )
+        
+        # Parse JSON from response
+        response_text = response.strip()
+        
+        # Try to extract JSON if wrapped in markdown
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+        
+        backstory_data = json.loads(response_text)
+        
+        # Build response
+        return BackstoryResponse(
+            npc_id=request.npc_id,
+            summary=backstory_data.get("summary", ""),
+            occupation=backstory_data.get("occupation", request.occupation or "Survivor"),
+            faction_history=backstory_data.get("faction_history", ""),
+            personal_goal=backstory_data.get("personal_goal", ""),
+            fear=backstory_data.get("fear", ""),
+            secret=backstory_data.get("secret", ""),
+            trait=backstory_data.get("trait", traits_str.split(",")[0] if traits_str else "cautious"),
+            version=1,
+            elements=[
+                BackstoryElement(**elem) 
+                for elem in backstory_data.get("elements", [])
+            ]
+        )
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse backstory JSON: {e}")
+        # Return a fallback backstory
+        return BackstoryResponse(
+            npc_id=request.npc_id,
+            summary=f"{request.npc_name} has lived on the island for as long as anyone can remember. Before the collapse, they led a quiet life, but circumstances forced them to adapt quickly. Now they work as a {request.occupation or 'survivor'}, doing what they can to survive.\n\nKnown for being {traits_str}, {request.npc_name} doesn't easily trust newcomers. They've seen too many people come and go, and have learned to rely on themselves first.",
+            occupation=request.occupation or "Survivor",
+            faction_history=f"Joined the {request.faction_id.title()} seeking protection",
+            personal_goal="To find safety and stability",
+            fear="Being alone when it matters most",
+            secret="Once abandoned someone who needed help",
+            trait=traits_str.split(",")[0].strip() if traits_str else "cautious",
+            version=0,
+            elements=[
+                BackstoryElement(type="origin", description="Island native", importance=0.8, public=True, tags=["history"]),
+                BackstoryElement(type="personality", description=traits_str, importance=0.9, public=True, tags=["personality"])
+            ]
+        )
+    except Exception as e:
+        logger.error(f"Backstory generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Mount Dashboard (Must be after API routes to avoid masking)
 DASHBOARD_DIR = Path(__file__).parent.parent / "Dashboard"
 if DASHBOARD_DIR.exists():

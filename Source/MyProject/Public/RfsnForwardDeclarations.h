@@ -27,6 +27,8 @@ class URfsnDialogueManager;
 class URfsnRelationshipManager;
 class URfsnFactionSystem;
 class URfsnNpcConversation;
+class URfsnHttpPool;
+class URfsnMetrics;
 
 // Save Data
 class URfsnRelationshipSaveData;
@@ -37,6 +39,12 @@ class URfsnDialogueCamera;
 class URfsnAmbientChatter;
 class URfsnAudioSettings;
 class URfsnReplicatedDialogue;
+
+// Advanced AI Components
+class URfsnEmotionBlend;
+class URfsnBackstoryGenerator;
+class URfsnTemporalMemory;
+class URfsnActionLattice;
 
 // Configuration
 class URfsnNpcConfig;
@@ -61,6 +69,13 @@ struct FRfsnFaction;
 struct FRfsnChatterLine;
 struct FRfsnNpcConversationSession;
 struct FRfsnNpcConversationParticipant;
+struct FRfsnEmotionAxis;
+struct FRfsnFacialExpression;
+struct FRfsnNpcBackstory;
+struct FRfsnBackstoryElement;
+struct FRfsnExpandedAction;
+struct FRfsnMemoryTrace;
+struct FRfsnActionBias;
 
 // ─────────────────────────────────────────────────────────────
 // Enums - typically need full header for usage
@@ -70,3 +85,7 @@ struct FRfsnNpcConversationParticipant;
 // ERfsnCameraMode - see RfsnDialogueCamera.h
 // ERfsnChatterTrigger - see RfsnAmbientChatter.h
 // ERfsnConversationType - see RfsnNpcConversation.h
+// ERfsnCoreEmotion - see RfsnEmotionBlend.h
+// ERfsnActionIntensity - see RfsnActionLattice.h
+// ERfsnActionCompliance - see RfsnActionLattice.h
+// ERfsnActionMotive - see RfsnActionLattice.h
