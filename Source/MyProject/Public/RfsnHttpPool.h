@@ -66,12 +66,10 @@ public:
 	// API
 	// ─────────────────────────────────────────────────────────────
 
-	/** Create a pooled POST request */
-	UFUNCTION(BlueprintCallable, Category = "HTTP Pool")
+	/** Create a pooled POST request (C++ only - TSharedPtr not Blueprint-exposable) */
 	TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CreatePostRequest(const FString& Endpoint, const FString& JsonBody);
 
-	/** Create a pooled GET request */
-	UFUNCTION(BlueprintCallable, Category = "HTTP Pool")
+	/** Create a pooled GET request (C++ only - TSharedPtr not Blueprint-exposable) */
 	TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CreateGetRequest(const FString& Endpoint);
 
 	/** Get current statistics */

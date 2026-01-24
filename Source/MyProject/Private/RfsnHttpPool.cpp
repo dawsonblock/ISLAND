@@ -10,7 +10,7 @@ void URfsnHttpPool::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	ResetStats();
 	PingServer();
-	RFSN_LOG("HTTP Pool initialized - BaseUrl: %s", *BaseUrl);
+	RFSN_LOG(TEXT("HTTP Pool initialized - BaseUrl: %s"), *BaseUrl);
 }
 
 TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> URfsnHttpPool::CreatePostRequest(const FString& Endpoint,
@@ -18,7 +18,7 @@ TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> URfsnHttpPool::CreatePostRequest(c
 {
 	if (Stats.ActiveRequests >= MaxConcurrentRequests)
 	{
-		RFSN_WARNING("Max concurrent requests reached (%d)", MaxConcurrentRequests);
+		RFSN_WARNING(TEXT("Max concurrent requests reached (%d)"), MaxConcurrentRequests);
 		// Could queue request here
 	}
 
@@ -65,11 +65,11 @@ void URfsnHttpPool::PingServer()
 
 		    if (bServerAvailable)
 		    {
-			    RFSN_LOG("RFSN server is available");
+			    RFSN_LOG(TEXT("RFSN server is available"));
 		    }
 		    else
 		    {
-			    RFSN_WARNING("RFSN server is not available");
+			    RFSN_WARNING(TEXT("RFSN server is not available"));
 		    }
 	    });
 

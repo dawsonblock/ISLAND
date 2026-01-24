@@ -67,7 +67,7 @@ void URfsnDialogueCamera::StartDialogueCamera(AActor* NpcActor, ERfsnCameraMode 
 	CurrentMode = Mode;
 	bDialogueCameraActive = true;
 
-	RFSN_DIALOGUE_LOG("Started dialogue camera: Mode=%d", static_cast<int32>(Mode));
+	RFSN_DIALOGUE_LOG(TEXT("Started dialogue camera: Mode=%d"), static_cast<int32>(Mode));
 
 	// Note: Actual camera blending would be done via PlayerController::SetViewTarget
 	// or Sequencer. This component calculates transforms.
@@ -79,7 +79,7 @@ void URfsnDialogueCamera::StopDialogueCamera()
 	CurrentMode = ERfsnCameraMode::None;
 	DialogueNpc.Reset();
 
-	RFSN_DIALOGUE_LOG("Stopped dialogue camera");
+	RFSN_DIALOGUE_LOG(TEXT("Stopped dialogue camera"));
 }
 
 void URfsnDialogueCamera::SetCameraMode(ERfsnCameraMode NewMode)
@@ -87,7 +87,7 @@ void URfsnDialogueCamera::SetCameraMode(ERfsnCameraMode NewMode)
 	if (CurrentMode != NewMode)
 	{
 		CurrentMode = NewMode;
-		RFSN_DIALOGUE_LOG("Camera mode changed to: %d", static_cast<int32>(NewMode));
+		RFSN_DIALOGUE_LOG(TEXT("Camera mode changed to: %d"), static_cast<int32>(NewMode));
 	}
 }
 

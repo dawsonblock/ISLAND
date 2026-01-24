@@ -4,9 +4,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HorrorNPC.generated.h"
 #include "MyProjectCharacter.h"
 #include "RfsnNpcClientComponent.h"
+#include "HorrorNPC.generated.h"
 
 class URfsnNpcClientComponent;
 class URfsnDialogueWidget;
@@ -20,79 +20,80 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHorrorNpcDeathDelegate);
  * Designed for stealth-focused encounters with conversation abilities.
  */
 UCLASS()
-class MYPROJECT_API AHorrorNPC : public AMyProjectCharacter {
-  GENERATED_BODY()
+class MYPROJECT_API AHorrorNPC : public AMyProjectCharacter
+{
+	GENERATED_BODY()
 
 public:
-  AHorrorNPC();
+	AHorrorNPC();
 
-  // ─────────────────────────────────────────────────────────────
-  // Components
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// Components
+	// ─────────────────────────────────────────────────────────────
 
-  /** RFSN client for LLM dialogue */
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
-  TObjectPtr<URfsnNpcClientComponent> RfsnClient;
+	/** RFSN client for LLM dialogue */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
+	TObjectPtr<URfsnNpcClientComponent> RfsnClient;
 
-  /** Dialogue trigger */
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
-  TObjectPtr<URfsnNpcDialogueTrigger> DialogueTrigger;
+	/** Dialogue trigger */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
+	TObjectPtr<URfsnNpcDialogueTrigger> DialogueTrigger;
 
-  /** Audio component for TTS playback */
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
-  TObjectPtr<UAudioComponent> VoiceAudio;
+	/** Audio component for TTS playback */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	TObjectPtr<UAudioComponent> VoiceAudio;
 
-  // ─────────────────────────────────────────────────────────────
-  // Properties
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// Properties
+	// ─────────────────────────────────────────────────────────────
 
-  /** NPC display name */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
-  FString NpcDisplayName = TEXT("Stranger");
+	/** NPC display name */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
+	FString NpcDisplayName = TEXT("Stranger");
 
-  /** Max HP */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
-  float MaxHP = 100.0f;
+	/** Max HP */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
+	float MaxHP = 100.0f;
 
-  /** Current HP */
-  UPROPERTY(BlueprintReadOnly, Category = "NPC")
-  float CurrentHP = 100.0f;
+	/** Current HP */
+	UPROPERTY(BlueprintReadOnly, Category = "NPC")
+	float CurrentHP = 100.0f;
 
-  /** Is this NPC hostile? */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
-  bool bIsHostile = false;
+	/** Is this NPC hostile? */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
+	bool bIsHostile = false;
 
-  /** Aggro radius for detecting player */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
-  float AggroRadius = 500.0f;
+	/** Aggro radius for detecting player */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
+	float AggroRadius = 500.0f;
 
-  // ─────────────────────────────────────────────────────────────
-  // Events
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// Events
+	// ─────────────────────────────────────────────────────────────
 
-  UPROPERTY(BlueprintAssignable, Category = "NPC|Events")
-  FHorrorNpcDeathDelegate OnDeath;
+	UPROPERTY(BlueprintAssignable, Category = "NPC|Events")
+	FHorrorNpcDeathDelegate OnDeath;
 
-  // ─────────────────────────────────────────────────────────────
-  // API
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// API
+	// ─────────────────────────────────────────────────────────────
 
-  /** Initiate dialogue with player input */
-  UFUNCTION(BlueprintCallable, Category = "RFSN")
-  void SpeakToPlayer(const FString &PlayerUtterance);
+	/** Initiate dialogue with player input */
+	UFUNCTION(BlueprintCallable, Category = "RFSN")
+	void SpeakToPlayer(const FString& PlayerUtterance);
 
-  /** Apply damage to this NPC */
-  UFUNCTION(BlueprintCallable, Category = "NPC")
-  void TakeDamageAmount(float Damage);
+	/** Apply damage to this NPC */
+	UFUNCTION(BlueprintCallable, Category = "NPC")
+	void TakeDamageAmount(float Damage);
 
 protected:
-  virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-  /** Handle RFSN action selection */
-  UFUNCTION()
-  void OnRfsnNpcAction(ERfsnNpcAction Action);
+	/** Handle RFSN action selection */
+	UFUNCTION()
+	void OnRfsnNpcAction(ERfsnNpcAction Action);
 
-  /** Handle sentence received for potential audio */
-  UFUNCTION()
-  void OnRfsnSentence(const FRfsnSentence &Sentence);
+	/** Handle sentence received for potential audio */
+	UFUNCTION()
+	void OnRfsnSentence(const FRfsnSentence& Sentence);
 };

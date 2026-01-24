@@ -159,7 +159,7 @@ public:
 
 	/** Is conversation active? */
 	UPROPERTY(BlueprintReadOnly, Category = "Conversation|State")
-	bool bIsActive = false;
+	bool bConversationActive = false;
 
 	/** Is player participating? */
 	UPROPERTY(BlueprintReadOnly, Category = "Conversation|State")

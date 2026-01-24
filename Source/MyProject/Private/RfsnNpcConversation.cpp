@@ -19,7 +19,7 @@ void URfsnNpcConversation::Initialize(FSubsystemCollectionBase& Collection)
 		                                  true);
 	}
 
-	RFSN_LOG("NPC Conversation system initialized");
+	RFSN_LOG(TEXT("NPC Conversation system initialized"));
 }
 
 void URfsnNpcConversation::Deinitialize()
@@ -44,20 +44,20 @@ FString URfsnNpcConversation::StartDialogue(AActor* NpcA, AActor* NpcB, const FS
 {
 	if (!NpcA || !NpcB)
 	{
-		RFSN_ERROR("Cannot start dialogue - invalid NPCs");
+		RFSN_ERROR(TEXT("Cannot start dialogue - invalid NPCs"));
 		return FString();
 	}
 
 	if (ActiveConversations.Num() >= MaxConcurrentConversations)
 	{
-		RFSN_WARNING("Max concurrent conversations reached");
+		RFSN_WARNING(TEXT("Max concurrent conversations reached"));
 		return FString();
 	}
 
 	// Check if either NPC is already in a conversation
 	if (IsNpcInConversation(NpcA) || IsNpcInConversation(NpcB))
 	{
-		RFSN_WARNING("One or both NPCs already in conversation");
+		RFSN_WARNING(TEXT("One or both NPCs already in conversation"));
 		return FString();
 	}
 
@@ -90,7 +90,7 @@ FString URfsnNpcConversation::StartDialogue(AActor* NpcA, AActor* NpcB, const FS
 	ActiveConversations.Add(Session.ConversationId, Session);
 
 	OnConversationStarted.Broadcast(Session.ConversationId, Session.Participants);
-	RFSN_DIALOGUE_LOG("Started NPC dialogue: %s and %s about '%s'", *ParticipantA.NpcName, *ParticipantB.NpcName,
+	RFSN_DIALOGUE_LOG(TEXT("Started NPC dialogue: %s and %s about '%s'"), *ParticipantA.NpcName, *ParticipantB.NpcName,
 	                  *Topic);
 
 	// Start first turn
@@ -103,7 +103,7 @@ FString URfsnNpcConversation::StartGroupDiscussion(const TArray<AActor*>& Npcs, 
 {
 	if (Npcs.Num() < 2)
 	{
-		RFSN_ERROR("Need at least 2 NPCs for group discussion");
+		RFSN_ERROR(TEXT("Need at least 2 NPCs for group discussion"));
 		return FString();
 	}
 
@@ -133,7 +133,7 @@ FString URfsnNpcConversation::StartGroupDiscussion(const TArray<AActor*>& Npcs, 
 
 	if (Session.Participants.Num() < 2)
 	{
-		RFSN_ERROR("Not enough available NPCs for discussion");
+		RFSN_ERROR(TEXT("Not enough available NPCs for discussion"));
 		return FString();
 	}
 
@@ -161,7 +161,7 @@ void URfsnNpcConversation::Announce(AActor* Speaker, const FString& Message, flo
 	// Find nearby NPCs
 	TArray<AActor*> NearbyNpcs = FindNearbyNpcs(Speaker, Radius);
 
-	RFSN_DIALOGUE_LOG("[%s] (Announcing) %s", *SpeakerName, *Message);
+	RFSN_DIALOGUE_LOG(TEXT("[%s] (Announcing) %s"), *SpeakerName, *Message);
 	OnNpcSpoke.Broadcast(SpeakerName, Message, TEXT("announcement"));
 
 	// Each nearby NPC could react
@@ -199,7 +199,7 @@ bool URfsnNpcConversation::PlayerJoinConversation(const FString& ConversationId)
 	EndConversation(ConversationId);
 
 	// Player can now talk to the NPCs through normal dialogue system
-	RFSN_LOG("Player joined conversation %s", *ConversationId);
+	RFSN_LOG(TEXT("Player joined conversation %s"), *ConversationId);
 	return true;
 }
 
@@ -214,7 +214,7 @@ void URfsnNpcConversation::EndConversation(const FString& ConversationId)
 	Session.bActive = false;
 
 	OnConversationEnded.Broadcast(ConversationId);
-	RFSN_LOG("Ended conversation: %s after %d turns", *ConversationId, Session.TotalTurns);
+	RFSN_LOG(TEXT("Ended conversation: %s after %d turns"), *ConversationId, Session.TotalTurns);
 
 	ActiveConversations.Remove(ConversationId);
 }

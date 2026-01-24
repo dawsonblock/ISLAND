@@ -33,7 +33,7 @@ void URfsnGroupConversation::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!bIsActive)
+	if (!bConversationActive)
 	{
 		return;
 	}
@@ -56,7 +56,7 @@ void URfsnGroupConversation::TickComponent(float DeltaTime, ELevelTick TickType,
 
 bool URfsnGroupConversation::StartConversation(const TArray<FString>& NpcIds, const FString& Topic)
 {
-	if (bIsActive || NpcIds.Num() < 2)
+	if (bConversationActive || NpcIds.Num() < 2)
 	{
 		return false;
 	}
@@ -87,7 +87,7 @@ bool URfsnGroupConversation::StartConversation(const TArray<FString>& NpcIds, co
 		return false;
 	}
 
-	bIsActive = true;
+	bConversationActive = true;
 	CurrentSpeakerIndex = 0;
 	TurnTimer = 0.0f;
 	ConversationStartTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f;
@@ -111,12 +111,12 @@ bool URfsnGroupConversation::StartConversation(const TArray<FString>& NpcIds, co
 
 void URfsnGroupConversation::EndConversation()
 {
-	if (!bIsActive)
+	if (!bConversationActive)
 	{
 		return;
 	}
 
-	bIsActive = false;
+	bConversationActive = false;
 	bPlayerParticipating = false;
 
 	OnConversationEnded.Broadcast();
@@ -125,7 +125,7 @@ void URfsnGroupConversation::EndConversation()
 
 bool URfsnGroupConversation::AddParticipant(const FString& NpcId)
 {
-	if (!bIsActive || IsParticipating(NpcId) || Participants.Num() >= MaxParticipants)
+	if (!bConversationActive || IsParticipating(NpcId) || Participants.Num() >= MaxParticipants)
 	{
 		return false;
 	}
@@ -171,7 +171,7 @@ bool URfsnGroupConversation::RemoveParticipant(const FString& NpcId)
 
 void URfsnGroupConversation::PlayerJoin()
 {
-	if (!bIsActive)
+	if (!bConversationActive)
 	{
 		return;
 	}
@@ -193,7 +193,7 @@ void URfsnGroupConversation::PlayerLeave()
 
 void URfsnGroupConversation::PlayerSpeak(const FString& Text)
 {
-	if (!bIsActive || !bPlayerParticipating)
+	if (!bConversationActive || !bPlayerParticipating)
 	{
 		return;
 	}
@@ -204,7 +204,7 @@ void URfsnGroupConversation::PlayerSpeak(const FString& Text)
 
 void URfsnGroupConversation::TriggerNextSpeaker()
 {
-	if (!bIsActive || Participants.Num() == 0)
+	if (!bConversationActive || Participants.Num() == 0)
 	{
 		return;
 	}

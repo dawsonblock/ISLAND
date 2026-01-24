@@ -117,7 +117,8 @@ void URfsnWitnessSystem::RegisterWitness(const FGuid& EventId, const FString& Np
 				URfsnNpcClientComponent* Client = (*It)->FindComponentByClass<URfsnNpcClientComponent>();
 				if (Client && Client->NpcId == NpcId)
 				{
-					Knowledge.Opinion = CalculateOpinion(Client->FactionId, *Event);
+					// TODO: Get faction from faction system once integrated
+					Knowledge.Opinion = CalculateOpinion(TEXT(""), *Event);
 					break;
 				}
 			}

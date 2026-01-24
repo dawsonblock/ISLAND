@@ -5,91 +5,91 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "RfsnConversationLog.generated.h"
 #include "RfsnNpcClientComponent.h"
+#include "RfsnConversationLog.generated.h"
 
 USTRUCT(BlueprintType)
-struct FRfsnConversationEntry {
-  GENERATED_BODY()
+struct FRfsnConversationEntry
+{
+	GENERATED_BODY()
 
-  UPROPERTY(BlueprintReadOnly, Category = "Conversation")
-  FString Speaker;
+	UPROPERTY(BlueprintReadOnly, Category = "Conversation")
+	FString Speaker;
 
-  UPROPERTY(BlueprintReadOnly, Category = "Conversation")
-  FString Message;
+	UPROPERTY(BlueprintReadOnly, Category = "Conversation")
+	FString Message;
 
-  UPROPERTY(BlueprintReadOnly, Category = "Conversation")
-  FDateTime Timestamp;
+	UPROPERTY(BlueprintReadOnly, Category = "Conversation")
+	FDateTime Timestamp;
 
-  UPROPERTY(BlueprintReadOnly, Category = "Conversation")
-  bool bIsPlayer = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Conversation")
+	bool bIsPlayer = false;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnConversationUpdated,
-                                            const FRfsnConversationEntry &,
-                                            Entry);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnConversationUpdated, const FRfsnConversationEntry&, Entry);
 
 /**
  * Component that logs conversation history with NPCs.
  * Can be attached to player or used globally.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class MYPROJECT_API URfsnConversationLog : public UActorComponent {
-  GENERATED_BODY()
+class MYPROJECT_API URfsnConversationLog : public UActorComponent
+{
+	GENERATED_BODY()
 
 public:
-  URfsnConversationLog();
+	URfsnConversationLog();
 
-  // ─────────────────────────────────────────────────────────────
-  // Configuration
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// Configuration
+	// ─────────────────────────────────────────────────────────────
 
-  /** Maximum entries to keep in log */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Conversation")
-  int32 MaxEntries = 50;
+	/** Maximum entries to keep in log */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Conversation")
+	int32 MaxEntries = 50;
 
-  // ─────────────────────────────────────────────────────────────
-  // Events
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// Events
+	// ─────────────────────────────────────────────────────────────
 
-  UPROPERTY(BlueprintAssignable, Category = "Conversation|Events")
-  FOnConversationUpdated OnConversationUpdated;
+	UPROPERTY(BlueprintAssignable, Category = "Conversation|Events")
+	FOnConversationUpdated OnConversationUpdated;
 
-  // ─────────────────────────────────────────────────────────────
-  // API
-  // ─────────────────────────────────────────────────────────────
+	// ─────────────────────────────────────────────────────────────
+	// API
+	// ─────────────────────────────────────────────────────────────
 
-  /** Add player message to log */
-  UFUNCTION(BlueprintCallable, Category = "Conversation")
-  void LogPlayerMessage(const FString &Message);
+	/** Add player message to log */
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	void LogPlayerMessage(const FString& Message);
 
-  /** Add NPC message to log */
-  UFUNCTION(BlueprintCallable, Category = "Conversation")
-  void LogNpcMessage(const FString &NpcName, const FString &Message);
+	/** Add NPC message to log */
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	void LogNpcMessage(const FString& NpcName, const FString& Message);
 
-  /** Get all conversation entries */
-  UFUNCTION(BlueprintPure, Category = "Conversation")
-  const TArray<FRfsnConversationEntry> &GetEntries() const { return Entries; }
+	/** Get all conversation entries */
+	UFUNCTION(BlueprintPure, Category = "Conversation")
+	const TArray<FRfsnConversationEntry>& GetEntries() const { return Entries; }
 
-  /** Get last N entries */
-  UFUNCTION(BlueprintCallable, Category = "Conversation")
-  TArray<FRfsnConversationEntry> GetRecentEntries(int32 Count) const;
+	/** Get last N entries */
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	TArray<FRfsnConversationEntry> GetRecentEntries(int32 Count) const;
 
-  /** Clear conversation log */
-  UFUNCTION(BlueprintCallable, Category = "Conversation")
-  void ClearLog();
+	/** Clear conversation log */
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	void ClearLog();
 
-  /** Bind to RFSN client for auto-logging */
-  UFUNCTION(BlueprintCallable, Category = "Conversation")
-  void BindToRfsnClient(URfsnNpcClientComponent *Client);
+	/** Bind to RFSN client for auto-logging */
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	void BindToRfsnClient(URfsnNpcClientComponent* Client);
 
 protected:
-  UPROPERTY()
-  TArray<FRfsnConversationEntry> Entries;
+	UPROPERTY()
+	TArray<FRfsnConversationEntry> Entries;
 
 private:
-  UFUNCTION()
-  void OnRfsnSentence(const FRfsnSentence &Sentence);
+	UFUNCTION()
+	void OnRfsnSentence(const FRfsnSentence& Sentence);
 
-  FString BoundNpcName;
+	FString BoundNpcName;
 };

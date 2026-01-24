@@ -2,10 +2,13 @@
 
 #include "RfsnBackstoryGenerator.h"
 #include "Dom/JsonObject.h"
+#include "HAL/FileManager.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "RfsnFactionSystem.h"
 #include "RfsnLogging.h"
 #include "RfsnNpcClientComponent.h"

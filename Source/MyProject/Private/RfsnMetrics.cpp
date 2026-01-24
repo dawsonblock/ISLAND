@@ -14,7 +14,7 @@ void URfsnMetrics::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	ResetMetrics();
 
-	RFSN_LOG("RFSN Metrics system initialized");
+	RFSN_LOG(TEXT("RFSN Metrics system initialized"));
 }
 
 void URfsnMetrics::Deinitialize()
@@ -69,7 +69,7 @@ void URfsnMetrics::UpdateMetrics()
 
 	if (bLogMetrics)
 	{
-		RFSN_VERBOSE("%s", *GetMetricsString());
+		RFSN_VERBOSE(TEXT("%s"), *GetMetricsString());
 	}
 }
 

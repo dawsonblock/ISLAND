@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "RfsnNpcClientComponent.h"
+#include "RfsnTemporalMemory.h"
 #include "RfsnActionLattice.generated.h"
 
 /**

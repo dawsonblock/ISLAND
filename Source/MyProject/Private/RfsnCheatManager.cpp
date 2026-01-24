@@ -18,7 +18,7 @@ void URfsnCheatManager::RfsnDebug()
 	APlayerController* PC = GetOuterAPlayerController();
 	if (!PC || !PC->GetPawn())
 	{
-		RFSN_WARNING("RfsnDebug: No player controller");
+		RFSN_WARNING(TEXT("RfsnDebug: No player controller"));
 		return;
 	}
 
@@ -26,11 +26,11 @@ void URfsnCheatManager::RfsnDebug()
 	if (DebugHud)
 	{
 		DebugHud->ToggleDebug();
-		RFSN_LOG("RFSN Debug HUD: %s", DebugHud->bEnabled ? TEXT("Enabled") : TEXT("Disabled"));
+		RFSN_LOG(TEXT("RFSN Debug HUD: %s"), DebugHud->bEnabled ? TEXT("Enabled") : TEXT("Disabled"));
 	}
 	else
 	{
-		RFSN_WARNING("RfsnDebug: No RfsnDebugHud component on player");
+		RFSN_WARNING(TEXT("RfsnDebug: No RfsnDebugHud component on player"));
 	}
 }
 
@@ -46,7 +46,7 @@ void URfsnCheatManager::RfsnTalk()
 	URfsnDialogueManager* Manager = World ? World->GetSubsystem<URfsnDialogueManager>() : nullptr;
 	if (!Manager)
 	{
-		RFSN_WARNING("RfsnTalk: No dialogue manager");
+		RFSN_WARNING(TEXT("RfsnTalk: No dialogue manager"));
 		return;
 	}
 
@@ -57,11 +57,11 @@ void URfsnCheatManager::RfsnTalk()
 	{
 		Manager->StartDialogue(NearestNpc);
 		Manager->SendPlayerMessage(TEXT("Hello!"));
-		RFSN_LOG("Started dialogue with: %s", *NearestNpc->GetName());
+		RFSN_LOG(TEXT("Started dialogue with: %s"), *NearestNpc->GetName());
 	}
 	else
 	{
-		RFSN_WARNING("RfsnTalk: No RFSN NPC in range");
+		RFSN_WARNING(TEXT("RfsnTalk: No RFSN NPC in range"));
 	}
 }
 
@@ -72,11 +72,11 @@ void URfsnCheatManager::RfsnSay(const FString& Message)
 	if (Manager && Manager->IsDialogueActive())
 	{
 		Manager->SendPlayerMessage(Message);
-		RFSN_LOG("Sent: %s", *Message);
+		RFSN_LOG(TEXT("Sent: %s"), *Message);
 	}
 	else
 	{
-		RFSN_WARNING("RfsnSay: No active dialogue");
+		RFSN_WARNING(TEXT("RfsnSay: No active dialogue"));
 	}
 }
 
@@ -87,15 +87,15 @@ void URfsnCheatManager::RfsnEndDialogue()
 	if (Manager)
 	{
 		Manager->EndDialogue();
-		RFSN_LOG("Dialogue ended");
+		RFSN_LOG(TEXT("Dialogue ended"));
 	}
 }
 
 void URfsnCheatManager::RfsnPingServer()
 {
-	RFSN_LOG("Pinging RFSN server at %s...", *URfsnBlueprintLibrary::GetRfsnServerUrl());
+	RFSN_LOG(TEXT("Pinging RFSN server at %s..."), *URfsnBlueprintLibrary::GetRfsnServerUrl());
 	// TODO: Implement async ping
-	RFSN_LOG("(Async ping not yet implemented)");
+	RFSN_LOG(TEXT("(Async ping not yet implemented)"));
 }
 
 void URfsnCheatManager::RfsnListNpcs()
@@ -113,11 +113,11 @@ void URfsnCheatManager::RfsnListNpcs()
 		URfsnNpcClientComponent* Client = Actor ? Actor->FindComponentByClass<URfsnNpcClientComponent>() : nullptr;
 		if (Client)
 		{
-			RFSN_LOG("[%d] %s - Name: %s, Mood: %s, Affinity: %.2f", Count++, *Actor->GetName(), *Client->NpcName,
+			RFSN_LOG(TEXT("[%d] %s - Name: %s, Mood: %s, Affinity: %.2f"), Count++, *Actor->GetName(), *Client->NpcName,
 			         *Client->Mood, Client->Affinity);
 		}
 	}
-	RFSN_LOG("Found %d RFSN NPCs", Count);
+	RFSN_LOG(TEXT("Found %d RFSN NPCs"), Count);
 }
 
 void URfsnCheatManager::RfsnSetMood(const FString& NpcName, const FString& Mood)
@@ -135,23 +135,23 @@ void URfsnCheatManager::RfsnSetMood(const FString& NpcName, const FString& Mood)
 		if (Client && Client->NpcName.Contains(NpcName))
 		{
 			Client->Mood = Mood;
-			RFSN_LOG("Set %s mood to: %s", *Client->NpcName, *Mood);
+			RFSN_LOG(TEXT("Set %s mood to: %s"), *Client->NpcName, *Mood);
 			return;
 		}
 	}
-	RFSN_WARNING("RfsnSetMood: NPC '%s' not found", *NpcName);
+	RFSN_WARNING(TEXT("RfsnSetMood: NPC '%s' not found"), *NpcName);
 }
 
 void URfsnCheatManager::RfsnSpawnNpc(const FString& NpcType)
 {
-	RFSN_LOG("RfsnSpawnNpc: Not yet implemented - spawn %s", *NpcType);
+	RFSN_LOG(TEXT("RfsnSpawnNpc: Not yet implemented - spawn %s"), *NpcType);
 	// Would need to spawn Blueprint actor dynamically
 }
 
 void URfsnCheatManager::RfsnMockMode()
 {
 	bMockModeEnabled = !bMockModeEnabled;
-	RFSN_LOG("RFSN Mock Mode: %s", bMockModeEnabled ? TEXT("Enabled") : TEXT("Disabled"));
+	RFSN_LOG(TEXT("RFSN Mock Mode: %s"), bMockModeEnabled ? TEXT("Enabled") : TEXT("Disabled"));
 	// TODO: Configure all RFSN clients to use mock responses
 }
 
@@ -167,14 +167,14 @@ void URfsnCheatManager::RfsnDumpLog()
 	URfsnConversationLog* Log = PC->GetPawn()->FindComponentByClass<URfsnConversationLog>();
 	if (!Log)
 	{
-		RFSN_WARNING("RfsnDumpLog: No conversation log component");
+		RFSN_WARNING(TEXT("RfsnDumpLog: No conversation log component"));
 		return;
 	}
 
 	const TArray<FRfsnConversationEntry>& Entries = Log->GetEntries();
-	RFSN_LOG("=== Conversation Log (%d entries) ===", Entries.Num());
+	RFSN_LOG(TEXT("=== Conversation Log (%d entries) ==="), Entries.Num());
 	for (const FRfsnConversationEntry& Entry : Entries)
 	{
-		RFSN_LOG("[%s] %s: %s", Entry.bIsPlayer ? TEXT("PLAYER") : TEXT("NPC"), *Entry.Speaker, *Entry.Message);
+		RFSN_LOG(TEXT("[%s] %s: %s"), Entry.bIsPlayer ? TEXT("PLAYER") : TEXT("NPC"), *Entry.Speaker, *Entry.Message);
 	}
 }

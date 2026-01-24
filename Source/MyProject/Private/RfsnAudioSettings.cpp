@@ -89,7 +89,7 @@ void URfsnAudioSettings::ApplyToTtsComponent(URfsnTtsAudioComponent* TtsComponen
 		return;
 	}
 
-	TtsComponent->Volume = GetFinalVolume();
+	TtsComponent->VolumeMultiplier = GetFinalVolume();
 }
 
 float URfsnAudioSettings::GetDistanceToPlayer() const

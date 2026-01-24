@@ -114,7 +114,7 @@ void URfsnAmbientChatter::SayLine(const FString& Line)
 		NpcName = Client->NpcName;
 	}
 
-	RFSN_DIALOGUE_LOG("[%s] (Ambient) %s", *NpcName, *Line);
+	RFSN_DIALOGUE_LOG(TEXT("[%s] (Ambient) %s"), *NpcName, *Line);
 
 	// Could also trigger TTS here if available
 }

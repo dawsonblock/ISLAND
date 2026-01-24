@@ -4,6 +4,7 @@
 #include "RfsnLogging.h"
 #include "RfsnNpcClientComponent.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"

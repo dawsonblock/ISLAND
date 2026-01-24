@@ -4,8 +4,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RfsnSampleGuard.generated.h"
 #include "Variant_Shooter/AI/ShooterNPC.h"
+#include "RfsnSampleGuard.generated.h"
 
 /**
  * Sample guard NPC with RFSN dialogue.
@@ -13,31 +13,32 @@
  * Inherits from ShooterNPC for combat capability.
  */
 UCLASS(Blueprintable)
-class MYPROJECT_API ARfsnSampleGuard : public AShooterNPC {
-  GENERATED_BODY()
+class MYPROJECT_API ARfsnSampleGuard : public AShooterNPC
+{
+	GENERATED_BODY()
 
 public:
-  ARfsnSampleGuard();
+	ARfsnSampleGuard();
 
-  /** Guard patrol mode */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Guard")
-  bool bOnPatrol = true;
+	/** Guard patrol mode */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Guard")
+	bool bOnPatrol = true;
 
-  /** Alert radius - larger than dialogue radius */
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Guard")
-  float AlertRadius = 500.0f;
+	/** Alert radius - larger than dialogue radius */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Guard")
+	float AlertRadius = 500.0f;
 
-  /** Has the guard been warned? */
-  UPROPERTY(BlueprintReadOnly, Category = "Guard")
-  bool bPlayerWarned = false;
+	/** Has the guard been warned? */
+	UPROPERTY(BlueprintReadOnly, Category = "Guard")
+	bool bPlayerWarned = false;
 
 protected:
-  virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-  /** Handle RFSN action - override from parent */
-  virtual void OnRfsnNpcAction(ERfsnNpcAction Action) override;
+	/** Handle RFSN action - override from parent */
+	virtual void OnRfsnNpcAction(ERfsnNpcAction Action) override;
 
 private:
-  void ConfigureAsHostileGuard();
-  void ConfigureAsNeutralGuard();
+	void ConfigureAsHostileGuard();
+	void ConfigureAsNeutralGuard();
 };

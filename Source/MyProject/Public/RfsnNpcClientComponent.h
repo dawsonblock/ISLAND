@@ -188,7 +188,7 @@ private:
 	ERfsnNpcAction LastNpcAction = ERfsnNpcAction::Talk;
 	FString StreamBuffer;
 
-	void OnStreamProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived);
+	void OnStreamProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived);
 	void OnStreamComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
 	void ProcessSSELine(const FString& Line);
 	void ParseMetaEvent(const FString& JsonData);

@@ -35,7 +35,7 @@ void URfsnTemporalMemory::RecordOutcome(ERfsnNpcAction Action, float Outcome, co
 
 	OnMemoryRecorded.Broadcast(Trace);
 
-	RFSN_VERBOSE("Memory recorded: Action=%d, Outcome=%.2f, StateHash=%d", static_cast<int32>(Action), Outcome,
+	RFSN_VERBOSE(TEXT("Memory recorded: Action=%d, Outcome=%.2f, StateHash=%d"), static_cast<int32>(Action), Outcome,
 	             Trace.StateHash);
 }
 
@@ -162,7 +162,7 @@ TArray<FRfsnMemoryTrace> URfsnTemporalMemory::GetRecentTraces(int32 Count) const
 void URfsnTemporalMemory::ClearMemory()
 {
 	Traces.Empty();
-	RFSN_LOG("Temporal memory cleared");
+	RFSN_LOG(TEXT("Temporal memory cleared"));
 }
 
 int32 URfsnTemporalMemory::ComputeStateHash(const FString& Mood, const FString& Relationship, float Affinity) const

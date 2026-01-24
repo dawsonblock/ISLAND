@@ -17,11 +17,11 @@ void URfsnRelationshipManager::Initialize(FSubsystemCollectionBase& Collection)
 	if (DoesSaveExist())
 	{
 		LoadRelationships();
-		RFSN_LOG("Loaded %d NPC relationships from save", SaveData->NpcRelationships.Num());
+		RFSN_LOG(TEXT("Loaded %d NPC relationships from save"), SaveData->NpcRelationships.Num());
 	}
 	else
 	{
-		RFSN_LOG("No saved relationships found, starting fresh");
+		RFSN_LOG(TEXT("No saved relationships found, starting fresh"));
 	}
 }
 
@@ -31,7 +31,7 @@ void URfsnRelationshipManager::Deinitialize()
 	if (SaveData && SaveData->NpcRelationships.Num() > 0)
 	{
 		SaveRelationships();
-		RFSN_LOG("Auto-saved %d relationships on shutdown", SaveData->NpcRelationships.Num());
+		RFSN_LOG(TEXT("Auto-saved %d relationships on shutdown"), SaveData->NpcRelationships.Num());
 	}
 
 	Super::Deinitialize();
@@ -59,7 +59,7 @@ void URfsnRelationshipManager::UpdateRelationship(const FString& NpcId, float Af
 	FRfsnNpcRelationship& Rel = SaveData->GetOrCreateRelationship(NpcId);
 	OnRelationshipChanged.Broadcast(NpcId, Rel);
 
-	RFSN_DIALOGUE_LOG("Relationship updated: %s - Affinity: %.2f, Type: %s", *NpcId, Affinity, *Relationship);
+	RFSN_DIALOGUE_LOG(TEXT("Relationship updated: %s - Affinity: %.2f, Type: %s"), *NpcId, Affinity, *Relationship);
 
 	// Auto-save if enabled
 	if (bAutoSave)
@@ -81,7 +81,7 @@ void URfsnRelationshipManager::RegisterNpcClient(URfsnNpcClientComponent* Client
 	// Sync client state from saved data
 	SyncClientFromSaveData(Client);
 
-	RFSN_LOG("Registered NPC client: %s", *Client->NpcId);
+	RFSN_LOG(TEXT("Registered NPC client: %s"), *Client->NpcId);
 }
 
 void URfsnRelationshipManager::UnregisterNpcClient(URfsnNpcClientComponent* Client)
@@ -98,7 +98,7 @@ void URfsnRelationshipManager::UnregisterNpcClient(URfsnNpcClientComponent* Clie
 	RegisteredClients.RemoveAll([Client](const TWeakObjectPtr<URfsnNpcClientComponent>& Ptr)
 	                            { return Ptr.Get() == Client; });
 
-	RFSN_LOG("Unregistered NPC client: %s", *Client->NpcId);
+	RFSN_LOG(TEXT("Unregistered NPC client: %s"), *Client->NpcId);
 }
 
 void URfsnRelationshipManager::ModifyAffinity(const FString& NpcId, float Delta)
@@ -168,7 +168,7 @@ bool URfsnRelationshipManager::SaveRelationships()
 {
 	if (!SaveData)
 	{
-		RFSN_ERROR("Cannot save - no save data object");
+		RFSN_ERROR(TEXT("Cannot save - no save data object"));
 		return false;
 	}
 
@@ -189,11 +189,11 @@ bool URfsnRelationshipManager::SaveRelationships()
 
 	if (bSuccess)
 	{
-		RFSN_LOG("Saved %d relationships to slot '%s'", SaveData->NpcRelationships.Num(), *SaveSlotName);
+		RFSN_LOG(TEXT("Saved %d relationships to slot '%s'"), SaveData->NpcRelationships.Num(), *SaveSlotName);
 	}
 	else
 	{
-		RFSN_ERROR("Failed to save relationships");
+		RFSN_ERROR(TEXT("Failed to save relationships"));
 	}
 
 	return bSuccess;
@@ -203,7 +203,7 @@ bool URfsnRelationshipManager::LoadRelationships()
 {
 	if (!DoesSaveExist())
 	{
-		RFSN_WARNING("No save file found at slot '%s'", *SaveSlotName);
+		RFSN_WARNING(TEXT("No save file found at slot '%s'"), *SaveSlotName);
 		return false;
 	}
 
@@ -212,7 +212,7 @@ bool URfsnRelationshipManager::LoadRelationships()
 
 	if (!LoadedData)
 	{
-		RFSN_ERROR("Failed to load or cast save data");
+		RFSN_ERROR(TEXT("Failed to load or cast save data"));
 		return false;
 	}
 
@@ -230,7 +230,7 @@ bool URfsnRelationshipManager::LoadRelationships()
 		}
 	}
 
-	RFSN_LOG("Loaded %d relationships from slot '%s'", SaveData->NpcRelationships.Num(), *SaveSlotName);
+	RFSN_LOG(TEXT("Loaded %d relationships from slot '%s'"), SaveData->NpcRelationships.Num(), *SaveSlotName);
 
 	return true;
 }
@@ -245,7 +245,7 @@ void URfsnRelationshipManager::ClearSavedRelationships()
 	if (DoesSaveExist())
 	{
 		UGameplayStatics::DeleteGameInSlot(SaveSlotName, SaveUserIndex);
-		RFSN_LOG("Deleted save slot '%s'", *SaveSlotName);
+		RFSN_LOG(TEXT("Deleted save slot '%s'"), *SaveSlotName);
 	}
 
 	if (SaveData)
@@ -287,7 +287,7 @@ void URfsnRelationshipManager::SyncClientFromSaveData(URfsnNpcClientComponent* C
 		Client->Affinity = Rel.Affinity;
 		Client->Relationship = Rel.Relationship;
 
-		RFSN_VERBOSE("Synced client %s from save: Affinity=%.2f, Relationship=%s", *Client->NpcId, Rel.Affinity,
+		RFSN_VERBOSE(TEXT("Synced client %s from save: Affinity=%.2f, Relationship=%s"), *Client->NpcId, Rel.Affinity,
 		             *Rel.Relationship);
 	}
 }

@@ -307,6 +307,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Emotion|Persistence")
 	FString GetNpcId() const;
 
+	/** Convert enum to string */
+	UFUNCTION(BlueprintPure, Category = "Emotion")
+	static FString EmotionToString(ERfsnCoreEmotion Emotion);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -324,7 +328,4 @@ private:
 
 	/** Convert emotion name to enum */
 	static ERfsnCoreEmotion StringToEmotion(const FString& Name);
-
-	/** Convert enum to string */
-	static FString EmotionToString(ERfsnCoreEmotion Emotion);
 };

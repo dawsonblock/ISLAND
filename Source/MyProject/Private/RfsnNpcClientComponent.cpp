@@ -105,8 +105,8 @@ void URfsnNpcClientComponent::SendPlayerUtterance(const FString& PlayerText)
 	CurrentRequest->SetHeader(TEXT("Accept"), TEXT("text/event-stream"));
 	CurrentRequest->SetContentAsString(JsonString);
 
-	// Bind streaming callbacks
-	CurrentRequest->OnRequestProgress().BindUObject(this, &URfsnNpcClientComponent::OnStreamProgress);
+	// Bind streaming callbacks (UE5 uses V2 progress callback)
+	CurrentRequest->OnRequestProgress64().BindUObject(this, &URfsnNpcClientComponent::OnStreamProgress);
 	CurrentRequest->OnProcessRequestComplete().BindUObject(this, &URfsnNpcClientComponent::OnStreamComplete);
 
 	// Reset state
@@ -131,7 +131,7 @@ void URfsnNpcClientComponent::CancelDialogue()
 	StreamBuffer.Empty();
 }
 
-void URfsnNpcClientComponent::OnStreamProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived)
+void URfsnNpcClientComponent::OnStreamProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived)
 {
 	if (!Request.IsValid())
 	{

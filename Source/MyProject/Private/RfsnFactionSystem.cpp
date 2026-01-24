@@ -7,13 +7,13 @@ void URfsnFactionSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	CreateDefaultFactions();
-	RFSN_LOG("Faction system initialized with %d factions", Factions.Num());
+	RFSN_LOG(TEXT("Faction system initialized with %d factions"), Factions.Num());
 }
 
 void URfsnFactionSystem::RegisterFaction(const FRfsnFaction& Faction)
 {
 	Factions.Add(Faction.FactionId, Faction);
-	RFSN_LOG("Registered faction: %s", *Faction.DisplayName);
+	RFSN_LOG(TEXT("Registered faction: %s"), *Faction.DisplayName);
 }
 
 bool URfsnFactionSystem::GetFaction(const FString& FactionId, FRfsnFaction& OutFaction)
@@ -48,7 +48,7 @@ void URfsnFactionSystem::ModifyReputation(const FString& FactionId, float Delta)
 	{
 		Found->Reputation = FMath::Clamp(Found->Reputation + Delta, -100.0f, 100.0f);
 		OnFactionReputationChanged.Broadcast(FactionId, Found->Reputation);
-		RFSN_LOG("Faction %s reputation changed by %.1f to %.1f", *FactionId, Delta, Found->Reputation);
+		RFSN_LOG(TEXT("Faction %s reputation changed by %.1f to %.1f"), *FactionId, Delta, Found->Reputation);
 
 		// Propagate to allies/enemies
 		for (const FString& Ally : Found->Allies)

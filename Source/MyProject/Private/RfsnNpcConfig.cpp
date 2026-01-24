@@ -13,14 +13,14 @@ void URfsnNpcConfig::ApplyToNpc(URfsnNpcClientComponent* Client)
 {
 	if (!Client)
 	{
-		RFSN_ERROR("Cannot apply config - no client component");
+		RFSN_ERROR(TEXT("Cannot apply config - no client component"));
 		return;
 	}
 
 	AActor* Owner = Client->GetOwner();
 	if (!Owner)
 	{
-		RFSN_ERROR("Cannot apply config - no owner actor");
+		RFSN_ERROR(TEXT("Cannot apply config - no owner actor"));
 		return;
 	}
 
@@ -40,13 +40,13 @@ void URfsnNpcConfig::ApplyToNpc(URfsnNpcClientComponent* Client)
 		if (bProximityDialogue)
 		{
 			Trigger->TriggerMode = ERfsnDialogueTriggerMode::Proximity;
-			Trigger->TriggerRadius = DialogueRadius;
-			Trigger->CooldownTime = DialogueCooldown;
+			Trigger->ProximityRadius = DialogueRadius;
+			Trigger->TriggerCooldown = DialogueCooldown;
 			Trigger->DefaultPrompt = GreetingLine;
 		}
 		else
 		{
-			Trigger->TriggerMode = ERfsnDialogueTriggerMode::Interaction;
+			Trigger->TriggerMode = ERfsnDialogueTriggerMode::Interact;
 		}
 	}
 
@@ -69,5 +69,5 @@ void URfsnNpcConfig::ApplyToNpc(URfsnNpcClientComponent* Client)
 		Chatter->ChatterLines = ChatterLines;
 	}
 
-	RFSN_LOG("Applied config to NPC: %s (Faction: %s)", *DisplayName, *FactionId);
+	RFSN_LOG(TEXT("Applied config to NPC: %s (Faction: %s)"), *DisplayName, *FactionId);
 }

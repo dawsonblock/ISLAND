@@ -58,7 +58,7 @@ void URfsnReplicatedDialogue::OnRep_CurrentSentence()
 	// Called on clients when sentence changes
 	if (!CurrentSentence.IsEmpty())
 	{
-		RFSN_DIALOGUE_LOG("[Replicated] %s", *CurrentSentence);
+		RFSN_DIALOGUE_LOG(TEXT("[Replicated] %s"), *CurrentSentence);
 		// Trigger local HUD display etc.
 	}
 }
@@ -66,7 +66,7 @@ void URfsnReplicatedDialogue::OnRep_CurrentSentence()
 void URfsnReplicatedDialogue::MulticastShowSentence_Implementation(const FString& Sentence)
 {
 	CurrentSentence = Sentence;
-	RFSN_DIALOGUE_LOG("[Multicast] %s", *Sentence);
+	RFSN_DIALOGUE_LOG(TEXT("[Multicast] %s"), *Sentence);
 }
 
 void URfsnReplicatedDialogue::MulticastNpcAction_Implementation(ERfsnNpcAction Action)

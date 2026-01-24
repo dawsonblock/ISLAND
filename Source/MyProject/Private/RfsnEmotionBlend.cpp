@@ -3,6 +3,8 @@
 #include "RfsnEmotionBlend.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EngineUtils.h"
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
 #include "RfsnLogging.h"
 
 // ─────────────────────────────────────────────────────────────

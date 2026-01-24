@@ -254,7 +254,7 @@ public:
 
 	/** Get memory context for LLM prompt */
 	UFUNCTION(BlueprintPure, Category = "Memory")
-	FString GetMemoryContext(int32 MaxMemories = 3) const;
+	FString GetMemoryContext(int32 InMaxMemories = 3) const;
 
 	/** Get conversation history for LLM prompt */
 	UFUNCTION(BlueprintPure, Category = "Memory")

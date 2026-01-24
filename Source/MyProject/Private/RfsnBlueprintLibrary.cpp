@@ -132,7 +132,7 @@ void URfsnBlueprintLibrary::SetNpcAffinity(AActor* NpcActor, float Affinity)
 void URfsnBlueprintLibrary::CheckServerHealth(const UObject* WorldContextObject)
 {
 	// TODO: Implement async health check
-	RFSN_LOG("Server health check requested");
+	RFSN_LOG(TEXT("Server health check requested"));
 }
 
 FString URfsnBlueprintLibrary::GetRfsnServerUrl()

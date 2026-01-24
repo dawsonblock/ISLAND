@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "MyProjectCharacter.h"
 #include "RfsnNpcClientComponent.h"
-#include "ShooterNPC.generated.h"
 #include "ShooterWeaponHolder.h"
+#include "ShooterNPC.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPawnDeathDelegate);
 
@@ -19,151 +19,149 @@ class URfsnNpcClientComponent;
  *  Holds and manages a weapon
  */
 UCLASS(abstract)
-class MYPROJECT_API AShooterNPC : public AMyProjectCharacter,
-                                  public IShooterWeaponHolder {
-  GENERATED_BODY()
+class MYPROJECT_API AShooterNPC : public AMyProjectCharacter, public IShooterWeaponHolder
+{
+	GENERATED_BODY()
 
 public:
-  /** Current HP for this character. It dies if it reaches zero through damage
-   */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
-  float CurrentHP = 100.0f;
+	/** Current HP for this character. It dies if it reaches zero through damage
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	float CurrentHP = 100.0f;
 
 protected:
-  /** Name of the collision profile to use during ragdoll death */
-  UPROPERTY(EditAnywhere, Category = "Damage")
-  FName RagdollCollisionProfile = FName("Ragdoll");
+	/** Name of the collision profile to use during ragdoll death */
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	FName RagdollCollisionProfile = FName("Ragdoll");
 
-  /** Time to wait after death before destroying this actor */
-  UPROPERTY(EditAnywhere, Category = "Damage")
-  float DeferredDestructionTime = 5.0f;
+	/** Time to wait after death before destroying this actor */
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float DeferredDestructionTime = 5.0f;
 
-  /** Team byte for this character */
-  UPROPERTY(EditAnywhere, Category = "Team")
-  uint8 TeamByte = 1;
+	/** Team byte for this character */
+	UPROPERTY(EditAnywhere, Category = "Team")
+	uint8 TeamByte = 1;
 
-  /** Actor tag to grant this character when it dies */
-  UPROPERTY(EditAnywhere, Category = "Team")
-  FName DeathTag = FName("Dead");
+	/** Actor tag to grant this character when it dies */
+	UPROPERTY(EditAnywhere, Category = "Team")
+	FName DeathTag = FName("Dead");
 
-  /** Pointer to the equipped weapon */
-  TObjectPtr<AShooterWeapon> Weapon;
+	/** Pointer to the equipped weapon */
+	TObjectPtr<AShooterWeapon> Weapon;
 
-  /** Type of weapon to spawn for this character */
-  UPROPERTY(EditAnywhere, Category = "Weapon")
-  TSubclassOf<AShooterWeapon> WeaponClass;
+	/** Type of weapon to spawn for this character */
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AShooterWeapon> WeaponClass;
 
-  /** Name of the first person mesh weapon socket */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-  FName FirstPersonWeaponSocket = FName("HandGrip_R");
+	/** Name of the first person mesh weapon socket */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
+	FName FirstPersonWeaponSocket = FName("HandGrip_R");
 
-  /** Name of the third person mesh weapon socket */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-  FName ThirdPersonWeaponSocket = FName("HandGrip_R");
+	/** Name of the third person mesh weapon socket */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
+	FName ThirdPersonWeaponSocket = FName("HandGrip_R");
 
-  /** Max range for aiming calculations */
-  UPROPERTY(EditAnywhere, Category = "Aim")
-  float AimRange = 10000.0f;
+	/** Max range for aiming calculations */
+	UPROPERTY(EditAnywhere, Category = "Aim")
+	float AimRange = 10000.0f;
 
-  /** Cone variance to apply while aiming */
-  UPROPERTY(EditAnywhere, Category = "Aim")
-  float AimVarianceHalfAngle = 10.0f;
+	/** Cone variance to apply while aiming */
+	UPROPERTY(EditAnywhere, Category = "Aim")
+	float AimVarianceHalfAngle = 10.0f;
 
-  /** Minimum vertical offset from the target center to apply when aiming */
-  UPROPERTY(EditAnywhere, Category = "Aim")
-  float MinAimOffsetZ = -35.0f;
+	/** Minimum vertical offset from the target center to apply when aiming */
+	UPROPERTY(EditAnywhere, Category = "Aim")
+	float MinAimOffsetZ = -35.0f;
 
-  /** Maximum vertical offset from the target center to apply when aiming */
-  UPROPERTY(EditAnywhere, Category = "Aim")
-  float MaxAimOffsetZ = -60.0f;
+	/** Maximum vertical offset from the target center to apply when aiming */
+	UPROPERTY(EditAnywhere, Category = "Aim")
+	float MaxAimOffsetZ = -60.0f;
 
-  /** Actor currently being targeted */
-  TObjectPtr<AActor> CurrentAimTarget;
+	/** Actor currently being targeted */
+	TObjectPtr<AActor> CurrentAimTarget;
 
-  /** If true, this character is currently shooting its weapon */
-  bool bIsShooting = false;
+	/** If true, this character is currently shooting its weapon */
+	bool bIsShooting = false;
 
-  /** If true, this character has already died */
-  bool bIsDead = false;
+	/** If true, this character has already died */
+	bool bIsDead = false;
 
-  /** Deferred destruction on death timer */
-  FTimerHandle DeathTimer;
+	/** Deferred destruction on death timer */
+	FTimerHandle DeathTimer;
 
 public:
-  /** Delegate called when this NPC dies */
-  FPawnDeathDelegate OnPawnDeath;
+	/** Delegate called when this NPC dies */
+	FPawnDeathDelegate OnPawnDeath;
 
-  /** RFSN NPC Client for LLM-driven dialogue */
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
-  TObjectPtr<URfsnNpcClientComponent> RfsnClient;
+	/** RFSN NPC Client for LLM-driven dialogue */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
+	TObjectPtr<URfsnNpcClientComponent> RfsnClient;
 
-  /** Initiate RFSN dialogue with player input */
-  UFUNCTION(BlueprintCallable, Category = "RFSN")
-  void SpeakToPlayer(const FString &PlayerUtterance);
+	/** Initiate RFSN dialogue with player input */
+	UFUNCTION(BlueprintCallable, Category = "RFSN")
+	void SpeakToPlayer(const FString& PlayerUtterance);
 
 protected:
-  /** Handle RFSN NPC action selection */
-  UFUNCTION()
-  void OnRfsnNpcAction(ERfsnNpcAction Action);
+	/** Handle RFSN NPC action selection */
+	UFUNCTION()
+	virtual void OnRfsnNpcAction(ERfsnNpcAction Action);
 
 protected:
-  /** Gameplay initialization */
-  virtual void BeginPlay() override;
+	/** Gameplay initialization */
+	virtual void BeginPlay() override;
 
-  /** Gameplay cleanup */
-  virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:
-  /** Handle incoming damage */
-  virtual float TakeDamage(float Damage, struct FDamageEvent const &DamageEvent,
-                           AController *EventInstigator,
-                           AActor *DamageCauser) override;
+	/** Gameplay cleanup */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-  //~Begin IShooterWeaponHolder interface
+	/** Handle incoming damage */
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator,
+	                         AActor* DamageCauser) override;
 
-  /** Attaches a weapon's meshes to the owner */
-  virtual void AttachWeaponMeshes(AShooterWeapon *Weapon) override;
+public:
+	//~Begin IShooterWeaponHolder interface
 
-  /** Plays the firing montage for the weapon */
-  virtual void PlayFiringMontage(UAnimMontage *Montage) override;
+	/** Attaches a weapon's meshes to the owner */
+	virtual void AttachWeaponMeshes(AShooterWeapon* Weapon) override;
 
-  /** Applies weapon recoil to the owner */
-  virtual void AddWeaponRecoil(float Recoil) override;
+	/** Plays the firing montage for the weapon */
+	virtual void PlayFiringMontage(UAnimMontage* Montage) override;
 
-  /** Updates the weapon's HUD with the current ammo count */
-  virtual void UpdateWeaponHUD(int32 CurrentAmmo, int32 MagazineSize) override;
+	/** Applies weapon recoil to the owner */
+	virtual void AddWeaponRecoil(float Recoil) override;
 
-  /** Calculates and returns the aim location for the weapon */
-  virtual FVector GetWeaponTargetLocation() override;
+	/** Updates the weapon's HUD with the current ammo count */
+	virtual void UpdateWeaponHUD(int32 CurrentAmmo, int32 MagazineSize) override;
 
-  /** Gives a weapon of this class to the owner */
-  virtual void
-  AddWeaponClass(const TSubclassOf<AShooterWeapon> &WeaponClass) override;
+	/** Calculates and returns the aim location for the weapon */
+	virtual FVector GetWeaponTargetLocation() override;
 
-  /** Activates the passed weapon */
-  virtual void OnWeaponActivated(AShooterWeapon *Weapon) override;
+	/** Gives a weapon of this class to the owner */
+	virtual void AddWeaponClass(const TSubclassOf<AShooterWeapon>& WeaponClass) override;
 
-  /** Deactivates the passed weapon */
-  virtual void OnWeaponDeactivated(AShooterWeapon *Weapon) override;
+	/** Activates the passed weapon */
+	virtual void OnWeaponActivated(AShooterWeapon* Weapon) override;
 
-  /** Notifies the owner that the weapon cooldown has expired and it's ready to
-   * shoot again */
-  virtual void OnSemiWeaponRefire() override;
+	/** Deactivates the passed weapon */
+	virtual void OnWeaponDeactivated(AShooterWeapon* Weapon) override;
 
-  //~End IShooterWeaponHolder interface
+	/** Notifies the owner that the weapon cooldown has expired and it's ready to
+	 * shoot again */
+	virtual void OnSemiWeaponRefire() override;
+
+	//~End IShooterWeaponHolder interface
 
 protected:
-  /** Called when HP is depleted and the character should die */
-  void Die();
+	/** Called when HP is depleted and the character should die */
+	void Die();
 
-  /** Called after death to destroy the actor */
-  void DeferredDestruction();
+	/** Called after death to destroy the actor */
+	void DeferredDestruction();
 
 public:
-  /** Signals this character to start shooting at the passed actor */
-  void StartShooting(AActor *ActorToShoot);
+	/** Signals this character to start shooting at the passed actor */
+	void StartShooting(AActor* ActorToShoot);
 
-  /** Signals this character to stop shooting */
-  void StopShooting();
+	/** Signals this character to stop shooting */
+	void StopShooting();
 };
