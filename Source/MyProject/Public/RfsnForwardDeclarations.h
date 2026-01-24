@@ -63,6 +63,7 @@ class URfsnQuestIntegration;
 class URfsnGroupConversation;
 class URfsnNpcBarks;
 class URfsnRelationshipDecay;
+class URfsnVoiceRouter;
 
 // Configuration
 class URfsnNpcConfig;
