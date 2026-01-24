@@ -58,6 +58,14 @@ struct FRfsnDialogueMeta
 
 	UPROPERTY(BlueprintReadOnly, Category = "RFSN")
 	FString ActionMode;
+
+	/** Instant bark text for latency masking (play immediately while LLM generates) */
+	UPROPERTY(BlueprintReadOnly, Category = "RFSN|InstantBark")
+	FString InstantBark;
+
+	/** Duration in milliseconds for the instant bark */
+	UPROPERTY(BlueprintReadOnly, Category = "RFSN|InstantBark")
+	int32 BarkDurationMs = 500;
 };
 
 USTRUCT(BlueprintType)

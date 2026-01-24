@@ -252,8 +252,12 @@ void URfsnNpcClientComponent::ParseMetaEvent(const FString& JsonData)
 		LastNpcAction = Meta.NpcAction;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[RFSN] Meta: action=%s, mode=%s, signal=%s"), *ActionString, *Meta.ActionMode,
-	       *Meta.PlayerSignal);
+	// Parse instant bark for latency masking (Gemini recommendation)
+	JsonObject->TryGetStringField(TEXT("instant_bark"), Meta.InstantBark);
+	JsonObject->TryGetNumberField(TEXT("bark_duration_ms"), Meta.BarkDurationMs);
+
+	UE_LOG(LogTemp, Log, TEXT("[RFSN] Meta: action=%s, mode=%s, signal=%s, bark='%s'"), *ActionString, *Meta.ActionMode,
+	       *Meta.PlayerSignal, *Meta.InstantBark.Left(30));
 
 	OnMetaReceived.Broadcast(Meta);
 	OnNpcActionReceived.Broadcast(Meta.NpcAction);
