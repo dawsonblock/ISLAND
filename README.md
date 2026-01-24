@@ -42,6 +42,8 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 - **Bandit Learner** — UCB1-based behavioral learning
 - **Temporal Memory** — Anticipatory context scoring
 - **Expanded Action Lattice** — Nuanced intent modifiers
+- **Emotion Blending** — VAD emotion model with transitions
+- **Procedural Backstories** — LLM-generated NPC histories
 
 </td>
 <td width="50%">
@@ -62,6 +64,7 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 
 - **Dialogue Camera** — Focus, over-shoulder, two-shot
 - **NPC Look-At** — Smooth rotation to player
+- **Facial Animation** — Emotion-driven morph targets
 - **Audio Attenuation** — Distance + occlusion
 - **Ambient Chatter** — Idle contextual dialogue
 
@@ -74,6 +77,7 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 - **Blueprint Library** — Static helper functions
 - **Mock Server** — Offline testing
 - **Performance Metrics** — Latency tracking
+- **NPC Config Asset** — Editor-based NPC setup
 
 </td>
 </tr>
@@ -183,6 +187,8 @@ python mock_server.py
 | `URfsnDialogueManager` | WorldSubsystem | Manages active dialogues |
 | `URfsnTemporalMemory` | ActorComponent | State-action-outcome memory |
 | `URfsnActionLattice` | Static Library | Expanded action construction |
+| `URfsnEmotionBlend` | ActorComponent | VAD emotion model with facial animation |
+| `URfsnBackstoryGenerator` | ActorComponent | LLM-driven procedural backstories |
 
 ### Subsystems
 
@@ -271,6 +277,50 @@ ConvMgr->StartGroupDiscussion({Npc1, Npc2, Npc3}, "survival plans");
 ConvMgr->PlayerJoinConversation(ConvId);
 ```
 
+### Emotion Blending
+
+```cpp
+// Apply emotional stimulus
+EmotionBlend->ApplyStimulus(TEXT("Joy"), 0.8f);
+EmotionBlend->ApplyStimulusEnum(ERfsnCoreEmotion::Fear, 0.5f);
+
+// Get dialogue tone for LLM
+FString Tone = EmotionBlend->ToDialogueTone();
+// → "warm, energetic, assertive"
+
+// Get mood string for prompts
+FString Mood = EmotionBlend->ToMoodString();
+// → "Intensely Joy"
+
+// Apply to mesh morph targets
+EmotionBlend->ApplyToSkeletalMesh(SkeletalMeshComponent);
+
+// Get facial expression weights
+FRfsnFacialExpression Expr = EmotionBlend->GetFacialExpression();
+// Expr.Joy, Expr.Anger, Expr.Fear, etc.
+```
+
+### Procedural Backstory
+
+```cpp
+// Backstory generates automatically on first dialogue interaction
+// Or trigger manually:
+BackstoryGen->GenerateBackstory();
+
+// Get context for LLM prompts
+FString Context = BackstoryGen->GetDialogueContext();
+// → "Background: Marcus grew up on the..."
+
+// Get short context
+FString Short = BackstoryGen->GetShortContext();
+// → "A Trader who is known for being cautious."
+
+// Check if backstory exists
+if (BackstoryGen->HasBackstory()) {
+    FString Goal = BackstoryGen->CachedBackstory.PersonalGoal;
+}
+```
+
 ---
 
 ## 🗂️ Project Structure
@@ -302,12 +352,13 @@ ISLAND/
 
 | Metric | Count |
 |--------|-------|
-| C++ Classes | 44+ |
+| C++ Classes | 48+ |
 | Subsystems | 7 |
 | Console Commands | 10 |
 | Default Factions | 5 |
+| Core Emotions | 8 |
 | Sample NPCs | 2 |
-| Lines of Code | ~10,000+ |
+| Lines of Code | ~12,000+ |
 
 ---
 
