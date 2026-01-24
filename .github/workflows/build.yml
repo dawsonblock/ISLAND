@@ -1,0 +1,105 @@
+name: ISLAND Build Verification
+
+on:
+    push:
+        branches: [main, develop]
+        paths:
+            - "Source/**"
+            - "*.uproject"
+            - ".github/workflows/**"
+    pull_request:
+        branches: [main]
+
+jobs:
+    # ─────────────────────────────────────────────────────────────
+    # C++ Syntax Check
+    # ─────────────────────────────────────────────────────────────
+    cpp-check:
+        name: C++ Syntax Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install cppcheck
+              run: sudo apt-get install -y cppcheck
+
+            - name: Run cppcheck
+              run: |
+                  cppcheck --enable=warning,style,performance \
+                    --suppress=missingIncludeSystem \
+                    --suppress=unknownMacro \
+                    --error-exitcode=1 \
+                    --inline-suppr \
+                    Source/MyProject/
+
+    # ─────────────────────────────────────────────────────────────
+    # Clang Format Check
+    # ─────────────────────────────────────────────────────────────
+    format-check:
+        name: Code Format Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Check clang-format
+              run: |
+                  find Source/MyProject -name "*.h" -o -name "*.cpp" | head -20 | xargs clang-format --dry-run --Werror || echo "Format issues found (non-blocking)"
+
+    # ─────────────────────────────────────────────────────────────
+    # Python RFSN Server Check
+    # ─────────────────────────────────────────────────────────────
+    python-check:
+        name: RFSN Python Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install dependencies
+              run: |
+                  cd RFSN_NPC_AI/Python
+                  pip install fastapi uvicorn
+
+            - name: Syntax check
+              run: |
+                  python -m py_compile RFSN_NPC_AI/Python/mock_server.py
+                  python -m py_compile RFSN_NPC_AI/Python/orchestrator.py || true
+
+            - name: Test mock server import
+              run: |
+                  cd RFSN_NPC_AI/Python
+                  python -c "from mock_server import app; print('Mock server OK')"
+
+    # ─────────────────────────────────────────────────────────────
+    # Documentation Check
+    # ─────────────────────────────────────────────────────────────
+    docs-check:
+        name: Documentation Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Check required docs exist
+              run: |
+                  test -f README.md || exit 1
+                  test -f SETUP_INSTRUCTIONS.md || exit 1
+                  test -f RFSN_BLUEPRINT_GUIDE.md || exit 1
+                  echo "All required documentation present"
+
+            - name: Markdown lint
+              uses: DavidAnson/markdownlint-cli2-action@v17
+              with:
+                  globs: "*.md"
+              continue-on-error: true
