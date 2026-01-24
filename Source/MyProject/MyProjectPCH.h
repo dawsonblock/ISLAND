@@ -6,11 +6,11 @@
 // ─────────────────────────────────────────────────────────────
 // Core UE Headers
 // ─────────────────────────────────────────────────────────────
-#include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
+#include "Components/ActorComponent.h"
+#include "GameFramework/Actor.h"
 
 // ─────────────────────────────────────────────────────────────
 // Common Gameplay Headers
@@ -18,6 +18,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/Pawn.h"
 
 // ─────────────────────────────────────────────────────────────
 // Input
@@ -33,16 +34,32 @@
 #include "Subsystems/WorldSubsystem.h"
 
 // ─────────────────────────────────────────────────────────────
+// Networking (for replicated components)
+// ─────────────────────────────────────────────────────────────
+#include "Net/UnrealNetwork.h"
+
+// ─────────────────────────────────────────────────────────────
+// HTTP/JSON (for RFSN communication)
+// ─────────────────────────────────────────────────────────────
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+
+// ─────────────────────────────────────────────────────────────
 // Common Utilities
 // ─────────────────────────────────────────────────────────────
 #include "Engine/World.h"
+#include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "EngineUtils.h"
 
 // ─────────────────────────────────────────────────────────────
-// RFSN Common (used across many RFSN components)
+// RFSN Forward Declarations
 // ─────────────────────────────────────────────────────────────
-// Forward declarations for RFSN types
-class URfsnNpcClientComponent;
-class URfsnDialogueManager;
-struct FRfsnSentence;
+#include "RfsnForwardDeclarations.h"
+#include "RfsnLogging.h"

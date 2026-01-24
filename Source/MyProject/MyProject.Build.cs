@@ -10,15 +10,19 @@ public class MyProject : ModuleRules
 		// Build Optimization Settings
 		// ─────────────────────────────────────────────────────────────
 		
-		// Use shared PCH for faster compilation
+		// Use shared PCH - significantly reduces compile times
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrivatePCHHeaderFile = "MyProjectPCH.h";
 		
-		// Enable IWYU for cleaner includes
+		// Enable IWYU for cleaner includes and faster iteration
 		bEnforceIWYU = true;
 		
-		// Faster iteration during development
+		// Unity builds - 2-3x faster full rebuilds
+		bUseUnity = true;
 		MinFilesUsingPrecompiledHeaderOverride = 1;
-		bUseUnity = true; // Unity builds for faster full rebuilds
+		
+		// Optimize for fast iteration in non-shipping builds
+		OptimizeCode = CodeOptimization.InShippingBuildsOnly;
 
 		// ─────────────────────────────────────────────────────────────
 		// Core Dependencies (always needed)
@@ -58,6 +62,20 @@ public class MyProject : ModuleRules
 			"HTTP",
 			"Json",
 			"JsonUtilities"
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// Networking (for multiplayer dialogue replication)
+		// ─────────────────────────────────────────────────────────────
+		PublicDependencyModuleNames.AddRange(new string[] {
+			"NetCore"
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// Audio (for TTS and spatial dialogue)
+		// ─────────────────────────────────────────────────────────────
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"AudioMixer"
 		});
 
 		// ─────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@
 // Core RFSN Types (forward declarations)
 // ─────────────────────────────────────────────────────────────
 
-// Components
+// Core Components
 class URfsnNpcClientComponent;
 class URfsnDirectorBridge;
 class URfsnDialogueWidget;
@@ -24,19 +24,49 @@ class URfsnChoiceWidget;
 
 // Subsystems
 class URfsnDialogueManager;
+class URfsnRelationshipManager;
+class URfsnFactionSystem;
+class URfsnNpcConversation;
 
 // Save Data
 class URfsnRelationshipSaveData;
 
-// Structs - these may need full header for usage
-struct FRfsnSentence;
-struct FRfsnMeta;
-struct FRfsnConversationEntry;
-struct FRfsnNpcRelationship;
+// Enhancement Components
+class URfsnNpcLookAt;
+class URfsnDialogueCamera;
+class URfsnAmbientChatter;
+class URfsnAudioSettings;
+class URfsnReplicatedDialogue;
+
+// Configuration
+class URfsnNpcConfig;
+
+// Blueprint Library
+class URfsnBlueprintLibrary;
+class URfsnCheatManager;
+
+// Sample NPCs
+class ARfsnSampleMerchant;
+class ARfsnSampleGuard;
 
 // ─────────────────────────────────────────────────────────────
-// Enums - forward declare if possible
-// Note: Enums typically need full header for usage
+// Structs - forward declare where possible
+// ─────────────────────────────────────────────────────────────
+
+struct FRfsnSentence;
+struct FRfsnDialogueMeta;
+struct FRfsnConversationEntry;
+struct FRfsnNpcRelationship;
+struct FRfsnFaction;
+struct FRfsnChatterLine;
+struct FRfsnNpcConversationSession;
+struct FRfsnNpcConversationParticipant;
+
+// ─────────────────────────────────────────────────────────────
+// Enums - typically need full header for usage
 // ─────────────────────────────────────────────────────────────
 // ERfsnNpcAction - see RfsnNpcClientComponent.h
 // ERfsnDialogueTriggerMode - see RfsnNpcDialogueTrigger.h
+// ERfsnCameraMode - see RfsnDialogueCamera.h
+// ERfsnChatterTrigger - see RfsnAmbientChatter.h
+// ERfsnConversationType - see RfsnNpcConversation.h
