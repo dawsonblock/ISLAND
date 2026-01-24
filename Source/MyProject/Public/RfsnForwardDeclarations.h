@@ -54,6 +54,9 @@ class URfsnReputationHud;
 class URfsnWitnessSystem;
 class URfsnLipSync;
 class URfsnNpcSchedule;
+class URfsnNpcMemory;
+class URfsnNpcNeeds;
+class URfsnNpcAwareness;
 
 // Configuration
 class URfsnNpcConfig;
