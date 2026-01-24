@@ -64,6 +64,7 @@ class URfsnGroupConversation;
 class URfsnNpcBarks;
 class URfsnRelationshipDecay;
 class URfsnVoiceRouter;
+class URfsnInstantBark;
 
 // Configuration
 class URfsnNpcConfig;
