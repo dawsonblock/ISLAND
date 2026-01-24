@@ -23,3 +23,13 @@ Script/
 *.sla
 
 .fake
+
+# RFSN NPC AI
+RFSN_NPC_AI/.venv/
+RFSN_NPC_AI/__pycache__/
+RFSN_NPC_AI/**/__pycache__/
+RFSN_NPC_AI/*.pyc
+RFSN_NPC_AI/Python/data/episodes/
+RFSN_NPC_AI/Python/data/memory/
+RFSN_NPC_AI/Python/data/logs/
+RFSN_NPC_AI/.git/

@@ -1,0 +1,6 @@
+# RFSN GenAI Orchestrator dependencies
+# Default install = core (Docker/Linux safe)
+-r requirements-core.txt
+
+# If you're on macOS and want MLX TTS, install both:
+# pip install -r Python/requirements-core.txt -r Python/requirements-mac-mlx.txt
