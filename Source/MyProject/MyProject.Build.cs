@@ -6,34 +6,77 @@ public class MyProject : ModuleRules
 {
 	public MyProject(ReadOnlyTargetRules Target) : base(Target)
 	{
+		// ─────────────────────────────────────────────────────────────
+		// Build Optimization Settings
+		// ─────────────────────────────────────────────────────────────
+		
+		// Use shared PCH for faster compilation
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		// Enable IWYU for cleaner includes
+		bEnforceIWYU = true;
+		
+		// Faster iteration during development
+		MinFilesUsingPrecompiledHeaderOverride = 1;
+		bUseUnity = true; // Unity builds for faster full rebuilds
 
+		// ─────────────────────────────────────────────────────────────
+		// Core Dependencies (always needed)
+		// ─────────────────────────────────────────────────────────────
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput",
+			"EnhancedInput"
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// Gameplay Systems
+		// ─────────────────────────────────────────────────────────────
+		PublicDependencyModuleNames.AddRange(new string[] {
 			"AIModule",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"GameplayTasks",
-			"NavigationSystem",
+			"NavigationSystem"
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// UI Dependencies
+		// ─────────────────────────────────────────────────────────────
+		PublicDependencyModuleNames.AddRange(new string[] {
 			"UMG",
-			"Niagara",
 			"Slate",
-			"SlateCore",
-			"TraceLog",
+			"SlateCore"
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// RFSN Integration (HTTP/JSON for AI dialogue)
+		// ─────────────────────────────────────────────────────────────
+		PublicDependencyModuleNames.AddRange(new string[] {
 			"HTTP",
 			"Json",
 			"JsonUtilities"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		// ─────────────────────────────────────────────────────────────
+		// Private Dependencies (implementation only)
+		// ─────────────────────────────────────────────────────────────
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"Niagara",   // VFX - only used in implementation
+			"TraceLog"   // Debug logging
+		});
 
+		// ─────────────────────────────────────────────────────────────
+		// Include Paths
+		// ─────────────────────────────────────────────────────────────
 		PublicIncludePaths.AddRange(new string[] {
 			"MyProject",
-			"MyProject/Public",
+			"MyProject/Public"
+		});
+		
+		PrivateIncludePaths.AddRange(new string[] {
 			"MyProject/Private",
 			"MyProject/Variant_Horror",
 			"MyProject/Variant_Horror/UI",
@@ -42,13 +85,5 @@ public class MyProject : ModuleRules
 			"MyProject/Variant_Shooter/UI",
 			"MyProject/Variant_Shooter/Weapons"
 		});
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }
