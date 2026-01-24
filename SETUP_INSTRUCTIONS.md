@@ -228,7 +228,7 @@ void AMyProjectCharacter::OnInteract()
 
 The project includes **RFSN (Reactive Finite State Network)** for LLM-driven NPC dialogue and Director pacing.
 
-### Prerequisites
+### RFSN Prerequisites
 
 1. **Python 3.10+** with virtual environment
 2. **RFSN dependencies** installed
@@ -246,7 +246,7 @@ python -m uvicorn orchestrator:app --port 8000
 ### RFSN Components
 
 | Component | Description |
-|-----------|-------------|
+| --------- | ----------- |
 | `RfsnNpcClientComponent` | HTTP SSE client for NPC dialogue |
 | `RfsnDirectorBridge` | Connects RFSN → IslandDirectorSubsystem |
 | `RfsnDialogueWidget` | Typewriter dialogue display |
@@ -299,7 +299,7 @@ DirectorBridge->PollInterval = 10.0f;
 ### API Endpoints
 
 | Endpoint | Method | Description |
-|----------|--------|-------------|
+| -------- | ------ | ----------- |
 | `/api/dialogue/stream` | POST | Stream NPC dialogue (SSE) |
 | `/api/director/control` | POST | Get pacing commands |
 | `/api/health` | GET | Server health check |
