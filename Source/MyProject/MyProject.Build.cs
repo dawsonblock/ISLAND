@@ -23,7 +23,10 @@ public class MyProject : ModuleRules
 			"Niagara",
 			"Slate",
 			"SlateCore",
-			"TraceLog"
+			"TraceLog",
+			"HTTP",
+			"Json",
+			"JsonUtilities"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
