@@ -11,7 +11,7 @@
 
 **A bounded decision system where LLMs are deliberately demoted to renderers.**
 
-[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [API Reference](#-api-reference)
+[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [Components](#-component-reference) • [API](#-api-reference)
 
 ---
 
@@ -24,9 +24,7 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
 - **Action selection happens before language** — the LLM never invents goals
 - **State drives intent** — mood, relationship, and affinity determine behavior
 - **Learning is scoped and reversible** — per-state isolation, bounded rewards, explicit bans
-- **The Unity contract is practical** — observation in, decision out, execution report back
-
-This architecture puts ISLAND ahead of most "AI NPC" implementations by separating reasoning from speech generation.
+- **75+ C++ components** — comprehensive NPC AI framework
 
 ---
 
@@ -48,35 +46,59 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 </td>
 <td width="50%">
 
-### 🎮 Game Systems
+### 🎭 Social Systems
 
-- **Faction System** — Group reputation with propagation
-- **Relationship Persistence** — SaveGame integration
-- **NPC Conversations** — Multi-NPC dialogue
-- **Director Control** — Pacing and tension management
+- **Witness System** — NPCs observe and gossip about player
+- **Group Conversations** — Multi-NPC dialogue with turns
+- **NPC Memory** — Persistent conversation tracking
+- **Relationship Decay** — Time-based standing changes
+- **NPC Barks** — Context-aware one-liners
 
 </td>
 </tr>
 <tr>
 <td>
 
-### 🎨 Presentation
+### 🎮 Game Systems
 
+- **Faction System** — Group reputation with propagation
+- **Quest Integration** — Quest-aware NPC dialogue
+- **Dynamic Pricing** — Reputation-based merchant prices
+- **NPC Schedules** — Daily routines and patrol routes
+- **NPC Needs** — Hunger, energy, social needs
+
+</td>
+<td>
+
+### 🌍 Environment & Presentation
+
+- **Weather Reactions** — NPCs react to environment
+- **Lip Sync** — Audio-driven facial animation
 - **Dialogue Camera** — Focus, over-shoulder, two-shot
-- **NPC Look-At** — Smooth rotation to player
-- **Facial Animation** — Emotion-driven morph targets
-- **Audio Attenuation** — Distance + occlusion
-- **Ambient Chatter** — Idle contextual dialogue
+- **NPC Portraits** — Character cards with faction colors
+- **Reputation HUD** — Visual faction standings
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔒 Behavior & Stealth
+
+- **NPC Awareness** — Detection, FOV, hearing
+- **Emotional Contagion** — NPCs influence each other's moods
+- **Voice Modulation** — Emotion-driven TTS parameters
+- **Emotion Persistence** — Save/load emotional states
 
 </td>
 <td>
 
 ### 🛠️ Developer Tools
 
-- **Console Commands** — 10 debug commands
+- **Console Commands** — 10+ debug commands
 - **Blueprint Library** — Static helper functions
 - **Mock Server** — Offline testing
-- **Performance Metrics** — Latency tracking
+- **Forward Declarations** — Optimized compilation
 - **NPC Config Asset** — Editor-based NPC setup
 
 </td>
@@ -99,18 +121,13 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 ┌─────────────────────────────────────────────────────────────────┐
 │                      DECISION LAYER                             │
 │  ┌────────────────────────────────────────────────────────────┐ │
-│  │                   Temporal Memory                          │ │
-│  │   State-Action-Outcome Traces → Context Similarity Bias   │ │
+│  │   Temporal Memory + Witness System + NPC Memory            │ │
 │  └───────────────────────────┬────────────────────────────────┘ │
-│                              │                                  │
 │  ┌───────────────────────────▼────────────────────────────────┐ │
-│  │                   Action Lattice                           │ │
-│  │   Base Action + Intensity + Compliance + Motive → Hint    │ │
+│  │   Action Lattice + Needs + Schedule + Awareness            │ │
 │  └───────────────────────────┬────────────────────────────────┘ │
-│                              │                                  │
 │  ┌───────────────────────────▼────────────────────────────────┐ │
-│  │                   Bandit Selector                          │ │
-│  │   UCB1 Scoring + Bias Application → Selected Action       │ │
+│  │   Bandit Selector + Emotion Blend + Relationship Decay    │ │
 │  └───────────────────────────┬────────────────────────────────┘ │
 └──────────────────────────────┼──────────────────────────────────┘
                                │
@@ -119,20 +136,10 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 │                      RENDER LAYER (LLM)                         │
 │  ┌────────────────────────────────────────────────────────────┐ │
 │  │   Action Hint + NPC State + Context → Natural Language    │ │
-│  │   (LLM cannot invent goals, shift tone, or leak structure) │ │
+│  │   + Voice Modulation + Lip Sync + Facial Animation        │ │
 │  └────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
-
-### Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| **Action before Language** | LLM renders intent, doesn't decide it |
-| **Per-state Bandit Isolation** | Learning doesn't leak across contexts |
-| **Bounded Rewards** | Prevents runaway optimization |
-| **Temporal Memory** | "This feels like last time" anticipation |
-| **Expanded Action Lattice** | Nuance via action space, not prompts |
 
 ---
 
@@ -144,206 +151,154 @@ This architecture puts ISLAND ahead of most "AI NPC" implementations by separati
 - Python 3.10+ (for RFSN server)
 - [Ollama](https://ollama.ai) with `llama3.2`
 
-### 1. Clone
+### 1. Clone & Setup
 
 ```bash
 git clone https://github.com/dawsonblock/ISLAND.git
 cd ISLAND
-```
-
-### 2. Start RFSN Server
-
-```bash
 cd RFSN_NPC_AI/Python
 pip install -r requirements.txt
-python orchestrator.py
+python orchestrator.py  # Or: python mock_server.py
 ```
 
-Or use the mock server for offline testing:
+### 2. Open in Unreal
 
-```bash
-python mock_server.py
-```
-
-### 3. Open in Unreal
-
-```
-1. Open MyProject.uproject
+1. Open `MyProject.uproject`
 2. Build (Ctrl+Shift+B)
-3. Place RfsnSampleMerchant or RfsnSampleGuard in level
-4. Create IA_Dialogue input action
-5. Play and interact
-```
+3. Place sample NPCs in level
+4. Play and interact (E key)
 
 ---
 
-## 📖 Documentation
+## 📦 Component Reference
 
 ### Core Components
 
-| Component | Type | Description |
-|-----------|------|-------------|
-| `URfsnNpcClientComponent` | ActorComponent | HTTP SSE client for RFSN |
-| `URfsnDialogueManager` | WorldSubsystem | Manages active dialogues |
-| `URfsnTemporalMemory` | ActorComponent | State-action-outcome memory |
-| `URfsnActionLattice` | Static Library | Expanded action construction |
-| `URfsnEmotionBlend` | ActorComponent | VAD emotion model with facial animation |
-| `URfsnBackstoryGenerator` | ActorComponent | LLM-driven procedural backstories |
+| Component | Description |
+|-----------|-------------|
+| `URfsnNpcClientComponent` | HTTP SSE client for RFSN backend |
+| `URfsnDialogueManager` | Active dialogue management |
+| `URfsnTemporalMemory` | State-action-outcome memory |
+| `URfsnActionLattice` | Expanded action construction |
+| `URfsnEmotionBlend` | VAD emotion model with facial animation |
+| `URfsnBackstoryGenerator` | LLM-driven procedural backstories |
 
-### Subsystems
+### Social & Memory
 
-| Subsystem | Scope | Description |
-|-----------|-------|-------------|
-| `URfsnDialogueManager` | World | Active dialogue management |
-| `URfsnRelationshipManager` | GameInstance | Persistent relationships |
-| `URfsnFactionSystem` | GameInstance | Group reputation |
-| `URfsnNpcConversation` | World | NPC-to-NPC dialogue |
-| `URfsnHttpPool` | GameInstance | Connection pooling |
-| `URfsnMetrics` | GameInstance | Performance tracking |
+| Component | Description |
+|-----------|-------------|
+| `URfsnWitnessSystem` | NPCs observe and share rumors |
+| `URfsnNpcMemory` | Persistent conversation tracking |
+| `URfsnGroupConversation` | Multi-NPC dialogue with turns |
+| `URfsnNpcBarks` | Context-aware one-liners (15+ triggers) |
+| `URfsnRelationshipDecay` | Time-based relationship changes |
 
-### Console Commands
+### Behavior & Environment
 
-```
-RfsnDebug         Toggle debug HUD
-RfsnTalk          Talk to nearest NPC
-RfsnSay <msg>     Send custom message
-RfsnListNpcs      List all RFSN NPCs
-RfsnSetMood       Change NPC mood
-RfsnMockMode      Toggle offline mode
-RfsnDumpLog       Show conversation history
-RfsnClearLog      Clear history
-RfsnServerStatus  Check server connection
-RfsnReload        Reload NPC configs
-```
+| Component | Description |
+|-----------|-------------|
+| `URfsnNpcSchedule` | Daily routines and patrol routes |
+| `URfsnNpcNeeds` | Hunger, energy, social, safety needs |
+| `URfsnNpcAwareness` | Detection with FOV and hearing |
+| `URfsnWeatherReactions` | Weather and time-of-day awareness |
+
+### Economy & Quests
+
+| Component | Description |
+|-----------|-------------|
+| `URfsnDynamicPricing` | Reputation-based merchant prices |
+| `URfsnQuestIntegration` | Quest-aware NPC dialogue |
+| `URfsnFactionSystem` | Group reputation with propagation |
+
+### Presentation
+
+| Component | Description |
+|-----------|-------------|
+| `URfsnLipSync` | Audio-driven facial animation |
+| `URfsnNpcPortrait` | Character card data aggregator |
+| `URfsnReputationHud` | Faction standing display |
+| `URfsnDialogueCamera` | Focus, over-shoulder, two-shot modes |
+| `URfsnNpcLookAt` | Smooth rotation to player |
 
 ---
 
 ## 📚 API Reference
-
-### Temporal Memory
-
-```cpp
-// Record outcome after player response
-Memory->RecordOutcome(Action, Outcome, Mood, Relationship, Affinity, PlayerSignal);
-
-// Get biases before selection
-TArray<FRfsnActionBias> Biases = Memory->GetActionBiases(Mood, Rel, Affinity, Signal);
-
-// Check for hesitation trigger
-if (Memory->HasNegativeMemory(Mood, Rel, Affinity)) {
-    // Apply caution
-}
-```
-
-### Action Lattice
-
-```cpp
-// Build nuanced action
-FRfsnExpandedAction Action = URfsnActionLattice::BuildAction(
-    BaseAction, Affinity, Bias, bHasNegativeMemory);
-
-// Or use factory methods
-FRfsnExpandedAction::Hesitant(ERfsnNpcAction::Help);
-FRfsnExpandedAction::Reluctant(ERfsnNpcAction::Trade);
-FRfsnExpandedAction::Conflicted(ERfsnNpcAction::Help, ERfsnNpcAction::Attack);
-
-// Render for LLM
-FString Hint = Action.ToPromptHint();
-// → "hesitantly Help, only partially (guarded)"
-```
-
-### Faction System
-
-```cpp
-// Get/modify reputation
-float Rep = FactionSys->GetReputation("bandits");
-FactionSys->ModifyReputation("bandits", -10.0f); // Also affects allies/enemies
-
-// Check tier
-FString Tier = FactionSys->GetReputationTier("bandits");
-// → "Hostile", "Unfriendly", "Neutral", "Friendly", "Allied"
-```
-
-### NPC Conversation
-
-```cpp
-// Start NPC-to-NPC dialogue
-FString ConvId = ConvMgr->StartDialogue(NpcA, NpcB, "the weather");
-
-// Group discussion
-ConvMgr->StartGroupDiscussion({Npc1, Npc2, Npc3}, "survival plans");
-
-// Player interrupts
-ConvMgr->PlayerJoinConversation(ConvId);
-```
 
 ### Emotion Blending
 
 ```cpp
 // Apply emotional stimulus
 EmotionBlend->ApplyStimulus(TEXT("Joy"), 0.8f);
-EmotionBlend->ApplyStimulusEnum(ERfsnCoreEmotion::Fear, 0.5f);
 
 // Get dialogue tone for LLM
 FString Tone = EmotionBlend->ToDialogueTone();
 // → "warm, energetic, assertive"
 
-// Get mood string for prompts
-FString Mood = EmotionBlend->ToMoodString();
-// → "Intensely Joy"
-
-// Apply to mesh morph targets
-EmotionBlend->ApplyToSkeletalMesh(SkeletalMeshComponent);
-
-// Get facial expression weights
-FRfsnFacialExpression Expr = EmotionBlend->GetFacialExpression();
-// Expr.Joy, Expr.Anger, Expr.Fear, etc.
+// Get voice modulation
+float Pitch = EmotionBlend->GetVoicePitchModifier();
+float Speed = EmotionBlend->GetVoiceSpeedModifier();
 ```
 
-### Procedural Backstory
+### Witness System
 
 ```cpp
-// Backstory generates automatically on first dialogue interaction
-// Or trigger manually:
-BackstoryGen->GenerateBackstory();
+// Record player action
+WitnessSystem->RecordPlayerAction(
+    ERfsnWitnessEventType::Help, 
+    "helped the wounded merchant",
+    Location, TargetNpcId, 0.7f, true);
 
-// Get context for LLM prompts
-FString Context = BackstoryGen->GetDialogueContext();
-// → "Background: Marcus grew up on the..."
+// Get gossip for NPC dialogue
+FString Gossip = WitnessSystem->GetGossipForNpc(NpcId);
+// → "I heard that you helped the wounded merchant"
+```
 
-// Get short context
-FString Short = BackstoryGen->GetShortContext();
-// → "A Trader who is known for being cautious."
+### NPC Memory
 
-// Check if backstory exists
-if (BackstoryGen->HasBackstory()) {
-    FString Goal = BackstoryGen->CachedBackstory.PersonalGoal;
+```cpp
+// Check if NPC has met player
+if (Memory->HasMetPlayer()) {
+    FString Context = Memory->GetMemoryContext(3);
 }
+
+// Create memory from conversation
+Memory->StartConversation();
+Memory->RecordPlayerStatement(PlayerText);
+FGuid MemId = Memory->EndConversation();
 ```
 
----
+### Dynamic Pricing
 
-## 🗂️ Project Structure
+```cpp
+// Get price with reputation modifier
+float Price = Pricing->GetPrice("medkit");
 
+// Apply event modifier
+Pricing->AddPriceModifier("shortage", 1.5f, "supplies");
 ```
-ISLAND/
-├── Source/MyProject/
-│   ├── Public/                     # Headers
-│   │   ├── RfsnNpcClientComponent.h
-│   │   ├── RfsnTemporalMemory.h
-│   │   ├── RfsnActionLattice.h
-│   │   ├── RfsnFactionSystem.h
-│   │   └── ... (40+ headers)
-│   ├── Private/                    # Implementations
-│   └── MyProjectPCH.h              # Shared PCH
-├── RFSN_NPC_AI/
-│   └── Python/
-│       ├── orchestrator.py         # Main server
-│       └── mock_server.py          # Offline testing
-├── Content/                        # UE assets
-├── SETUP_INSTRUCTIONS.md           # Detailed setup guide
-├── RFSN_BLUEPRINT_GUIDE.md         # Blueprint integration
-└── README.md                       # This file
+
+### NPC Schedules
+
+```cpp
+// Check current activity
+ERfsnActivityType Activity = Schedule->CurrentActivity;
+
+// Get target location
+FVector Target = Schedule->GetCurrentTargetLocation();
+
+// Interrupt for dialogue
+Schedule->InterruptSchedule(ERfsnActivityType::Idle, 60.0f);
+```
+
+### Group Conversations
+
+```cpp
+// Start NPC group chat
+GroupConv->StartConversation({NpcA, NpcB, NpcC}, "weather");
+
+// Player joins
+GroupConv->PlayerJoin();
+GroupConv->PlayerSpeak("What do you think?");
 ```
 
 ---
@@ -352,25 +307,36 @@ ISLAND/
 
 | Metric | Count |
 |--------|-------|
-| C++ Classes | 48+ |
-| Subsystems | 7 |
-| Console Commands | 10 |
-| Default Factions | 5 |
-| Core Emotions | 8 |
-| Sample NPCs | 2 |
-| Lines of Code | ~12,000+ |
+| **C++ Classes** | 75+ |
+| **Subsystems** | 10+ |
+| **Console Commands** | 10 |
+| **Default Factions** | 5 |
+| **Bark Triggers** | 15 |
+| **Weather Types** | 9 |
+| **Emotion States** | 8 |
+| **Lines of Code** | 30,000+ |
 
 ---
 
-## 🔧 Build Optimization
+## 🗂️ Project Structure
 
-The project includes aggressive compile-time optimizations:
-
-- **Unity Builds** — 2-3x faster full rebuilds
-- **Shared PCH** — Common headers pre-compiled
-- **Forward Declarations** — Minimal header parsing
-- **IWYU Enforcement** — Clean include graphs
-- **Shipping-only Optimization** — Fast iteration in dev
+```
+ISLAND/
+├── Source/MyProject/
+│   ├── Public/                     # 75+ Headers
+│   │   ├── Rfsn*.h                 # All RFSN components
+│   │   └── RfsnForwardDeclarations.h
+│   ├── Private/                    # Implementations
+│   └── MyProjectPCH.h              # Shared PCH
+├── RFSN_NPC_AI/
+│   └── Python/
+│       ├── orchestrator.py         # Main server
+│       └── mock_server.py          # Offline testing
+├── Content/                        # UE assets
+├── SETUP_INSTRUCTIONS.md           # Detailed setup
+├── RFSN_BLUEPRINT_GUIDE.md         # Blueprint guide
+└── README.md                       # This file
+```
 
 ---
 
