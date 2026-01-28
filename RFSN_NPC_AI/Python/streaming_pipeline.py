@@ -6,7 +6,7 @@ import uuid
 import time
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 from enum import Enum
 from collections import deque
@@ -490,5 +490,5 @@ class StreamingPipeline:
         return {
             "lifecycle": lifecycle.to_dict(),
             "pipeline_metrics": self.get_metrics(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }

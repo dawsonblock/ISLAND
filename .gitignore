@@ -33,3 +33,17 @@ RFSN_NPC_AI/Python/data/episodes/
 RFSN_NPC_AI/Python/data/memory/
 RFSN_NPC_AI/Python/data/logs/
 RFSN_NPC_AI/.git/
+RFSN_NPC_AI/Python/__pycache__/
+RFSN_NPC_AI/Python/**/__pycache__/
+RFSN_NPC_AI/Python/Models/
+
+# macOS
+.DS_Store
+.metadata_never_index
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+.mypy_cache/

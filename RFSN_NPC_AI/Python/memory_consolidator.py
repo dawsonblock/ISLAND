@@ -7,7 +7,7 @@ import logging
 import json
 import re
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from memory_manager import ConversationTurn, ConversationManager
 from memory_governance import MemoryGovernance, GovernedMemory, MemoryType, MemorySource
@@ -80,7 +80,7 @@ JSON Facts:
                     source=MemorySource.LEARNER_INFERENCE,
                     content=fact,
                     confidence=0.8,
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                     metadata={"consolidation_source": "llm_summary"}
                 )
                 

@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Security
 from fastapi.responses import StreamingResponse, FileResponse
@@ -977,7 +977,7 @@ async def stream_dialogue(request: DialogueRequest):
                             source=MemorySource.NPC_RESPONSE,
                             content=stored_text,
                             confidence=1.0,
-                            timestamp=datetime.utcnow(),
+                            timestamp=datetime.now(timezone.utc),
                             metadata={
                                 "npc_name": npc_name,
                                 "user_input": request.user_input,

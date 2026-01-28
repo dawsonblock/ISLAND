@@ -10,7 +10,7 @@ from typing import List, Optional, Any
 from unittest.mock import Mock, patch, MagicMock
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add Python directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -481,7 +481,7 @@ class TestMemoryGovernance:
                 source=MemorySource.LEARNER_INFERENCE,
                 content="Test fact",
                 confidence=0.1,  # Below threshold
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             
             success, reason, memory_id = governance.add_memory(low_conf_memory)
@@ -507,7 +507,7 @@ class TestMemoryGovernance:
                 source=MemorySource.USER_INPUT,
                 content="Temporary mood",
                 confidence=0.8,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 ttl_seconds=0.1  # 100ms
             )
             
@@ -539,7 +539,7 @@ class TestMemoryGovernance:
                 source=MemorySource.USER_INPUT,
                 content="The sky is blue",
                 confidence=0.9,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             governance.add_memory(memory1)
             
@@ -550,7 +550,7 @@ class TestMemoryGovernance:
                 source=MemorySource.USER_INPUT,
                 content="The sky is not blue",
                 confidence=0.9,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             
             success, reason, _ = governance.add_memory(memory2)
@@ -571,7 +571,7 @@ class TestMemoryGovernance:
                 source=MemorySource.NPC_RESPONSE,
                 content="Hello there",
                 confidence=0.95,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             
             governance.add_memory(memory)

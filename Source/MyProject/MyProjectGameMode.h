@@ -9,14 +9,11 @@
 /**
  *  Simple GameMode for a first person game
  */
-UCLASS(abstract)
-class AMyProjectGameMode : public AGameModeBase
+UCLASS(config = Game, Blueprintable)
+class MYPROJECT_API AMyProjectGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
 	AMyProjectGameMode();
 };
-
-
-

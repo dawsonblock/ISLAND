@@ -10,7 +10,7 @@ import logging
 import re
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
@@ -285,7 +285,7 @@ class NPCSession:
     
     def touch(self):
         """Update last activity time"""
-        self.last_activity = datetime.utcnow()
+        self.last_activity = datetime.now(timezone.utc)
         self.turn_count += 1
 
 
@@ -330,7 +330,7 @@ class MultiNPCManager:
     
     def _cleanup_sessions(self):
         """Remove expired sessions"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         expired = [
             name for name, session in self.sessions.items()
             if (now - session.last_activity).total_seconds() > self.session_timeout

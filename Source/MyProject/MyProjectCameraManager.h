@@ -10,13 +10,12 @@
  *  Basic First Person camera manager.
  *  Limits min/max look pitch.
  */
-UCLASS()
-class AMyProjectCameraManager : public APlayerCameraManager
+UCLASS(Blueprintable)
+class MYPROJECT_API AMyProjectCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()
-	
-public:
 
+public:
 	/** Constructor */
 	AMyProjectCameraManager();
 };

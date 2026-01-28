@@ -7,7 +7,7 @@ Persistent conversation memory with safe reset and backup functionality.
 import json
 import logging
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
@@ -90,7 +90,7 @@ class ConversationManager:
             turn = ConversationTurn(
                 user_input=user_input,
                 npc_response=npc_response,
-                timestamp=datetime.utcnow().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat(),
                 metadata=metadata or {}
             )
             self.history.append(turn)
@@ -134,7 +134,7 @@ class ConversationManager:
                 return None
             
             # Create timestamped backup
-            timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             backup_path = self.memory_dir / f"{self._file_token}_backup_{timestamp}.json"
             
             try:

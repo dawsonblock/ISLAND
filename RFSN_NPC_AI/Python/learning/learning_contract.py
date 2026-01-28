@@ -6,7 +6,7 @@ import threading
 import hashlib
 import json
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Set, Tuple
 from enum import Enum
@@ -177,7 +177,7 @@ class LearningContract:
         last_update = self._last_update_time.get(update.field_name)
         if last_update:
             cooldown = self.constraints.cooldowns.get(update.field_name, 0)
-            elapsed = (datetime.utcnow() - last_update).total_seconds()
+            elapsed = (datetime.now(timezone.utc) - last_update).total_seconds()
             if elapsed < cooldown:
                 return False, f"Cooldown active for '{update.field_name}': {cooldown - elapsed:.1f}s remaining"
 
@@ -212,12 +212,12 @@ class LearningContract:
             StateSnapshot
         """
         snapshot_id = hashlib.sha256(
-            f"{datetime.utcnow().isoformat()}:{json.dumps(self._state, sort_keys=True)}".encode()
+            f"{datetime.now(timezone.utc).isoformat()}:{json.dumps(self._state, sort_keys=True)}".encode()
         ).hexdigest()[:16]
         
         snapshot = StateSnapshot(
             snapshot_id=snapshot_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             state=self._state.copy(),
             update_applied=update
         )
@@ -368,7 +368,7 @@ class LearningContract:
     
     def clear_old_snapshots(self, older_than_days: int = 7):
         """Clear snapshot files older than specified days"""
-        cutoff = datetime.utcnow() - timedelta(days=older_than_days)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=older_than_days)
         cleared = 0
         cleared_ids = set()
 

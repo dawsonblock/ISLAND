@@ -11,7 +11,7 @@ import logging
 import os
 import secrets
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import Optional, Dict, Any, Callable
 from collections import defaultdict
@@ -61,7 +61,7 @@ class APIKeyManager:
             self.keys[key_hash] = {
                 "name": name,
                 "scopes": scopes or ["read", "write"],
-                "created": datetime.utcnow().isoformat(),
+                "created": datetime.now(timezone.utc).isoformat(),
                 "last_used": None,
                 "active": True
             }
@@ -77,7 +77,7 @@ class APIKeyManager:
         
         with self._lock:
             if key_hash in self.keys and self.keys[key_hash]["active"]:
-                self.keys[key_hash]["last_used"] = datetime.utcnow().isoformat()
+                self.keys[key_hash]["last_used"] = datetime.now(timezone.utc).isoformat()
                 self._save_keys()
                 return self.keys[key_hash]
         
@@ -124,7 +124,7 @@ class JWTManager:
         header = {"alg": "HS256", "typ": "JWT"}
         
         # Add standard claims
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         payload.update({
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(hours=self.expires_hours)).timestamp()),

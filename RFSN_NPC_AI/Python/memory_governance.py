@@ -6,7 +6,7 @@ import threading
 import hashlib
 import json
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Set, Tuple
 from enum import Enum
@@ -69,7 +69,7 @@ class GovernedMemory:
         if self.ttl_seconds is None:
             return False
         expiry_time = self.timestamp + timedelta(seconds=self.ttl_seconds)
-        return datetime.utcnow() > expiry_time
+        return datetime.now(timezone.utc) > expiry_time
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage"""
@@ -454,7 +454,7 @@ class MemoryGovernance:
             
             cutoff_time = None
             if older_than_seconds is not None:
-                cutoff_time = datetime.utcnow() - timedelta(seconds=older_than_seconds)
+                cutoff_time = datetime.now(timezone.utc) - timedelta(seconds=older_than_seconds)
             
             # Check active memories
             for memory_id, memory in self._memories.items():

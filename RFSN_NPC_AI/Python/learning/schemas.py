@@ -4,7 +4,7 @@ Type definitions for learning layer
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class ActionMode(Enum):
@@ -140,7 +140,7 @@ class TurnLog:
                signals: RewardSignals) -> 'TurnLog':
         """Create a turn log from components"""
         return cls(
-            timestamp=datetime.utcnow().isoformat() + "Z",
+            timestamp=datetime.now(timezone.utc).isoformat() + "Z",
             npc_id=npc_id,
             features=features.to_dict(),
             action_mode=action_mode.name,
