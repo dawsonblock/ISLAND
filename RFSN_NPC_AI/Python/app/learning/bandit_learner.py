@@ -10,12 +10,15 @@ while maintaining safety constraints.
 from __future__ import annotations
 
 import json
+import logging
 import math
 import os
 import random
 import time
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -100,6 +103,7 @@ class StateActionBandit:
             raise ValueError(f"Unsupported mode: {self.cfg.mode}")
         self.cfg.mode = mode
         self._db: Dict[str, Dict[str, ArmStats]] = {}
+        self.all_banned_fallback_count = 0
         self._load()
 
     # ---------- public API ----------
@@ -135,8 +139,13 @@ class StateActionBandit:
         banned = set(self.cfg.banned_actions or [])
         actions = [a for a in candidate_actions if a not in banned]
         if not actions:
-            # If all candidate actions are banned, there are no valid choices.
-            raise ValueError("All candidate actions are banned.")
+            self.all_banned_fallback_count += 1
+            logger.warning(
+                "all candidate actions banned for state %s; falling back to original candidates (count=%d)",
+                state_id,
+                self.all_banned_fallback_count,
+            )
+            actions = list(candidate_actions)
 
         # Ensure stats exist
         st = self._db.setdefault(state_id, {})
@@ -195,6 +204,8 @@ class StateActionBandit:
                 arm.a += p
                 arm.b += (1.0 - p)
 
+        self._save()
+
     def reset_state(self, state_id: str) -> None:
         """Reset all statistics for a given state.
     
@@ -203,6 +214,7 @@ class StateActionBandit:
         """
         if state_id in self._db:
             del self._db[state_id]
+        self._save()
 
     def snapshot(self) -> Dict[str, Dict[str, dict]]:
         """Get a snapshot of all current statistics.
