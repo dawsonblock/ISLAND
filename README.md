@@ -48,6 +48,7 @@ The active island loop is:
 For the up-to-date runtime hookup guide, see:
 
 - [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md)
+- [`EDITOR_VALIDATION_CHECKLIST.md`](./EDITOR_VALIDATION_CHECKLIST.md)
 
 ### Prerequisites
 

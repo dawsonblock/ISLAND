@@ -7,6 +7,7 @@ This repo now has a concrete first playable slice:
 For the full current hookup guide, read:
 
 - [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md)
+- [`EDITOR_VALIDATION_CHECKLIST.md`](./EDITOR_VALIDATION_CHECKLIST.md)
 
 ## Fast path
 
@@ -90,4 +91,5 @@ Make sure the input mapping context on `MyProjectPlayerController` includes thos
 - confirm `echo $UE_PATH`
 - or rerun `./setup_environment.sh`
 
-For the exact editor-side setup checklist, use `FIRST_PLAYABLE_SLICE_SETUP.md`.
+For the exact setup guide, use `FIRST_PLAYABLE_SLICE_SETUP.md`.
+For the quick pass/fail editor checklist, use `EDITOR_VALIDATION_CHECKLIST.md`.

@@ -6,6 +6,10 @@ beach spawn -> scavenge fuse/fuel/crank -> repair tower under pressure -> transm
 
 Use this guide for the current setup. Older docs in the repo still describe earlier prototype behavior.
 
+For a shorter in-editor pass/fail checklist after setup, use:
+
+- [`EDITOR_VALIDATION_CHECKLIST.md`](./EDITOR_VALIDATION_CHECKLIST.md)
+
 ## 1. Build prerequisites
 
 - Unreal Engine 5.7 installed locally
@@ -219,3 +223,74 @@ Create these lightweight Blueprints for content hookup:
 - `BP_Pickup_Fuse` / `BP_Pickup_Fuel` / `BP_Pickup_Crank` from `IslandPickupActor`
 
 That gives you asset assignment without changing the runtime authority back out of C++.
+
+### Recommended Blueprint hookups
+
+#### `BP_IslandPlayer`
+- assign the input actions used by the slice:
+  - `MoveAction`
+  - `LookAction`
+  - `MouseLookAction`
+  - `SprintAction`
+  - `InteractAction`
+  - optional: `FlashlightAction`
+- assign first-person mesh / camera tuning as needed
+- keep the island components created in C++ as the runtime authority
+
+#### `BP_Cultist`
+- assign skeletal mesh and anim blueprint
+- tune movement speeds and attack values in defaults:
+  - `PatrolMoveSpeed`
+  - `InvestigateMoveSpeed`
+  - `ChaseMoveSpeed`
+  - `AttackRange`
+  - `AttackRadius`
+  - `AttackInterval`
+- implement these Blueprint events for presentation:
+  - `OnCultStateChanged`
+  - `OnAttackStarted`
+  - `OnAttackConnected`
+- use those events for:
+  - attack montage playback
+  - hit reactions / bark audio
+  - suspicious / chase / guard state VFX or posture changes
+
+#### `BP_RadioTower`
+- assign mesh, sound, and Niagara assets
+- verify prompt visibility and collision
+- keep `RequiredParts` aligned with the placed pickups
+
+#### `BP_Pickup_*`
+- assign a mesh that clearly communicates the item role
+- keep collision hittable by `Visibility`
+- customize prompts so the scavenging path reads cleanly in playtests
+
+## 11. Combat feel tuning notes
+
+The cult runtime now supports a more readable melee loop:
+
+- slower patrol pace
+- faster chase pace
+- local search sweeps at investigation points
+- short lunge when entering melee
+- facing-sensitive melee confirmation
+- Blueprint events for attack start and attack connect
+
+Recommended first tuning pass for `BP_Cultist`:
+
+- `AttackRange`: 140-180
+- `AttackRadius`: 90-120
+- `AttackInterval`: 1.0-1.4
+- `AttackLungeDistance`: 180-240
+- `AttackLungeStrength`: 350-500
+- `LoseTargetDistance`: 1800-2400
+
+If combat feels too sticky:
+- lower `ChaseMoveSpeed`
+- lower `AttackLungeStrength`
+- raise `AttackInterval`
+
+If combat feels too soft:
+- raise `InvestigateMoveSpeed`
+- raise `AttackRadius` slightly
+- lower `AttackInterval`

@@ -175,6 +175,16 @@ void ACultistAIController::UpdateBehavior()
 
 	if (CurrentTarget)
 	{
+		const float DistanceToTrackedTarget =
+		    FVector::Dist(CurrentTarget->GetActorLocation(), ControlledCultist->GetActorLocation());
+		if (DistanceToTrackedTarget > ControlledCultist->LoseTargetDistance &&
+		    ControlledCultist->AwarenessComponent &&
+		    !ControlledCultist->AwarenessComponent->bCanSeeTarget)
+		{
+			ControlledCultist->LoseTarget();
+			return;
+		}
+
 		if (ControlledCultist->AwarenessComponent &&
 		    ControlledCultist->AwarenessComponent->CurrentAwareness < ERfsnAwarenessLevel::Alerted &&
 		    !ControlledCultist->AwarenessComponent->bCanSeeTarget)
@@ -197,8 +207,7 @@ void ACultistAIController::UpdateBehavior()
 			ControlledCultist->SetCultState(ECultistState::Attack);
 			if (World->GetTimeSeconds() >= NextAttackTime)
 			{
-				UGameplayStatics::ApplyDamage(CurrentTarget, ControlledCultist->AttackDamage, this,
-				                              ControlledCultist, nullptr);
+				ControlledCultist->PerformAttack(CurrentTarget, this);
 				NextAttackTime = World->GetTimeSeconds() + ControlledCultist->AttackInterval;
 			}
 		}

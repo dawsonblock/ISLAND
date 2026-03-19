@@ -44,7 +44,40 @@ void ACultistCharacter::SetCultState(ECultistState NewState)
 {
 	if (CurrentState != ECultistState::Dead)
 	{
+		const ECultistState OldState = CurrentState;
 		CurrentState = NewState;
+
+		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+		{
+			switch (CurrentState)
+			{
+			case ECultistState::Patrol:
+			case ECultistState::ReturnToRoute:
+				MoveComp->MaxWalkSpeed = PatrolMoveSpeed;
+				break;
+			case ECultistState::Investigate:
+			case ECultistState::Search:
+			case ECultistState::Suspicious:
+				MoveComp->MaxWalkSpeed = InvestigateMoveSpeed;
+				break;
+			case ECultistState::GuardTower:
+				MoveComp->MaxWalkSpeed = GuardMoveSpeed;
+				break;
+			case ECultistState::Chase:
+			case ECultistState::Attack:
+				MoveComp->MaxWalkSpeed = ChaseMoveSpeed;
+				break;
+			case ECultistState::Idle:
+			case ECultistState::Dead:
+			default:
+				break;
+			}
+		}
+
+		if (OldState != CurrentState)
+		{
+			OnCultStateChanged(CurrentState, OldState);
+		}
 	}
 }
 
@@ -144,4 +177,51 @@ void ACultistCharacter::OnAwarenessChanged(ERfsnAwarenessLevel NewLevel, ERfsnAw
 	{
 		LastKnownPlayerLocation = AwarenessComponent->LastKnownLocation;
 	}
+}
+
+bool ACultistCharacter::CanAttackTarget(AActor* Target) const
+{
+	if (!Target || IsDead())
+	{
+		return false;
+	}
+
+	const FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
+	const float DistanceSq = ToTarget.SizeSquared2D();
+	if (DistanceSq > FMath::Square(AttackRadius))
+	{
+		return false;
+	}
+
+	const FVector Facing = GetActorForwardVector().GetSafeNormal2D();
+	const FVector DirectionToTarget = ToTarget.GetSafeNormal2D();
+	const float FacingDot = FVector::DotProduct(Facing, DirectionToTarget);
+	return FacingDot >= AttackFacingDotThreshold;
+}
+
+bool ACultistCharacter::PerformAttack(AActor* Target, AController* InstigatorController)
+{
+	if (!Target || IsDead())
+	{
+		return false;
+	}
+
+	OnAttackStarted(Target);
+
+	const FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
+	const float DistanceToTarget = ToTarget.Size2D();
+	if (DistanceToTarget <= AttackLungeDistance && DistanceToTarget > AttackRadius)
+	{
+		const FVector LungeDirection = ToTarget.GetSafeNormal2D();
+		LaunchCharacter(LungeDirection * AttackLungeStrength, true, false);
+	}
+
+	if (!CanAttackTarget(Target))
+	{
+		return false;
+	}
+
+	UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorController, this, nullptr);
+	OnAttackConnected(Target);
+	return true;
 }
