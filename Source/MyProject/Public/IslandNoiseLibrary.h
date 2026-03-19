@@ -1,3 +1,4 @@
+class AActor;
 #pragma once
 
 #include "CoreMinimal.h"
