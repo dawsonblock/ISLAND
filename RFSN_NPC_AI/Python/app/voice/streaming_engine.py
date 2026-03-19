@@ -35,219 +35,119 @@ class SentenceChunk:
 
 class StreamTokenizer:
     """
-    State-machine based sentence splitter for streaming text.
-    Handles quotes, ellipses, and abbreviations better than regex.
+    Stateful sentence splitter for streaming text.
+    Defers end-of-buffer terminals until more context arrives or flush() is
+    called, while preserving quotes, ellipses, and common abbreviations.
     """
+
     def __init__(self):
         self.buffer = ""
-        self.in_quotes = False
-        self.quote_char = None  # ' or "
-        
-        # Deferred split state
-        self._pending_boundary = False
-        self._pending_boundary_deadline = 0.0
-        
-        # Abbreviations that end in dot but shouldn't split
         self.abbreviations = {
-            'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'st', 
-            'mt', 'capt', 'col', 'gen', 'lt', 'sgt', 'corp', 
+            'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'st',
+            'mt', 'capt', 'col', 'gen', 'lt', 'sgt', 'corp',
             'etc', 'vs', 'inc', 'ltd', 'fig', 'op'
         }
-    
-    def _peek_after_closers(self, s: str, i: int) -> int:
-        j = i + 1
-        while j < len(s) and s[j] in CLOSERS:
-            j += 1
-        return j
-    
-    def process(self, token: str) -> List[str]:
-        """
-        Process a new token and return list of completed sentences.
-        """
-        sentences = []
 
-        
-        # CRITICAL (Patch v8.9): Check if new token CANCELS pending boundary BEFORE deadline flush
-        # This prevents premature flush of abbreviations like "Mr." + " Jones"
-        if self._pending_boundary and len(token) > 0:
-            # Skip leading whitespace to find first content char
-            c_idx = 0
-            while c_idx < len(token) and token[c_idx].isspace():
-                c_idx += 1
-            
-            if c_idx < len(token):  # Found a content char after whitespace
-                # Skip leading closers to find first alphanumeric char
-                while c_idx < len(token) and token[c_idx] in CLOSERS:
-                    c_idx += 1
-                
-                if c_idx < len(token) and token[c_idx].isalnum():
-                    # Alphanumeric continuation - cancel pending boundary
-                    self._pending_boundary = False
-                    # Add token to buffer and continue normal processing
-                    self.buffer += token
-                    # Return early to avoid double-processing the token
-                    return sentences
-                # Else (punctuation?), pending boundary stands until flush time
-            # Else (all whitespace), let pending boundary stand until flush time
-        
-        # Check pending flush deadline AFTER cancellation check
-        now = time.time()
-        if self._pending_boundary and now >= self._pending_boundary_deadline:
+    def _is_abbreviation(self, text: str, period_idx: int) -> bool:
+        if period_idx <= 0:
+            return False
+        word_match = ABBREVIATION_PATTERN.search(text[:period_idx])
+        if not word_match:
+            return False
+        return word_match.group(1).lower() in self.abbreviations
 
-            sentences.extend(self.flush())
-            self._pending_boundary = False
-            
-        self.buffer += token
+    def _next_significant_char(self, start_idx: int):
+        idx = start_idx
+        while idx < len(self.buffer):
+            if not self.buffer[idx].isspace():
+                return idx, self.buffer[idx]
+            idx += 1
+        return None
 
-        
-        if len(self.buffer) < 2:
-            return sentences
-            
-        cursor = 0
-        while cursor < len(self.buffer):
-            char = self.buffer[cursor]
-            
-            # Handle quotes - track quote state for sentence splitting
-            # Must do this BEFORE terminator check so quote state is accurate
-            quote_just_closed = False
-            if char in ('"', '"', '"'):
-                if not self.in_quotes:
-                    self.in_quotes = True
-                    self.quote_char = char
-                elif char == self.quote_char or char in ('"', '"'):
-                    # Close quote when we see matching quote
-                    self.in_quotes = False
-                    self.quote_char = None
-                    quote_just_closed = True
-            
-            # Terminator check logic (Patch A)
-            if char in ('.', '!', '?'):
+    def _find_sentence_boundary(self):
+        in_quotes = False
+        quote_chars = {'"', '“', '”'}
+        quote_closers = {'"', '”'}
 
-                # Check for "..." - treat as sentence terminator
-                if char == '.' and self.buffer[cursor:cursor+3] == '...':
-                    cursor += 2
-                    # Set pending boundary after ellipsis
-                    if cursor + 1 >= len(self.buffer):
-                        self._pending_boundary = True
-                        self._pending_boundary_deadline = time.time() + (BOUNDARY_FLUSH_MS / 1000.0)
-                        should_split = True
+        idx = 0
+        while idx < len(self.buffer):
+            char = self.buffer[idx]
+
+            if char in quote_chars:
+                in_quotes = not in_quotes
+
+            if char in '.!?':
+                terminal_end = idx
+                is_ellipsis = char == '.' and self.buffer[idx:idx + 3] == '...'
+                if is_ellipsis:
+                    terminal_end = min(idx + 2, len(self.buffer) - 1)
+
+                if char == '.' and not is_ellipsis and self._is_abbreviation(self.buffer, idx):
+                    idx += 1
                     continue
 
-                j = self._peek_after_closers(self.buffer, cursor)
-                should_split = False
+                suffix_end = terminal_end + 1
+                has_closing_quote = False
+                while suffix_end < len(self.buffer) and self.buffer[suffix_end] in CLOSERS:
+                    if self.buffer[suffix_end] in quote_closers:
+                        has_closing_quote = True
+                    suffix_end += 1
 
-                # Boundary conditions
-                if j >= len(self.buffer):
-                    # End-of-buffer: defer split (Patch B)
-                    if not self.in_quotes:
-                        self._pending_boundary = True
-                        self._pending_boundary_deadline = time.time() + (BOUNDARY_FLUSH_MS / 1000.0)
-                        should_split = False  # Don't split yet, just set pending boundary
-                    else:
-                        # Inside quotes - don't split, don't set pending boundary
-                        should_split = False
-                elif self.buffer[j].isspace():
-                    should_split = True
+                if suffix_end >= len(self.buffer):
+                    return None
 
-                # Quote check - don't split inside quotes (final check)
-                # BUT: allow split if quote is closed and followed by space
-                if self.in_quotes:
-                    should_split = False
-                    # Special case: period inside quote, but quote closes immediately after
-                    # Look ahead to see if quote closes at cursor+1
-                    if char == '.' and cursor + 1 < len(self.buffer):
-                        next_char = self.buffer[cursor + 1]
-                        if next_char in ('"', '"', '"'):
-                            # Quote closes after period - check for space after quote
-                            if cursor + 2 < len(self.buffer) and self.buffer[cursor + 2].isspace():
-                                # Period, closing quote, space - this is a sentence boundary
-                                should_split = True
-                            elif cursor + 2 >= len(self.buffer):
-                                # End of buffer - set pending boundary
-                                self._pending_boundary = True
-                                self._pending_boundary_deadline = time.time() + (BOUNDARY_FLUSH_MS / 1000.0)
-                elif quote_just_closed and j < len(self.buffer) and self.buffer[j] == ' ':
-                    # Quote was just closed, space follows - allow split
-                    should_split = True
-                elif quote_just_closed and j >= len(self.buffer):
-                    # Quote was just closed at end of buffer - set pending boundary
-                    self._pending_boundary = True
-                    self._pending_boundary_deadline = time.time() + (BOUNDARY_FLUSH_MS / 1000.0)
-                    should_split = False
+                next_char = self.buffer[suffix_end]
+                if next_char == '\n':
+                    return suffix_end + 1
 
-                # Abbreviation Check
-                if char == '.' and should_split:
-                    word_match = ABBREVIATION_PATTERN.search(self.buffer[:cursor])
-                    if word_match:
-                        word = word_match.group(1).lower()
-                        if word in self.abbreviations:
-                            should_split = False
+                if next_char.isspace():
+                    next_sig = self._next_significant_char(suffix_end)
+                    if next_sig is None:
+                        return None
 
-                
-                if should_split:
-                    # Point j is where the next sentence *starts* (after space)
-                    # But actually we want to slice up to j (keeping punctuation+closers)
-                    # self.buffer[j] is space.
-                    split_idx = j 
-                    sentence = self.buffer[:split_idx].strip()
-                    if sentence:
-                        # Advanced cleaning
-                        clean_sentence = self._clean_for_tts(sentence)
-                        if clean_sentence and len(clean_sentence) > 1: # Skip single char noise
-                             sentences.append(clean_sentence)
-                    
-                    self.buffer = self.buffer[split_idx:]
-                    cursor = -1 # Restart scanning new buffer
-                    self._pending_boundary = False
-                    self.in_quotes = False # Sentence boundary creates clean slate
-            
-            cursor += 1
-            
+                    _, next_sig_char = next_sig
+                    if in_quotes and has_closing_quote and next_sig_char.islower():
+                        idx = terminal_end + 1
+                        continue
+                    return suffix_end + 1
+
+            idx += 1
+
+        return None
+
+    def process(self, token: str) -> List[str]:
+        self.buffer += token
+
+        sentences = []
+        while True:
+            split_idx = self._find_sentence_boundary()
+            if split_idx is None:
+                break
+
+            sentence = self.buffer[:split_idx].strip()
+            clean_sentence = self._clean_for_tts(sentence)
+            if clean_sentence and len(clean_sentence) > 1:
+                sentences.append(clean_sentence)
+
+            self.buffer = self.buffer[split_idx:].lstrip()
+
         return sentences
 
     def _clean_for_tts(self, text: str) -> str:
-        """
-        Aggressive cleaning for TTS:
-        1. Remove actions in (...) or *...*
-        2. Replace punctuation with pauses or spaces
-        3. Normalize whitespace
-        """
-        # Remove actions (smiling), *laughs*
-        text = re.sub(r'\([^\)]+\)', '', text)
         text = re.sub(r'\*[^\*]+\*', '', text)
-        
-        # Replace explicit punctuation that models might read out as "dot" or "bang"
-        # We replace with a period + SPACE to ensure separation (fixes "Hello.I'm" -> "Hello. I'm")
-        # The space is critical to prevent "dot" pronunciation.
-        text = text.replace('!', '. ')
-        text = text.replace('?', '. ') 
-        text = text.replace(':', ' ')
-        text = text.replace(';', ' ')
-        
-        # Handle "..." which might be read as "dot dot dot"
-        text = text.replace('...', ' ')
-        
-        # Ensure periods have spaces after them if they are followed by letters
-        text = re.sub(r'\.([a-zA-Z])', r'. \1', text)
-
-        # Collapse whitespace
+        text = re.sub(r'\[[^\]]+\]', '', text)
         text = ' '.join(text.split())
         return text
-    
+
     def flush(self) -> List[str]:
-        """Flush remaining buffer as a sentence"""
         res = []
-        # If pending boundary, we definitely flush now
         if self.buffer.strip():
             sentence = self.buffer.strip()
-            # Apply same cleaning as process()
             clean_sentence = self._clean_for_tts(sentence)
-            if clean_sentence and len(clean_sentence) > 1: # Skip single char noise
-                 logger.info(f"[TTS-DEBUG] Queueing flushed sentence: '{clean_sentence}'")
-                 res.append(clean_sentence)
+            if clean_sentence and len(clean_sentence) > 1:
+                logger.info(f"[TTS-DEBUG] Queueing flushed sentence: '{clean_sentence}'")
+                res.append(clean_sentence)
         self.buffer = ""
-        self.in_quotes = False
-        self._pending_boundary = False
         return res
 
 
@@ -370,12 +270,6 @@ class StreamingVoiceSystem:
         self.speech_queue.set_maxsize(new_max)
         logger.info(f"[VoiceSystem] Resized queue to {new_max}")
         self.metrics.tts_queue_size = len(self.speech_queue)
-
-    def set_prosody(self, pitch: float = 1.0, rate: float = 1.0):
-        """Update current prosody for future chunks"""
-        self.current_pitch = pitch
-        self.current_rate = rate
-        logger.debug(f"[VoiceSystem] Prosody updated: pitch={pitch}, rate={rate}")
 
     def set_prosody(self, pitch: float = 1.0, rate: float = 1.0):
         """Update current prosody for future chunks"""
