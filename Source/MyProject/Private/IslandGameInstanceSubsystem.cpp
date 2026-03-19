@@ -31,6 +31,7 @@ void UIslandGameInstanceSubsystem::SaveToDisk()
 void UIslandGameInstanceSubsystem::StartRun(int32 Seed)
 {
 	RunTimeSeconds = 0.0f;
+	LastRunEndReason = EIslandRunEndReason::Unknown;
 
 	if (Seed == 0)
 	{
@@ -43,9 +44,10 @@ void UIslandGameInstanceSubsystem::StartRun(int32 Seed)
 	SaveToDisk();
 }
 
-void UIslandGameInstanceSubsystem::EndRun(bool bEscaped)
+void UIslandGameInstanceSubsystem::EndRun(bool bEscaped, EIslandRunEndReason Reason)
 {
 	if (!Save) LoadOrCreate();
+	LastRunEndReason = bEscaped ? EIslandRunEndReason::Escaped : Reason;
 
 	Save->TotalRuns += 1;
 

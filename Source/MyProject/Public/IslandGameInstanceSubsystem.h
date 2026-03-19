@@ -6,6 +6,16 @@
 
 class UIslandRunSaveGame;
 
+UENUM(BlueprintType)
+enum class EIslandRunEndReason : uint8
+{
+	Escaped,
+	KilledByCult,
+	Starved,
+	Quit,
+	Unknown
+};
+
 UCLASS()
 class MYPROJECT_API UIslandGameInstanceSubsystem : public UGameInstanceSubsystem
 {
@@ -22,10 +32,13 @@ public:
 	void StartRun(int32 Seed = 0);
 
 	UFUNCTION(BlueprintCallable, Category="Run")
-	void EndRun(bool bEscaped);
+	void EndRun(bool bEscaped, EIslandRunEndReason Reason = EIslandRunEndReason::Unknown);
 
 	UFUNCTION(BlueprintCallable, Category="Run")
 	UIslandRunSaveGame* GetSave() const { return Save; }
+
+	UPROPERTY(BlueprintReadOnly, Category = "Run")
+	EIslandRunEndReason LastRunEndReason = EIslandRunEndReason::Unknown;
 
 protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

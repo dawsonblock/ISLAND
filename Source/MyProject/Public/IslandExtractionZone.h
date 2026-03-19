@@ -6,6 +6,12 @@
 #include "IslandExtractionZone.generated.h"
 
 class USoundBase;
+class UAudioComponent;
+class UNiagaraComponent;
+class UBoxComponent;
+class UPrimitiveComponent;
+class USceneComponent;
+class APawn;
 
 UCLASS()
 class MYPROJECT_API AIslandExtractionZone : public AActor
@@ -27,6 +33,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="State")
 	bool bActive = false;
 
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bTransmissionCompleted = false;
+
 	UPROPERTY(BlueprintReadOnly, Category="State")
 	float ActiveUntilTime = 0.0f;
 
@@ -44,6 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Extraction")
 	void SetActive(bool bInActive, float WindowSeconds);
+
+	UFUNCTION(BlueprintCallable, Category = "Extraction")
+	void SetTransmissionCompleted(bool bCompleted);
 
 	UFUNCTION(BlueprintCallable, Category="Extraction")
 	float GetRemainingSeconds() const;

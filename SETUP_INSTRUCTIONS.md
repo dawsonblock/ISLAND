@@ -1,5 +1,10 @@
 # Island Survival System - Setup Instructions
 
+> **Note**
+> For the current first playable island loop setup, start with
+> [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md).
+> This file still contains older prototype-oriented instructions.
+
 ## Prerequisites
 
 1. **Set the UE_PATH environment variable**
@@ -7,11 +12,11 @@
    Open Terminal and run:
 
    ```bash
-   echo 'export UE_PATH="/Users/Shared/Epic Games/UE_5.3"' >> ~/.zshrc
+   echo 'export UE_PATH="/Users/Shared/Epic Games/UE_5.7"' >> ~/.zshrc
    source ~/.zshrc
    ```
 
-   *Replace UE_5.3 with your actual Unreal Engine version folder name*
+   *Replace UE_5.7 with your actual Unreal Engine version folder name*
 
 2. **Verify the environment variable**
 
@@ -132,6 +137,18 @@ void AMyProjectCharacter::OnInteract()
 
 ## Setting Up in Unreal Editor
 
+### Current playable-slice differences
+
+The current island loop is:
+
+1. wake on the beach
+2. scavenge `TowerFuse`, `TowerFuel`, and `AntennaCrank`
+3. install parts and complete a timed tower repair
+4. power the repaired tower
+5. transmit the distress signal
+6. survive the converging cult pressure
+7. extract after transmission completes
+
 1. **Open your project in Unreal Editor**
 
 2. **Set the GameMode**
@@ -141,11 +158,16 @@ void AMyProjectCharacter::OnInteract()
 3. **Place actors in your level**
    - Add `IslandRadioTower` actor
    - Add `IslandExtractionZone` actor
+   - Add `IslandAISpawnManager` actor
+   - Add three `IslandPickupActor` instances for fuse, fuel, and crank
    - Position them appropriately
 
 4. **Configure actors**
    - Select the Radio Tower
    - In Details panel, adjust:
+     - Required Parts (keep fuse, fuel, and crank for the slice)
+     - Required Repair Time
+     - Repair Noise Per Second
      - Transmit Duration (default: 30s)
      - Extract Window (default: 60s)
      - Cooldown (default: 120s)
@@ -156,23 +178,29 @@ void AMyProjectCharacter::OnInteract()
      - Hold Time (default: 3s)
      - Box extent (collision volume size)
 
+   - Select the AI Spawn Manager
+   - Assign `CultistClass` to `CultistCharacter` or a Blueprint subclass
+
 5. **Test the system**
    - Press Play in Editor
-   - Press E while looking at the radio tower
-   - Follow the HUD prompts
+   - Collect the three tower parts first
+   - Return to the tower and start repair
+   - Follow the HUD prompts through transmit and extraction
 
 ## How the System Works
 
 1. **Alert System**: Actions increase alert level, which decays over time
 2. **Radio Tower**:
-   - Unpowered → Power On (requires minimum alert)
-   - Powered → Transmit Signal (requires higher alert)
-   - Transmitting → Sends pulses, increases alert, attracts enemies
-   - Extract Window → Extraction zone becomes active
-   - Cooldown → Tower resets
+   - Needs Parts → waits for fuse, fuel, and crank
+   - Broken/Repairing → timed repair with noise and pressure
+   - Unpowered → ready to power on after repair
+   - Powered → can transmit distress signal
+   - Transmitting → sends pulses, increases pressure, attracts cultists
+   - Extract Window → extraction zone becomes active
+   - Cooldown → post-window state
 
 3. **Extraction**:
-   - Only active during Extract Window
+   - Only active after transmission completes
    - Stand in zone for 3 seconds
    - Must be alive and not downed
    - Successfully extracting ends the run (win)
@@ -208,19 +236,20 @@ void AMyProjectCharacter::OnInteract()
    - Make sure your character has IslandInteractorComponent
    - Verify interact input is bound
    - Check that tower has collision enabled
+   - Check that the required pickups have been collected first
 
 3. **Extraction not working**
    - Ensure extraction zone is placed in level
-   - Check that tower state reaches ExtractWindow
+   - Check that transmission completed first
    - Verify your character implements IslandLifeStateInterface
 
 ## Next Steps
 
-- Add AI enemies that respond to alert/objective system
+- Tune `BP_Cultist` animations/audio using cult state and attack events
 - Create visual feedback for tower states (lights, particles)
 - Add sound effects for pulses and state changes
-- Implement stamina/health systems
-- Add loot and progression systems
+- Expand Blueprint polish around the first playable slice
+- Add more level dressing and encounter layouts
 
 ---
 

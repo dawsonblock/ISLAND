@@ -124,6 +124,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Awareness|Detection")
 	float AlertedThreshold = 0.9f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Awareness|Detection")
+	float HostileThreshold = 1.0f;
+
 	/** How long to stay alerted after losing sight */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Awareness|Detection")
 	float AlertDuration = 10.0f;

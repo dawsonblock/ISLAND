@@ -33,7 +33,7 @@ void AIslandExtractionZone::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!bActive) return;
+	if (!bActive || !bTransmissionCompleted) return;
 
 	// Check if we timed out
 	if (GetWorld()->GetTimeSeconds() > ActiveUntilTime)
@@ -69,8 +69,6 @@ void AIslandExtractionZone::Tick(float DeltaTime)
 
 void AIslandExtractionZone::SetActive(bool bInActive, float WindowSeconds)
 {
-	if (bActive == bInActive) return;
-
 	bActive = bInActive;
 	ActiveUntilTime = bActive ? GetWorld()->GetTimeSeconds() + WindowSeconds : 0.0f;
 	
@@ -102,6 +100,15 @@ void AIslandExtractionZone::SetActive(bool bInActive, float WindowSeconds)
 	}
 }
 
+void AIslandExtractionZone::SetTransmissionCompleted(bool bCompleted)
+{
+	bTransmissionCompleted = bCompleted;
+	if (!bTransmissionCompleted)
+	{
+		HoldTimers.Empty();
+	}
+}
+
 float AIslandExtractionZone::GetRemainingSeconds() const
 {
 	if (!bActive) return 0.0f;
@@ -116,7 +123,7 @@ float AIslandExtractionZone::GetHoldProgress(APawn* Pawn) const
 
 bool AIslandExtractionZone::IsPawnEligible(APawn* Pawn) const
 {
-	if (!Pawn || !Pawn->IsPlayerControlled())
+	if (!bActive || !bTransmissionCompleted || !Pawn || !Pawn->IsPlayerControlled())
 		return false;
 
 	if (Pawn->GetClass()->ImplementsInterface(UIslandLifeStateInterface::StaticClass()))
@@ -126,7 +133,7 @@ bool AIslandExtractionZone::IsPawnEligible(APawn* Pawn) const
 		return !bDead && !bDowned;
 	}
 
-	return true; // debug-friendly
+	return false;
 }
 
 void AIslandExtractionZone::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -168,7 +175,7 @@ void AIslandExtractionZone::TriggerWin(APawn* Pawn)
 	{
 		if (UIslandGameInstanceSubsystem* Run = GI->GetSubsystem<UIslandGameInstanceSubsystem>())
 		{
-			Run->EndRun(true);
+			Run->EndRun(true, EIslandRunEndReason::Escaped);
 		}
 	}
 }

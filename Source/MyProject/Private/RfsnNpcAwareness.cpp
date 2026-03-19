@@ -1,6 +1,8 @@
 // RFSN NPC Awareness Implementation
 
 #include "RfsnNpcAwareness.h"
+#include "GameFramework/Pawn.h"
+#include "IslandStealthComponent.h"
 #include "RfsnLogging.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -92,6 +94,10 @@ void URfsnNpcAwareness::UpdateAwarenessLevel()
 	if (AwarenessValue >= AlertedThreshold)
 	{
 		NewLevel = ERfsnAwarenessLevel::Alerted;
+		if (AwarenessValue >= HostileThreshold)
+		{
+			NewLevel = ERfsnAwarenessLevel::Hostile;
+		}
 	}
 	else if (AwarenessValue >= InvestigateThreshold)
 	{
@@ -112,7 +118,8 @@ void URfsnNpcAwareness::UpdateAwarenessLevel()
 		CurrentAwareness = NewLevel;
 		OnAwarenessChanged.Broadcast(NewLevel, OldLevel);
 
-		if (NewLevel == ERfsnAwarenessLevel::Alerted && CurrentTarget)
+		if ((NewLevel == ERfsnAwarenessLevel::Alerted || NewLevel == ERfsnAwarenessLevel::Hostile) &&
+		    CurrentTarget)
 		{
 			OnTargetDetected.Broadcast(CurrentTarget);
 		}
@@ -184,7 +191,12 @@ void URfsnNpcAwareness::ReportSound(FVector SoundLocation, float Loudness, AActo
 	AwarenessValue = FMath::Min(1.0f, AwarenessValue + AwarenessGain);
 	LastKnownLocation = SoundLocation;
 
-	if (Source && !CurrentTarget)
+	const APawn* SourcePawn = Cast<APawn>(Source);
+	const bool bSourceLooksLikePlayer =
+	    SourcePawn ? SourcePawn->IsPlayerControlled()
+	               : (Source && Source->FindComponentByClass<UIslandStealthComponent>() != nullptr);
+
+	if (bSourceLooksLikePlayer && !CurrentTarget)
 	{
 		CurrentTarget = Source;
 	}
@@ -198,7 +210,7 @@ void URfsnNpcAwareness::ReportSound(FVector SoundLocation, float Loudness, AActo
 void URfsnNpcAwareness::AlertToTarget(AActor* Target)
 {
 	CurrentTarget = Target;
-	AwarenessValue = 1.0f;
+	AwarenessValue = FMath::Max(AlertedThreshold, 0.95f);
 	bCanSeeTarget = CanSeeActor(Target);
 	if (Target)
 	{
@@ -302,7 +314,13 @@ float URfsnNpcAwareness::CalculateVisibility(AActor* Target) const
 		MovementFactor = 1.3f;
 	}
 
-	return DistanceFactor * FOVFactor * MovementFactor;
+	float VisibilityFactor = 1.0f;
+	if (const UIslandStealthComponent* Stealth = Target->FindComponentByClass<UIslandStealthComponent>())
+	{
+		VisibilityFactor = Stealth->GetVisibilityMultiplier();
+	}
+
+	return DistanceFactor * FOVFactor * MovementFactor * VisibilityFactor;
 }
 
 bool URfsnNpcAwareness::HasLineOfSight(AActor* Target) const

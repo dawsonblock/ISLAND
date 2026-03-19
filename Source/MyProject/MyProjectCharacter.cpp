@@ -7,12 +7,21 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "IslandDirectorSubsystem.h"
+#include "IslandGameInstanceSubsystem.h"
+#include "IslandInteractorComponent.h"
+#include "IslandInventoryComponent.h"
+#include "IslandNoiseLibrary.h"
+#include "IslandStealthComponent.h"
+#include "IslandVitalityComponent.h"
 #include "MyProject.h"
-#include "Public/IslandVitalityComponent.h"
 #include "RfsnDialogueManager.h"
 
 AMyProjectCharacter::AMyProjectCharacter() {
+  PrimaryActorTick.bCanEverTick = true;
+
   // Set size for collision capsule
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -51,22 +60,76 @@ AMyProjectCharacter::AMyProjectCharacter() {
 
   VitalityComponent = CreateDefaultSubobject<UIslandVitalityComponent>(
       TEXT("VitalityComponent"));
+  InteractorComponent = CreateDefaultSubobject<UIslandInteractorComponent>(
+      TEXT("InteractorComponent"));
+  InventoryComponent = CreateDefaultSubobject<UIslandInventoryComponent>(
+      TEXT("InventoryComponent"));
+  StealthComponent = CreateDefaultSubobject<UIslandStealthComponent>(
+      TEXT("StealthComponent"));
+
+  GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+}
+
+void AMyProjectCharacter::BeginPlay() {
+  Super::BeginPlay();
+
+  if (VitalityComponent) {
+    VitalityComponent->OnDeath.AddDynamic(this, &AMyProjectCharacter::HandleDeath);
+  }
 }
 
 void AMyProjectCharacter::Tick(float DeltaTime) {
   Super::Tick(DeltaTime);
 
+  if (bDead) {
+    return;
+  }
+
   // Handle stamina drain during sprint
-  if (GetCharacterMovement()->MaxWalkSpeed > 600.0f &&
-      GetVelocity().Size() > 0.0f) {
+  if (bIsSprinting && GetVelocity().SizeSquared2D() > 0.0f) {
     VitalityComponent->ModifyStamina(-20.0f * DeltaTime);
 
     if (VitalityComponent->GetStaminaNormalized() <= 0.0f) {
       DoSprintEnd();
     }
-  } else {
-    // Regenerate stamina
-    VitalityComponent->ModifyStamina(10.0f * DeltaTime);
+  }
+
+  if (StealthComponent) {
+    StealthComponent->UpdateStealth(DeltaTime, GetVelocity(), bIsCrouched,
+                                    bIsSprinting);
+  }
+
+  EmitMovementNoise(DeltaTime);
+}
+
+bool AMyProjectCharacter::IsDowned_Implementation() const { return bDowned; }
+
+bool AMyProjectCharacter::IsDead_Implementation() const { return bDead; }
+
+void AMyProjectCharacter::HandleDeath(bool bIsFatal) {
+  if (bDead) {
+    return;
+  }
+
+  bDowned = false;
+  bDead = true;
+  bIsSprinting = false;
+  GetCharacterMovement()->DisableMovement();
+  GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+  if (APlayerController *PC = Cast<APlayerController>(GetController())) {
+    DisableInput(PC);
+  }
+
+  if (UGameInstance *GI = GetGameInstance()) {
+    if (UIslandGameInstanceSubsystem *Run =
+            GI->GetSubsystem<UIslandGameInstanceSubsystem>()) {
+      const EIslandRunEndReason Reason =
+          VitalityComponent && VitalityComponent->GetHungerNormalized() <= 0.0f
+              ? EIslandRunEndReason::Starved
+              : EIslandRunEndReason::KilledByCult;
+      Run->EndRun(false, Reason);
+    }
   }
 }
 
@@ -98,6 +161,18 @@ void AMyProjectCharacter::SetupPlayerInputComponent(
                                        &AMyProjectCharacter::DoSprintStart);
     EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed,
                                        this, &AMyProjectCharacter::DoSprintEnd);
+
+    if (InteractAction) {
+      EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started,
+                                         this,
+                                         &AMyProjectCharacter::TryInteract);
+    }
+
+    if (FlashlightAction) {
+      EnhancedInputComponent->BindAction(
+          FlashlightAction, ETriggerEvent::Started, this,
+          &AMyProjectCharacter::ToggleFlashlight);
+    }
 
     // Dialogue
     if (DialogueAction) {
@@ -132,7 +207,7 @@ void AMyProjectCharacter::LookInput(const FInputActionValue &Value) {
 }
 
 void AMyProjectCharacter::DoAim(float Yaw, float Pitch) {
-  if (GetController()) {
+  if (!bDead && GetController()) {
     // pass the rotation inputs
     AddControllerYawInput(Yaw);
     AddControllerPitchInput(Pitch);
@@ -140,7 +215,7 @@ void AMyProjectCharacter::DoAim(float Yaw, float Pitch) {
 }
 
 void AMyProjectCharacter::DoMove(float Right, float Forward) {
-  if (GetController()) {
+  if (!bDead && GetController()) {
     // pass the move inputs
     AddMovementInput(GetActorRightVector(), Right);
     AddMovementInput(GetActorForwardVector(), Forward);
@@ -148,6 +223,9 @@ void AMyProjectCharacter::DoMove(float Right, float Forward) {
 }
 
 void AMyProjectCharacter::DoJumpStart() {
+  if (bDead) {
+    return;
+  }
   // pass Jump to the character
   Jump();
 }
@@ -157,16 +235,66 @@ void AMyProjectCharacter::DoJumpEnd() {
   StopJumping();
 }
 void AMyProjectCharacter::DoSprintStart() {
-  if (VitalityComponent && VitalityComponent->GetStaminaNormalized() > 0.1f) {
+  if (!bDead && VitalityComponent &&
+      VitalityComponent->GetStaminaNormalized() > 0.1f) {
+    bIsSprinting = true;
     GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
   }
 }
 
 void AMyProjectCharacter::DoSprintEnd() {
+  bIsSprinting = false;
   GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 }
 
+void AMyProjectCharacter::TryInteract() {
+  if (InteractorComponent) {
+    InteractorComponent->TryInteract();
+  }
+}
+
+void AMyProjectCharacter::ToggleFlashlight() {
+  if (StealthComponent) {
+    StealthComponent->SetFlashlightEnabled(!StealthComponent->bFlashlightOn);
+  }
+}
+
+void AMyProjectCharacter::EmitMovementNoise(float DeltaTime) {
+  if (!StealthComponent) {
+    return;
+  }
+
+  MovementNoiseCooldown = FMath::Max(0.0f, MovementNoiseCooldown - DeltaTime);
+
+  const float Loudness = GetCurrentNoiseLoudness();
+  if (Loudness <= 0.0f || GetVelocity().SizeSquared2D() <= 25.0f) {
+    return;
+  }
+
+  if (UWorld *World = GetWorld()) {
+    if (UIslandDirectorSubsystem *Director =
+            World->GetSubsystem<UIslandDirectorSubsystem>()) {
+      Director->AddAlertFromPlayerNoise(Loudness * DeltaTime * 4.0f);
+    }
+  }
+
+  if (MovementNoiseCooldown > 0.0f) {
+    return;
+  }
+
+  MovementNoiseCooldown = bIsSprinting ? 0.18f : (bIsCrouched ? 0.45f : 0.3f);
+  UIslandNoiseLibrary::EmitNoise(this, GetActorLocation(), Loudness, this);
+}
+
+float AMyProjectCharacter::GetCurrentNoiseLoudness() const {
+  return StealthComponent ? StealthComponent->GetNoiseLoudness() : 0.0f;
+}
+
 void AMyProjectCharacter::TryStartDialogue() {
+  if (bDead) {
+    return;
+  }
+
   UWorld *World = GetWorld();
   if (!World) {
     return;

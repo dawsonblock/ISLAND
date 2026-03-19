@@ -3,17 +3,23 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "IslandInteractableInterface.h"
+#include "IslandInventoryComponent.h"
 #include "NiagaraSystem.h"
 #include "IslandRadioTower.generated.h"
 
 class UPointLightComponent;
+class USceneComponent;
+class UStaticMeshComponent;
 class USoundBase;
+class APawn;
 
 UENUM(BlueprintType)
 enum class ERadioTowerState : uint8
 {
 	Broken,
+	NeedsParts,
 	Unpowered,
+	Repairing,
 	Powered,
 	Transmitting,
 	ExtractWindow,
@@ -40,7 +46,7 @@ public:
 	TObjectPtr<UPointLightComponent> StatusLight;
 
 	UPROPERTY(BlueprintReadOnly, Category="State")
-	ERadioTowerState State = ERadioTowerState::Unpowered;
+	ERadioTowerState State = ERadioTowerState::NeedsParts;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config")
 	float TransmitDurationSeconds = 30.0f;
@@ -56,6 +62,24 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category="State")
 	float RepairProgress = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Tower")
+	bool bRepairInProgress = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Tower")
+	TObjectPtr<APawn> RepairingPawn = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Tower")
+	bool bTransmissionCompleted = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tower")
+	TArray<EIslandItemType> RequiredParts;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tower")
+	float RepairNoisePerSecond = 8.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tower")
+	float RepairCancelDistance = 300.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config")
 	float PulseInterval = 3.0f;
@@ -87,8 +111,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Tower")
 	void Repair();
 
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	bool CanConsumeRequiredParts(APawn* Pawn) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	bool ConsumeRequiredParts(APawn* Pawn);
+
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	void BeginRepair(APawn* Pawn);
+
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	void CancelRepair();
+
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	void CompleteRepair();
+
 	UFUNCTION(BlueprintPure, Category="Tower")
 	float GetTransmitProgress() const;
+
+	UFUNCTION(BlueprintPure, Category = "Tower")
+	bool HasTransmissionCompleted() const { return bTransmissionCompleted; }
+
+	UFUNCTION(BlueprintPure, Category = "Tower")
+	bool AreRequiredPartsInstalled() const { return bPartsInstalled || RequiredParts.Num() == 0; }
 
 	// IIslandInteractableInterface
 	virtual bool CanInteract_Implementation(const FIslandInteractContext& Ctx) const override;
@@ -105,10 +150,13 @@ private:
 	FTimerHandle CooldownTimer;
 
 	float TransmitStartTime;
+	float RepairNoiseTickAccumulator = 0.0f;
+	bool bPartsInstalled = false;
 
 	void SetState(ERadioTowerState NewState);
 	void OnTransmitComplete();
 	void OnCooldownComplete();
 	void SendPulse();
 	void UpdateVisuals();
+	void TickRepair(float DeltaTime);
 };
