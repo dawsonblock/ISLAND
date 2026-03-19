@@ -7,6 +7,7 @@
 
 class UIslandVitalityComponent;
 class URfsnNpcAwareness;
+class UAnimMontage;
 
 UENUM(BlueprintType)
 enum class ECultistState : uint8
@@ -91,6 +92,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cult")
 	float LoseTargetDistance = 2200.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cult|Animation")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cult|Animation")
+	TObjectPtr<UAnimMontage> HitReactMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cult|Animation")
+	TObjectPtr<UAnimMontage> DeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cult|Animation")
+	float AttackImpactDelay = 0.18f;
+
 	UPROPERTY(BlueprintAssignable, Category = "Cult")
 	FCultistDeathSignature OnCultistDied;
 
@@ -118,6 +131,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cult")
 	bool PerformAttack(AActor* Target, AController* InstigatorController);
 
+	UFUNCTION(BlueprintCallable, Category = "Cult|Animation")
+	void TriggerPendingAttackImpact();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Cult")
 	void OnCultStateChanged(ECultistState NewState, ECultistState OldState);
 
@@ -144,4 +160,15 @@ private:
 	void OnAwarenessChanged(ERfsnAwarenessLevel NewLevel, ERfsnAwarenessLevel OldLevel);
 
 	bool CanAttackTarget(AActor* Target) const;
+	void ClearPendingAttack();
+
+	FTimerHandle PendingAttackImpactTimer;
+
+	UPROPERTY()
+	TObjectPtr<AActor> PendingAttackTarget;
+
+	UPROPERTY()
+	TObjectPtr<AController> PendingAttackInstigator;
+
+	bool bPendingAttackResolved = false;
 };

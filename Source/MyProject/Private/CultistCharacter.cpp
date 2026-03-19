@@ -1,9 +1,11 @@
 #include "CultistCharacter.h"
 
+#include "Animation/AnimMontage.h"
 #include "CultistAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "IslandVitalityComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 ACultistCharacter::ACultistCharacter()
 {
@@ -26,6 +28,10 @@ float ACultistCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEven
 	const float AppliedDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (AppliedDamage > 0.0f && !IsDead())
 	{
+		if (HitReactMontage)
+		{
+			PlayAnimMontage(HitReactMontage);
+		}
 		OnDamagedByActor(AppliedDamage, DamageCauser, EventInstigator);
 	}
 
@@ -166,8 +172,17 @@ void ACultistCharacter::HandleDeath(bool bFatal)
 		return;
 	}
 
+	ClearPendingAttack();
 	OnDeathStarted(bFatal);
+	const ECultistState OldState = CurrentState;
 	CurrentState = ECultistState::Dead;
+	OnCultStateChanged(CurrentState, OldState);
+
+	if (DeathMontage)
+	{
+		PlayAnimMontage(DeathMontage);
+	}
+
 	GetCharacterMovement()->DisableMovement();
 	SetActorEnableCollision(false);
 	DetachFromControllerPendingDestroy();
@@ -219,7 +234,43 @@ bool ACultistCharacter::PerformAttack(AActor* Target, AController* InstigatorCon
 		return false;
 	}
 
+	ClearPendingAttack();
+	PendingAttackTarget = Target;
+	PendingAttackInstigator = InstigatorController;
+	bPendingAttackResolved = false;
 	OnAttackStarted(Target);
+
+	if (AttackMontage)
+	{
+		PlayAnimMontage(AttackMontage);
+	}
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(PendingAttackImpactTimer, this,
+		                                  &ACultistCharacter::TriggerPendingAttackImpact,
+		                                  AttackImpactDelay, false);
+	}
+
+	return true;
+}
+
+void ACultistCharacter::TriggerPendingAttackImpact()
+{
+	if (bPendingAttackResolved)
+	{
+		return;
+	}
+
+	bPendingAttackResolved = true;
+
+	AActor* Target = PendingAttackTarget.Get();
+	AController* InstigatorController = PendingAttackInstigator.Get();
+	if (!Target || IsDead())
+	{
+		ClearPendingAttack();
+		return;
+	}
 
 	const FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
 	const float DistanceToTarget = ToTarget.Size2D();
@@ -232,10 +283,23 @@ bool ACultistCharacter::PerformAttack(AActor* Target, AController* InstigatorCon
 	if (!CanAttackTarget(Target))
 	{
 		OnAttackMissed(Target);
-		return false;
+		ClearPendingAttack();
+		return;
 	}
 
 	UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorController, this, nullptr);
 	OnAttackConnected(Target);
-	return true;
+	ClearPendingAttack();
+}
+
+void ACultistCharacter::ClearPendingAttack()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(PendingAttackImpactTimer);
+	}
+
+	PendingAttackTarget = nullptr;
+	PendingAttackInstigator = nullptr;
+	bPendingAttackResolved = false;
 }

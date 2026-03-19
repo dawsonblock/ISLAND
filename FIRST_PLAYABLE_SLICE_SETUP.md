@@ -55,6 +55,18 @@ In Unreal Editor:
 2. Set **Default GameMode** to `IslandGameMode`
 3. If the level overrides GameMode in **World Settings**, set that override to `IslandGameMode` too
 
+### Optional UMG HUD path
+
+The island HUD now supports a UMG-backed widget path.
+
+To use it:
+
+1. Create `BP_IslandHUDWidget` from `IslandHUDWidget`
+2. Build your layout in UMG using `CurrentState`
+3. Assign that widget class to `IslandGameMode.IslandHUDWidgetClass`
+
+If no widget class is assigned, the canvas HUD fallback remains active.
+
 ## 3. Input setup required in the editor
 
 The player code now exposes these input actions:
@@ -247,13 +259,29 @@ That gives you asset assignment without changing the runtime authority back out 
   - `AttackRadius`
   - `AttackInterval`
 - implement these Blueprint events for presentation:
+  - `OnDamagedByActor`
+  - `OnDeathStarted`
   - `OnCultStateChanged`
   - `OnAttackStarted`
   - `OnAttackConnected`
+  - `OnAttackMissed`
 - use those events for:
   - attack montage playback
   - hit reactions / bark audio
   - suspicious / chase / guard state VFX or posture changes
+  - death presentation / bark cutoff / collapse setup
+
+##### Montage notify integration
+
+If you use an attack montage in `BP_Cultist`:
+
+- assign `AttackMontage`
+- optionally assign `HitReactMontage`
+- optionally assign `DeathMontage`
+- add an anim notify at the intended impact frame that calls:
+  - `TriggerPendingAttackImpact()`
+
+If you do not add a notify, the runtime falls back to `AttackImpactDelay`.
 
 #### `BP_RadioTower`
 - assign mesh, sound, and Niagara assets
@@ -274,7 +302,8 @@ The cult runtime now supports a more readable melee loop:
 - local search sweeps at investigation points
 - short lunge when entering melee
 - facing-sensitive melee confirmation
-- Blueprint events for attack start and attack connect
+- optional montage-driven attack timing
+- Blueprint events for attack start, connect, miss, damage, and death
 
 Recommended first tuning pass for `BP_Cultist`:
 

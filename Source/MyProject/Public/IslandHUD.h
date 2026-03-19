@@ -2,8 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "IslandHUDWidget.h"
 #include "RfsnNpcClientComponent.h"
 #include "IslandHUD.generated.h"
+
+class UIslandHUDWidget;
 
 UCLASS()
 class MYPROJECT_API AIslandHUD : public AHUD
@@ -11,6 +14,7 @@ class MYPROJECT_API AIslandHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
 	virtual void DrawHUD() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
@@ -27,7 +31,7 @@ public:
 
 private:
 	FString CurrentTutorialMessage;
-	float TutorialMessageExpireTime;
+	float TutorialMessageExpireTime = 0.0f;
 
 	// RFSN Dialogue
 	FString CurrentDialogueNpcName;
@@ -52,4 +56,13 @@ private:
 	void OnRfsnSentence(const FRfsnSentence& Sentence);
 
 	FString BoundNpcName;
+
+	UPROPERTY()
+	TObjectPtr<UIslandHUDWidget> IslandHUDWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD", meta = (AllowPrivateAccess = "true"))
+	bool bHideCanvasWhenWidgetActive = true;
+
+	void EnsureWidgetCreated();
+	FIslandHUDState BuildHudState() const;
 };

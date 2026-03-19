@@ -7,6 +7,7 @@
 
 class AIslandExtractionZone;
 class AIslandAISpawnManager;
+class UIslandHUDWidget;
 
 UCLASS()
 class MYPROJECT_API AIslandGameMode : public AGameModeBase
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Island")
 	TObjectPtr<AIslandAISpawnManager> SpawnManager;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Island|UI")
+	TSubclassOf<UIslandHUDWidget> IslandHUDWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tutorial")
 	bool bShowWelcomeTutorial = true;

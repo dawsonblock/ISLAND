@@ -295,7 +295,7 @@ void AMyProjectCharacter::Die()
 - [ ] Player can look at tower and see the correct prompt
 - [ ] Pressing E after collecting parts starts timed repair
 - [ ] Repair can complete into the unpowered state
-- [ ] Pressing E powers the tower
+- [ ] Pressing E after repair powers the tower
 - [ ] Pressing E again starts transmission
 - [ ] HUD shows alert level
 - [ ] HUD shows tower state, repair progress, and parts state

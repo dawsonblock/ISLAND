@@ -26,12 +26,19 @@ Use this after building the first playable slice in Unreal Editor.
 - [ ] `IslandAISpawnManager.CultistClass` is assigned
 - [ ] the cult class is `CultistCharacter` or a Blueprint subclass
 - [ ] navmesh exists around the player path, tower area, and likely spawn ring
+- [ ] if using attack montages, `AttackMontage` is assigned on the cult Blueprint
+- [ ] if using anim notifies, the impact notify calls `TriggerPendingAttackImpact()`
 
 ### Player setup
 - [ ] the runtime pawn is `MyProjectCharacter` or a Blueprint subclass of it
 - [ ] the input mapping context includes `InteractAction`
 - [ ] the input mapping context includes `SprintAction`
 - [ ] optional: `FlashlightAction` is mapped
+
+### HUD setup
+- [ ] if using UMG HUD, `IslandGameMode.IslandHUDWidgetClass` is assigned
+- [ ] the widget is a subclass of `IslandHUDWidget`
+- [ ] the widget reads from `CurrentState`
 
 ### Tower setup
 - [ ] `RequiredParts` includes fuse, fuel, and crank
@@ -85,6 +92,8 @@ Use this after building the first playable slice in Unreal Editor.
 ## Recommended final spot checks
 
 - [ ] `BP_Cultist` has mesh / anim / audio assigned
+- [ ] `BP_Cultist` implements hit / miss / death presentation events if desired
 - [ ] `BP_IslandPlayer` has the expected input assets assigned
 - [ ] `BP_RadioTower` has tower visuals/audio assigned
+- [ ] `BP_IslandHUDWidget` is assigned if using the UMG path
 - [ ] there is no accidental dialogue-only critical path blocking the run
