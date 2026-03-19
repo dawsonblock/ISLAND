@@ -62,11 +62,11 @@ class ActionMode(Enum):
 @dataclass
 class FeatureVector:
     """Features extracted from current state for policy decision"""
-    npc_id_hash: int                    # Hash bucket of NPC name
-    affinity: float                     # Relationship affinity score
-    mood: int                           # Mood category (0-5)
-    relationship: int                   # Relationship type (0-5)
-    player_playstyle: int              # Playstyle category (0-3)
+    npc_id_hash: float                  # Normalized hash bucket of NPC name (0.0–1.0)
+    affinity: float                     # Relationship affinity score (already normalized)
+    mood: float                         # Normalized mood category (originally 0–5 mapped to 0.0–1.0)
+    relationship: float                 # Normalized relationship type (originally 0–5 mapped to 0.0–1.0)
+    player_playstyle: float             # Normalized playstyle category (originally 0–3 mapped to 0.0–1.0)
     recent_sentiment: float            # Sentiment of recent turns
     retrieval_topk_mean_sim: float     # Mean similarity of retrieved memories
     retrieval_contradiction_flag: int  # 1 if contradiction detected, 0 otherwise
@@ -74,7 +74,7 @@ class FeatureVector:
     last_action_mode: int              # Previous action mode ID
     
     def to_array(self) -> list:
-        """Convert to numerical array for linear model"""
+        """Convert to numerical array for linear model (values already normalized where appropriate)"""
         return [
             self.npc_id_hash,
             self.affinity,
