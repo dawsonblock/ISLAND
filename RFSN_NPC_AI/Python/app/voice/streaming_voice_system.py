@@ -116,6 +116,8 @@ class DequeSpeechQueue:
         with self._cv:
             while True:
                 if self._dq:
+                if self._dq:
+                    self.played_total += 1
                     return self._dq.popleft()
                 if self._closed:
                     return None
