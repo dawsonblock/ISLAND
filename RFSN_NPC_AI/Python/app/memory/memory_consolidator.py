@@ -9,8 +9,8 @@ import re
 from typing import List, Optional
 from datetime import datetime, timezone
 
-from memory_manager import ConversationTurn, ConversationManager
-from memory_governance import MemoryGovernance, GovernedMemory, MemoryType, MemorySource
+from .memory_manager import ConversationTurn, ConversationManager
+from .memory_governance import MemoryGovernance, GovernedMemory, MemoryType, MemorySource
 
 logger = logging.getLogger(__name__)
 
