@@ -13,7 +13,6 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from ..safety.sanitize import safe_filename_token
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -261,6 +260,7 @@ def list_backups(memory_dir: str = "memory", npc_name: str = None) -> List[Dict[
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     # Quick test
     print("Testing Memory Manager...")
     
