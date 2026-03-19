@@ -1,8 +1,10 @@
 #include "IslandAISpawnManager.h"
+#include "CultistAIController.h"
+#include "CultistCharacter.h"
 #include "EngineUtils.h"
-#include "NavigationSystem.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
+#include "NavigationSystem.h"
 
 AIslandAISpawnManager::AIslandAISpawnManager()
 {
@@ -43,14 +45,24 @@ void AIslandAISpawnManager::OnIntensityChanged(EIslandIntensityState NewState)
 
 void AIslandAISpawnManager::OnTowerStateChanged(ERadioTowerState NewState)
 {
-	// Tower transmit state now influences the Director directly (logic to be added in Director)
+	if (NewState == ERadioTowerState::Transmitting || NewState == ERadioTowerState::ExtractWindow)
+	{
+		SpawnCultistNearTower();
+		StartSpawning();
+	}
 }
 
 void AIslandAISpawnManager::StartSpawning()
 {
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
-	float NextDelay = GetCurrentInterval();
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AIslandAISpawnManager::TrySpawnHunter, NextDelay, false);
+
+	float NextDelay = 10.0f;
+	if (UIslandDirectorSubsystem* Director = GetWorld()->GetSubsystem<UIslandDirectorSubsystem>())
+	{
+		NextDelay = Director->GetCurrentSpawnInterval();
+	}
+
+	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AIslandAISpawnManager::TrySpawnCultist, NextDelay, false);
 }
 
 void AIslandAISpawnManager::StopSpawning()
@@ -58,25 +70,79 @@ void AIslandAISpawnManager::StopSpawning()
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
 }
 
-float AIslandAISpawnManager::GetCurrentInterval() const
+void AIslandAISpawnManager::SpawnCultistNearTower()
 {
-	switch (CurrentIntensity)
+	if (CachedTower)
 	{
-	case EIslandIntensityState::Alerted: return AlertedInterval;
-	case EIslandIntensityState::Hostile: return HostileInterval;
-	case EIslandIntensityState::Overwhelmed: return OverwhelmedInterval;
-	case EIslandIntensityState::Passive: default: return PassiveInterval;
+		const FVector TowerLocation = CachedTower->GetActorLocation();
+		SpawnCultistAroundLocation(TowerLocation, nullptr, true);
 	}
 }
 
-void AIslandAISpawnManager::TrySpawnHunter()
+void AIslandAISpawnManager::SpawnCultistNearLastKnownPlayerLocation(const FVector& Location)
 {
-	if (!HunterClass) return;
+	FVector InvestigationLocation = Location;
+	SpawnCultistAroundLocation(Location, &InvestigationLocation, false);
+}
+
+void AIslandAISpawnManager::RegisterCultistDeath(ACultistCharacter* Cultist)
+{
+	AliveCultistCount = FMath::Max(0, AliveCultistCount - 1);
+}
+
+void AIslandAISpawnManager::TrySpawnCultist()
+{
+	if (!CultistClass)
+	{
+		return;
+	}
+
+	UIslandDirectorSubsystem* Director = GetWorld()->GetSubsystem<UIslandDirectorSubsystem>();
+	const bool bTowerPressure = CachedTower &&
+	                            (CachedTower->State == ERadioTowerState::Transmitting ||
+	                             CachedTower->State == ERadioTowerState::ExtractWindow);
+	const int32 DesiredCultists =
+	    Director ? FMath::Max(Director->GetDesiredActiveCultists(), bTowerPressure ? 3 : 0)
+	             : (bTowerPressure ? 3 : 0);
+	if (AliveCultistCount >= FMath::Min(MaxAliveCultists, DesiredCultists))
+	{
+		if (CurrentIntensity != EIslandIntensityState::Passive || bTowerPressure)
+		{
+			StartSpawning();
+		}
+		return;
+	}
 
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (!PlayerPawn) return;
+	if (!PlayerPawn && !bTowerPressure)
+	{
+		return;
+	}
 
-	FVector Origin = PlayerPawn->GetActorLocation();
+	if (bTowerPressure && CachedTower)
+	{
+		SpawnCultistNearTower();
+	}
+	else if (PlayerPawn)
+	{
+		FVector InvestigationLocation = PlayerPawn->GetActorLocation();
+		SpawnCultistAroundLocation(PlayerPawn->GetActorLocation(), &InvestigationLocation, false);
+	}
+
+	if (CurrentIntensity != EIslandIntensityState::Passive || bTowerPressure)
+	{
+		StartSpawning();
+	}
+}
+
+bool AIslandAISpawnManager::SpawnCultistAroundLocation(const FVector& Origin, FVector* ForcedInvestigationLocation,
+                                                       bool bGuardTower)
+{
+	if (!CultistClass || AliveCultistCount >= MaxAliveCultists)
+	{
+		return false;
+	}
+
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 
 	if (NavSys)
@@ -101,13 +167,34 @@ void AIslandAISpawnManager::TrySpawnHunter()
 		{
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			GetWorld()->SpawnActor<APawn>(HunterClass, SpawnLoc.Location, FRotator::ZeroRotator, Params);
+			if (ACultistCharacter* Cultist =
+			        GetWorld()->SpawnActor<ACultistCharacter>(CultistClass, SpawnLoc.Location,
+			                                                 FRotator::ZeroRotator, Params))
+			{
+				AliveCultistCount++;
+				Cultist->OnCultistDied.AddDynamic(this, &AIslandAISpawnManager::RegisterCultistDeath);
+
+				if (ACultistAIController* CultistController = Cast<ACultistAIController>(Cultist->GetController()))
+				{
+					if (bGuardTower)
+					{
+						CultistController->SetInvestigationLocation(Origin);
+					}
+					if (ForcedInvestigationLocation)
+					{
+						CultistController->SetInvestigationLocation(*ForcedInvestigationLocation);
+					}
+				}
+
+				if (bGuardTower)
+				{
+					Cultist->SetCultState(ECultistState::GuardTower);
+				}
+
+				return true;
+			}
 		}
 	}
 
-	// Schedule next spawn if not passive
-	if (CurrentIntensity != EIslandIntensityState::Passive)
-	{
-		StartSpawning();
-	}
+	return false;
 }

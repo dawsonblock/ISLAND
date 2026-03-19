@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "IslandRadioTower.h"
 #include "IslandDirectorSubsystem.h"
+#include "IslandRadioTower.h"
 #include "IslandAISpawnManager.generated.h"
 
 UCLASS()
@@ -15,7 +15,7 @@ public:
 	AIslandAISpawnManager();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config")
-	TSubclassOf<APawn> HunterClass;
+	TSubclassOf<class ACultistCharacter> CultistClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config")
 	float SpawnRadius = 2000.0f;
@@ -23,17 +23,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config")
 	float MinSpawnDistance = 800.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config|Intensity")
-	float PassiveInterval = 30.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
+	int32 MaxAliveCultists = 6;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config|Intensity")
-	float AlertedInterval = 15.0f;
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	int32 AliveCultistCount = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config|Intensity")
-	float HostileInterval = 5.0f;
+	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	void SpawnCultistNearTower();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Config|Intensity")
-	float OverwhelmedInterval = 2.0f;
+	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	void SpawnCultistNearLastKnownPlayerLocation(const FVector& Location);
+
+	UFUNCTION()
+	void RegisterCultistDeath(class ACultistCharacter* Cultist);
 
 protected:
 	virtual void BeginPlay() override;
@@ -51,8 +54,9 @@ private:
 	FTimerHandle SpawnTimer;
 	void StartSpawning();
 	void StopSpawning();
-	void TrySpawnHunter();
-	float GetCurrentInterval() const;
+	void TrySpawnCultist();
+	bool SpawnCultistAroundLocation(const FVector& Origin, FVector* ForcedInvestigationLocation = nullptr,
+	                                bool bGuardTower = false);
 	
 	EIslandIntensityState CurrentIntensity = EIslandIntensityState::Passive;
 };

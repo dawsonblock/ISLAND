@@ -46,6 +46,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Director")
 	void AddAlert(float Amount);
 
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	void AddAlertFromTowerRepair(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	void AddAlertFromTransmissionPulse(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	void AddAlertFromPlayerNoise(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	void AddAlertFromCultSpotting(float Amount);
+
 	UFUNCTION(BlueprintCallable, Category="Director")
 	float GetAlertLevel() const { return AlertLevel; }
 
@@ -57,6 +69,48 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Director")
 	bool CanTransmit() const { return AlertLevel >= MinAlertForTransmit; }
+
+	UFUNCTION(BlueprintPure, Category = "Director")
+	float GetCurrentSpawnInterval() const;
+
+	UFUNCTION(BlueprintPure, Category = "Director")
+	float GetCurrentSearchDuration() const;
+
+	UFUNCTION(BlueprintPure, Category = "Director")
+	int32 GetDesiredActiveCultists() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	float PassiveSpawnInterval = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	float AlertedSpawnInterval = 18.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	float HostileSpawnInterval = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	float OverwhelmedSpawnInterval = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Search")
+	float PassiveSearchDuration = 4.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Search")
+	float AlertedSearchDuration = 7.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Search")
+	float HostileSearchDuration = 11.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Search")
+	float OverwhelmedSearchDuration = 15.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	int32 AlertedCultistCount = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	int32 HostileCultistCount = 4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Director|Spawning")
+	int32 OverwhelmedCultistCount = 6;
 
 protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

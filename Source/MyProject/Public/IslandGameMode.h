@@ -6,6 +6,7 @@
 #include "IslandGameMode.generated.h"
 
 class AIslandExtractionZone;
+class AIslandAISpawnManager;
 
 UCLASS()
 class MYPROJECT_API AIslandGameMode : public AGameModeBase
@@ -22,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Island")
 	TObjectPtr<AIslandExtractionZone> Extraction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Island")
+	TObjectPtr<AIslandAISpawnManager> SpawnManager;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tutorial")
 	bool bShowWelcomeTutorial = true;
 
@@ -34,4 +38,9 @@ private:
 	void OnTowerStateChanged(ERadioTowerState NewState);
 
 	void TryAutoFindActors();
+	void UpdateObjectiveText();
+	void HandlePlayerDeath();
+	void HandleTowerPhaseChanged(ERadioTowerState NewState);
+
+	bool bHandledInvalidRun = false;
 };

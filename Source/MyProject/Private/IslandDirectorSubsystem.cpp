@@ -36,6 +36,26 @@ void UIslandDirectorSubsystem::AddAlert(float Amount)
 	}
 }
 
+void UIslandDirectorSubsystem::AddAlertFromTowerRepair(float Amount)
+{
+	AddAlert(Amount);
+}
+
+void UIslandDirectorSubsystem::AddAlertFromTransmissionPulse(float Amount)
+{
+	AddAlert(Amount);
+}
+
+void UIslandDirectorSubsystem::AddAlertFromPlayerNoise(float Amount)
+{
+	AddAlert(Amount);
+}
+
+void UIslandDirectorSubsystem::AddAlertFromCultSpotting(float Amount)
+{
+	AddAlert(Amount);
+}
+
 void UIslandDirectorSubsystem::DecayAlert()
 {
 	AlertLevel = FMath::Max(0.0f, AlertLevel - AlertDecayRate);
@@ -61,5 +81,53 @@ void UIslandDirectorSubsystem::UpdateIntensityState()
 	{
 		CurrentIntensity = NewState;
 		OnIntensityStateChanged.Broadcast(CurrentIntensity);
+	}
+}
+
+float UIslandDirectorSubsystem::GetCurrentSpawnInterval() const
+{
+	switch (CurrentIntensity)
+	{
+	case EIslandIntensityState::Alerted:
+		return AlertedSpawnInterval;
+	case EIslandIntensityState::Hostile:
+		return HostileSpawnInterval;
+	case EIslandIntensityState::Overwhelmed:
+		return OverwhelmedSpawnInterval;
+	case EIslandIntensityState::Passive:
+	default:
+		return PassiveSpawnInterval;
+	}
+}
+
+float UIslandDirectorSubsystem::GetCurrentSearchDuration() const
+{
+	switch (CurrentIntensity)
+	{
+	case EIslandIntensityState::Alerted:
+		return AlertedSearchDuration;
+	case EIslandIntensityState::Hostile:
+		return HostileSearchDuration;
+	case EIslandIntensityState::Overwhelmed:
+		return OverwhelmedSearchDuration;
+	case EIslandIntensityState::Passive:
+	default:
+		return PassiveSearchDuration;
+	}
+}
+
+int32 UIslandDirectorSubsystem::GetDesiredActiveCultists() const
+{
+	switch (CurrentIntensity)
+	{
+	case EIslandIntensityState::Alerted:
+		return AlertedCultistCount;
+	case EIslandIntensityState::Hostile:
+		return HostileCultistCount;
+	case EIslandIntensityState::Overwhelmed:
+		return OverwhelmedCultistCount;
+	case EIslandIntensityState::Passive:
+	default:
+		return 0;
 	}
 }
