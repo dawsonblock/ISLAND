@@ -2,15 +2,15 @@
 // HTTP SSE streaming client for RFSN Orchestrator
 
 #include "Dialogue/RfsnNpcClientComponent.h"
-#include "Social/RfsnBackstoryGenerator.h"
 #include "Dialogue/RfsnEmotionBlend.h"
+#include "Social/RfsnBackstoryGenerator.h"
 #include "Social/RfsnRelationshipManager.h"
 #include "Dom/JsonObject.h"
+#include "Engine/GameInstance.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "Engine/GameInstance.h"
 
 URfsnNpcClientComponent::URfsnNpcClientComponent()
 {
@@ -53,16 +53,13 @@ void URfsnNpcClientComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void URfsnNpcClientComponent::SendPlayerUtterance(const FString& PlayerText)
 {
-	// Cancel any existing stream
 	CancelDialogue();
 
-	// Trigger first interaction for backstory generation
 	if (URfsnBackstoryGenerator* BackstoryGen = GetOwner()->FindComponentByClass<URfsnBackstoryGenerator>())
 	{
 		BackstoryGen->OnFirstInteraction();
 	}
 
-	// Get mood from emotion blend if available, otherwise use string
 	FString CurrentMood = Mood;
 	FString DialogueTone = TEXT("");
 	if (URfsnEmotionBlend* EmotionBlend = GetOwner()->FindComponentByClass<URfsnEmotionBlend>())
@@ -71,14 +68,12 @@ void URfsnNpcClientComponent::SendPlayerUtterance(const FString& PlayerText)
 		DialogueTone = EmotionBlend->ToDialogueTone();
 	}
 
-	// Get backstory context if available
 	FString BackstoryContext = TEXT("");
 	if (URfsnBackstoryGenerator* BackstoryGen = GetOwner()->FindComponentByClass<URfsnBackstoryGenerator>())
 	{
 		BackstoryContext = BackstoryGen->GetShortContext();
 	}
 
-	// Build JSON payload matching RFSN DialogueRequest schema
 	TSharedPtr<FJsonObject> NpcState = MakeShareable(new FJsonObject());
 	NpcState->SetStringField(TEXT("npc_name"), NpcName);
 	NpcState->SetStringField(TEXT("npc_id"), NpcId);
@@ -97,43 +92,102 @@ void URfsnNpcClientComponent::SendPlayerUtterance(const FString& PlayerText)
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 	FJsonSerializer::Serialize(Payload.ToSharedRef(), Writer);
 
-	// Create HTTP request
+	ResetStreamState();
+	ActiveRequestId = FGuid::NewGuid();
+
 	CurrentRequest = FHttpModule::Get().CreateRequest();
+	if (!CurrentRequest.IsValid())
+	{
+		EnterFallbackMode(TEXT("failed to create dialogue request"));
+		return;
+	}
+
 	CurrentRequest->SetURL(OrchestratorUrl);
 	CurrentRequest->SetVerb(TEXT("POST"));
 	CurrentRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 	CurrentRequest->SetHeader(TEXT("Accept"), TEXT("text/event-stream"));
 	CurrentRequest->SetContentAsString(JsonString);
 
-	// Bind streaming callbacks (UE5 uses V2 progress callback)
 	CurrentRequest->OnRequestProgress64().BindUObject(this, &URfsnNpcClientComponent::OnStreamProgress);
 	CurrentRequest->OnProcessRequestComplete().BindUObject(this, &URfsnNpcClientComponent::OnStreamComplete);
 
-	// Reset state
 	bIsStreaming = true;
-	bGotMeta = false;
-	StreamBuffer.Empty();
 
-	UE_LOG(LogTemp, Log, TEXT("[RFSN] Sending utterance to %s: %s"), *NpcName, *PlayerText);
+	UE_LOG(LogTemp, Log, TEXT("[RFSN] Sending utterance to %s (request=%s): %s"),
+	       *NpcName, *ActiveRequestId.ToString(), *PlayerText);
 
-	CurrentRequest->ProcessRequest();
+	if (!CurrentRequest->ProcessRequest())
+	{
+		EnterFallbackMode(TEXT("failed to start dialogue request"));
+	}
 }
 
 void URfsnNpcClientComponent::CancelDialogue()
 {
-	if (CurrentRequest.IsValid() && bIsStreaming)
+	if (CurrentRequest.IsValid())
 	{
 		CurrentRequest->CancelRequest();
 		CurrentRequest.Reset();
 	}
+
 	bIsStreaming = false;
-	bGotMeta = false;
-	StreamBuffer.Empty();
+	ActiveRequestId.Invalidate();
+	ResetStreamState();
+}
+
+void URfsnNpcClientComponent::ResetStreamState()
+{
+	bReceivedMeta = false;
+	bReceivedAnyEvent = false;
+	bFallbackMode = false;
+	RawStreamBuffer.Empty();
+	PendingLineFragment.Empty();
+	LastProcessedOffset = 0;
+	ProcessedEventLines.Empty();
+}
+
+void URfsnNpcClientComponent::ProcessPendingStreamData(const FString& NewChunk)
+{
+	if (NewChunk.IsEmpty())
+	{
+		return;
+	}
+
+	PendingLineFragment += NewChunk;
+	ProcessPendingLineFragment(false);
+}
+
+void URfsnNpcClientComponent::ProcessPendingLineFragment(bool bFlushTrailingFragment)
+{
+	int32 NewlineIndex = INDEX_NONE;
+	while (PendingLineFragment.FindChar(TEXT('\n'), NewlineIndex))
+	{
+		FString Line = PendingLineFragment.Left(NewlineIndex).Replace(TEXT("\r"), TEXT("")).TrimStartAndEnd();
+		PendingLineFragment = PendingLineFragment.Mid(NewlineIndex + 1);
+
+		if (!Line.IsEmpty() && !ProcessedEventLines.Contains(Line))
+		{
+			ProcessedEventLines.Add(Line);
+			ProcessSSELine(Line);
+		}
+	}
+
+	if (bFlushTrailingFragment)
+	{
+		const FString TrailingLine = PendingLineFragment.Replace(TEXT("\r"), TEXT("")).TrimStartAndEnd();
+		PendingLineFragment.Empty();
+
+		if (!TrailingLine.IsEmpty() && !ProcessedEventLines.Contains(TrailingLine))
+		{
+			ProcessedEventLines.Add(TrailingLine);
+			ProcessSSELine(TrailingLine);
+		}
+	}
 }
 
 void URfsnNpcClientComponent::OnStreamProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived)
 {
-	if (!Request.IsValid())
+	if (!Request.IsValid() || !CurrentRequest.IsValid() || CurrentRequest.Get() != Request.Get())
 	{
 		return;
 	}
@@ -144,65 +198,68 @@ void URfsnNpcClientComponent::OnStreamProgress(FHttpRequestPtr Request, uint64 B
 		return;
 	}
 
-	// Accumulate response content
-	FString Content = Response->GetContentAsString();
-
-	// Process any complete lines we haven't seen yet
-	int32 SearchStart = StreamBuffer.Len();
-	StreamBuffer = Content;
-
-	// Find and process complete lines
-	TArray<FString> Lines;
-	StreamBuffer.ParseIntoArrayLines(Lines);
-
-	for (const FString& Line : Lines)
+	const FString Content = Response->GetContentAsString();
+	if (Content.Len() <= LastProcessedOffset)
 	{
-		if (!Line.IsEmpty())
-		{
-			ProcessSSELine(Line);
-		}
+		return;
 	}
+
+	const FString NewChunk = Content.Mid(LastProcessedOffset);
+	LastProcessedOffset = Content.Len();
+	RawStreamBuffer = Content;
+	ProcessPendingStreamData(NewChunk);
 }
 
 void URfsnNpcClientComponent::OnStreamComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 {
 	bIsStreaming = false;
 
-	if (!bSuccess || !Response.IsValid())
+	if (!Request.IsValid() || !CurrentRequest.IsValid() || CurrentRequest.Get() != Request.Get())
 	{
-		FString ErrorMsg = TEXT("Connection failed");
-		if (Response.IsValid())
-		{
-			ErrorMsg =
-			    FString::Printf(TEXT("HTTP %d: %s"), Response->GetResponseCode(), *Response->GetContentAsString());
-		}
-		UE_LOG(LogTemp, Error, TEXT("[RFSN] Error: %s"), *ErrorMsg);
-		OnError.Broadcast(ErrorMsg);
 		return;
 	}
 
-	// Process any remaining content
-	FString FinalContent = Response->GetContentAsString();
-	if (FinalContent.Len() > StreamBuffer.Len())
+	if (Response.IsValid())
 	{
-		TArray<FString> Lines;
-		FinalContent.ParseIntoArrayLines(Lines);
-		for (const FString& Line : Lines)
+		const FString FinalContent = Response->GetContentAsString();
+		if (FinalContent.Len() > LastProcessedOffset)
 		{
-			if (!Line.IsEmpty())
-			{
-				ProcessSSELine(Line);
-			}
+			const FString NewChunk = FinalContent.Mid(LastProcessedOffset);
+			LastProcessedOffset = FinalContent.Len();
+			RawStreamBuffer = FinalContent;
+			ProcessPendingStreamData(NewChunk);
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[RFSN] Dialogue stream complete for %s"), *NpcName);
+	ProcessPendingLineFragment(true);
+	CurrentRequest.Reset();
+
+	if (!bReceivedAnyEvent)
+	{
+		const FString FailureReason = Response.IsValid()
+			? FString::Printf(TEXT("backend unavailable (HTTP %d)"), Response->GetResponseCode())
+			: TEXT("backend unavailable");
+		EnterFallbackMode(FailureReason);
+		return;
+	}
+
+	if (!bSuccess || !Response.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RFSN] Stream ended in degraded mode for %s (request=%s)"),
+		       *NpcName, *ActiveRequestId.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[RFSN] Dialogue stream complete for %s (request=%s)"),
+		       *NpcName, *ActiveRequestId.ToString());
+	}
+
+	ActiveRequestId.Invalidate();
 	OnDialogueComplete.Broadcast();
 }
 
 void URfsnNpcClientComponent::ProcessSSELine(const FString& Line)
 {
-	// SSE format: "data: {...json...}"
 	if (!Line.StartsWith(TEXT("data:")))
 	{
 		return;
@@ -214,15 +271,20 @@ void URfsnNpcClientComponent::ProcessSSELine(const FString& Line)
 		return;
 	}
 
-	// Try meta event first (has npc_action field)
-	if (!bGotMeta && JsonData.Contains(TEXT("\"npc_action\"")))
+	if (JsonData == TEXT("[DONE]"))
 	{
-		bGotMeta = true;
-		ParseMetaEvent(JsonData);
 		return;
 	}
 
-	// Sentence event (has sentence field)
+	if (JsonData.Contains(TEXT("\"npc_action\"")))
+	{
+		if (!bReceivedMeta)
+		{
+			ParseMetaEvent(JsonData);
+		}
+		return;
+	}
+
 	if (JsonData.Contains(TEXT("\"sentence\"")))
 	{
 		ParseSentenceEvent(JsonData);
@@ -252,9 +314,11 @@ void URfsnNpcClientComponent::ParseMetaEvent(const FString& JsonData)
 		LastNpcAction = Meta.NpcAction;
 	}
 
-	// Parse instant bark for latency masking (Gemini recommendation)
 	JsonObject->TryGetStringField(TEXT("instant_bark"), Meta.InstantBark);
 	JsonObject->TryGetNumberField(TEXT("bark_duration_ms"), Meta.BarkDurationMs);
+
+	bReceivedMeta = true;
+	bReceivedAnyEvent = true;
 
 	UE_LOG(LogTemp, Log, TEXT("[RFSN] Meta: action=%s, mode=%s, signal=%s, bark='%s'"), *ActionString, *Meta.ActionMode,
 	       *Meta.PlayerSignal, *Meta.InstantBark.Left(30));
@@ -286,10 +350,8 @@ void URfsnNpcClientComponent::ParseSentenceEvent(const FString& JsonData)
 
 	if (!Sentence.Sentence.IsEmpty())
 	{
-		// Apply emotional stimulus from sentence tone (if detected)
 		if (URfsnEmotionBlend* EmotionBlend = GetOwner()->FindComponentByClass<URfsnEmotionBlend>())
 		{
-			// Simple sentiment analysis based on NPC action
 			if (LastNpcAction == ERfsnNpcAction::Attack || LastNpcAction == ERfsnNpcAction::Threaten)
 			{
 				EmotionBlend->ApplyStimulus(TEXT("Anger"), 0.5f);
@@ -304,9 +366,51 @@ void URfsnNpcClientComponent::ParseSentenceEvent(const FString& JsonData)
 			}
 		}
 
+		bReceivedAnyEvent = true;
 		UE_LOG(LogTemp, Log, TEXT("[%s] %s"), *NpcName, *Sentence.Sentence);
 		OnSentenceReceived.Broadcast(Sentence);
 	}
+}
+
+void URfsnNpcClientComponent::EnterFallbackMode(const FString& Reason)
+{
+	if (bFallbackMode)
+	{
+		return;
+	}
+
+	bFallbackMode = true;
+	bIsStreaming = false;
+	CurrentRequest.Reset();
+
+	UE_LOG(LogTemp, Warning, TEXT("[RFSN] Falling back to local bark for %s (request=%s): %s"),
+	       *NpcName, *ActiveRequestId.ToString(), *Reason);
+
+	EmitLocalBark();
+	ActiveRequestId.Invalidate();
+}
+
+void URfsnNpcClientComponent::EmitLocalBark()
+{
+	FRfsnDialogueMeta Meta;
+	Meta.PlayerSignal = TEXT("offline");
+	Meta.ActionMode = TEXT("OfflineFallback");
+	Meta.NpcAction = ERfsnNpcAction::Talk;
+	Meta.InstantBark = TEXT("Stay focused.");
+	Meta.BarkDurationMs = 800;
+	LastNpcAction = Meta.NpcAction;
+	bReceivedMeta = true;
+	bReceivedAnyEvent = true;
+
+	OnMetaReceived.Broadcast(Meta);
+	OnNpcActionReceived.Broadcast(Meta.NpcAction);
+
+	FRfsnSentence Sentence;
+	Sentence.Sentence = FString::Printf(TEXT("%s keeps watch and says, \"Stay focused. We can talk after this.\""), *NpcName);
+	Sentence.bIsFinal = true;
+	Sentence.LatencyMs = 0.0f;
+	OnSentenceReceived.Broadcast(Sentence);
+	OnDialogueComplete.Broadcast();
 }
 
 ERfsnNpcAction URfsnNpcClientComponent::ParseNpcAction(const FString& ActionString)

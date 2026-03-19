@@ -184,13 +184,24 @@ protected:
 private:
 	TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CurrentRequest;
 	bool bIsStreaming = false;
-	bool bGotMeta = false;
+	bool bReceivedMeta = false;
+	bool bReceivedAnyEvent = false;
+	bool bFallbackMode = false;
 	ERfsnNpcAction LastNpcAction = ERfsnNpcAction::Talk;
-	FString StreamBuffer;
+	FString RawStreamBuffer;
+	FString PendingLineFragment;
+	int32 LastProcessedOffset = 0;
+	FGuid ActiveRequestId;
+	TSet<FString> ProcessedEventLines;
 
 	void OnStreamProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived);
 	void OnStreamComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
+	void ResetStreamState();
+	void ProcessPendingStreamData(const FString& NewChunk);
+	void ProcessPendingLineFragment(bool bFlushTrailingFragment);
 	void ProcessSSELine(const FString& Line);
 	void ParseMetaEvent(const FString& JsonData);
 	void ParseSentenceEvent(const FString& JsonData);
+	void EnterFallbackMode(const FString& Reason);
+	void EmitLocalBark();
 };
