@@ -112,7 +112,7 @@ class DequeSpeechQueue:
         """
         Returns None on timeout or if closed+empty.
         """
-        end = None if timeout is None else (time.time() + timeout)
+        end = None if timeout is None else (time.monotonic() + timeout)
         with self._cv:
             while True:
                 if self._dq:
@@ -122,7 +122,7 @@ class DequeSpeechQueue:
                 if timeout is None:
                     self._cv.wait()
                 else:
-                    remaining = end - time.time()
+                    remaining = end - time.monotonic()
                     if remaining <= 0:
                         return None
                     self._cv.wait(timeout=remaining)
