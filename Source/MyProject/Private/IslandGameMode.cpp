@@ -73,10 +73,17 @@ void AIslandGameMode::Tick(float DeltaSeconds)
 	if ((!Tower || !Extraction) && !bHandledInvalidRun && GetGameInstance())
 	{
 		bHandledInvalidRun = true;
-		if (UIslandGameInstanceSubsystem* Run = GetGameInstance()->GetSubsystem<UIslandGameInstanceSubsystem>())
-		{
-			Run->EndRun(false, EIslandRunEndReason::Unknown);
-		}
+
+		// The level is missing required actors (Tower and/or Extraction). Do NOT call EndRun()
+		// here because UIslandGameInstanceSubsystem::EndRun() will reopen the same level,
+		// which would remain invalid and could cause an infinite reload loop.
+		UE_LOG(LogTemp, Error, TEXT("AIslandGameMode: Invalid run configuration in level '%s' (Tower=%s, Extraction=%s).")
+			, *GetWorld()->GetName()
+			, Tower ? TEXT("Present") : TEXT("Missing")
+			, Extraction ? TEXT("Present") : TEXT("Missing"));
+
+		// Optional: make one more attempt to auto-find actors in case they spawned late.
+		TryAutoFindActors();
 	}
 }
 
