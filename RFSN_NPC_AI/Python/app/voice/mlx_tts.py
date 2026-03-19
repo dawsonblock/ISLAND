@@ -148,8 +148,8 @@ class MlxTTSEngine:
                 elif shutil.which("paplay"):
                     subprocess.run(["paplay", tmp_path], check=True)
             elif system == "Windows":
-                 from ctypes import windll
-                 windll.winmm.PlaySoundW(tmp_path, None, 0x00020000 | 0x00000001)
+                from ctypes import windll
+                windll.winmm.PlaySoundW(tmp_path, None, 0x00020000 | 0x00000001)
         
         except Exception as e:
             logger.error(f"MLX Audio Playback failed: {e}")
