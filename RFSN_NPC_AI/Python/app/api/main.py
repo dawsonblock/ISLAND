@@ -3,8 +3,8 @@
 RFSN GenAI Orchestrator - Production Streaming Build
 Complete system with Kokoro TTS, Ollama LLM, security, metrics, and multi-NPC support.
 """
-from version import ORCHESTRATOR_VERSION, STREAMING_ENGINE_VERSION, get_version_string
-from runtime_state import Runtime, RuntimeState
+from ..telemetry.version import ORCHESTRATOR_VERSION, STREAMING_ENGINE_VERSION, get_version_string
+from ..dialogue.runtime_state import Runtime, RuntimeState
 from runtime_paths import runtime_dir, runtime_file
 
 import asyncio
@@ -22,52 +22,52 @@ from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from learning.learning_contract import LearningContract
-from learning.npc_action_bandit import NPCActionBandit, NPCAction
-from action_scorer import ActionScorer
-from world_model import WorldModel
-from reward_shaping import RewardAccumulator
-from learning.reward_model import RewardModel
-from learning.trainer import Trainer
+from ..learning.learning_contract import LearningContract
+from ..learning.npc_action_bandit import NPCActionBandit, NPCAction
+from ..dialogue.action_scorer import ActionScorer
+from ..dialogue.world_model import WorldModel
+from ..learning.reward_shaping import RewardAccumulator
+from ..learning.reward_model import RewardModel
+from ..learning.trainer import Trainer
 
 # Import core modules
-from streaming_engine import StreamingMantellaEngine, StreamingMetrics, RFSNState
-from kokoro_tts import KokoroTTSEngine, setup_kokoro_voice
-from ollama_client import OllamaClient, ensure_ollama_ready
-from memory_manager import ConversationManager, list_backups
+from ..voice.streaming_engine import StreamingMantellaEngine, StreamingMetrics, RFSNState
+from ..voice.kokoro_tts import KokoroTTSEngine, setup_kokoro_voice
+from ..dialogue.ollama_client import OllamaClient, ensure_ollama_ready
+from ..memory.memory_manager import ConversationManager, list_backups
 
 # Import enhancements
 from model_manager import ModelManager, setup_models
-from security import setup_security, APIKeyManager, JWTManager, require_auth, optional_auth
-from structured_logging import configure_logging, get_logger, RequestLoggingMiddleware
-from multi_npc import MultiNPCManager
-from prometheus_metrics import router as metrics_router, registry, inc_requests, inc_errors, observe_request_duration, inc_tokens, observe_first_token
-from hot_config import init_config, get_config
-from xvasynth_engine import XVASynthEngine
+from ..safety.security import setup_security, APIKeyManager, JWTManager, require_auth, optional_auth
+from ..telemetry.structured_logging import configure_logging, get_logger, RequestLoggingMiddleware
+from ..dialogue.multi_npc import MultiNPCManager
+from ..telemetry.prometheus_metrics import router as metrics_router, registry, inc_requests, inc_errors, observe_request_duration, inc_tokens, observe_first_token
+from ..telemetry.hot_config import init_config, get_config
+from ..voice.xvasynth_engine import XVASynthEngine
 
 # Import learning layer
-from learning import (
+from ..learning import (
     PolicyAdapter, RewardModel, Trainer, ActionMode, 
     FeatureVector, RewardSignals, TurnLog,
     NPCActionBandit, BanditKey
 )
-from learning.learning_contract import (
+from ..learning.learning_contract import (
     LearningContract, LearningConstraints, StateSnapshot as LearningStateSnapshot,
     LearningUpdate, EvidenceType, WriteGateError
 )
-from memory_governance import MemoryGovernance, GovernedMemory, MemoryType, MemorySource
-from intent_extraction import IntentGate, IntentExtractor, IntentType, SafetyFlag
-from streaming_pipeline import StreamingPipeline, DropPolicy, TimeoutConfig, BoundedQueue, DropPolicy
-from observability import StructuredLogger, MetricsCollector, TraceContext
-from event_recorder import EventRecorder, EventType
-from state_machine import StateMachine, RFSNStateMachine
+from ..memory.memory_governance import MemoryGovernance, GovernedMemory, MemoryType, MemorySource
+from ..dialogue.intent_extraction import IntentGate, IntentExtractor, IntentType, SafetyFlag
+from ..voice.streaming_pipeline import StreamingPipeline, DropPolicy, TimeoutConfig, BoundedQueue, DropPolicy
+from ..telemetry.observability import StructuredLogger, MetricsCollector, TraceContext
+from ..telemetry.event_recorder import EventRecorder, EventType
+from ..dialogue.state_machine import StateMachine, RFSNStateMachine
 
 # Import world model and action scoring
-from world_model import (
+from ..dialogue.world_model import (
     WorldModel, StateSnapshot, NPCAction, PlayerSignal
 )
-from action_scorer import ActionScorer, UtilityFunction
-from llm_action_prompts import render_action_block
+from ..dialogue.action_scorer import ActionScorer, UtilityFunction
+from ..dialogue.prompts import render_action_block
 import re
 
 # Import latency optimizations (Gemini recommendations)

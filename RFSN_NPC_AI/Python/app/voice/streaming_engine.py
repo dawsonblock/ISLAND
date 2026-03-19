@@ -11,7 +11,7 @@ import logging
 from typing import Generator, Optional, List, Callable, Dict, Any
 from dataclasses import dataclass, field
 from pathlib import Path
-from streaming_voice_system import DequeSpeechQueue, VoiceChunk
+from .streaming_voice_system import DequeSpeechQueue, VoiceChunk
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -42,6 +42,9 @@ class StreamTokenizer:
 
     def __init__(self):
         self.buffer = ""
+        self.in_quotes = False
+        self._pending_boundary = False
+        self._pending_boundary_deadline = 0.0
         self.abbreviations = {
             'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'st',
             'mt', 'capt', 'col', 'gen', 'lt', 'sgt', 'corp',
@@ -116,6 +119,11 @@ class StreamTokenizer:
         return None
 
     def process(self, token: str) -> List[str]:
+        if self._pending_boundary:
+            next_sig = next((char for char in token if not char.isspace()), "")
+            if next_sig and next_sig.isalnum():
+                self._pending_boundary = False
+
         self.buffer += token
 
         sentences = []
@@ -130,6 +138,7 @@ class StreamTokenizer:
                 sentences.append(clean_sentence)
 
             self.buffer = self.buffer[split_idx:].lstrip()
+            self._pending_boundary = False
 
         return sentences
 
@@ -148,6 +157,9 @@ class StreamTokenizer:
                 logger.info(f"[TTS-DEBUG] Queueing flushed sentence: '{clean_sentence}'")
                 res.append(clean_sentence)
         self.buffer = ""
+        self.in_quotes = False
+        self._pending_boundary = False
+        self._pending_boundary_deadline = 0.0
         return res
 
 

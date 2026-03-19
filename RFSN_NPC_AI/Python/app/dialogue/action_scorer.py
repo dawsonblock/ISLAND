@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Tuple, Optional
 from dataclasses import dataclass
 import logging
 
-from world_model import (
+from .world_model import (
     WorldModel, StateSnapshot, NPCAction, PlayerSignal
 )
 

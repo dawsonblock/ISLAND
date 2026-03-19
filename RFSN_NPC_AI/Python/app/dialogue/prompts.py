@@ -2,7 +2,7 @@
 Strict LLM action sub-prompts for RFSN Orchestrator.
 Each action has a control block with constraints, style, and output format.
 """
-from world_model import NPCAction
+from .world_model import NPCAction
 
 
 def render_action_block(
