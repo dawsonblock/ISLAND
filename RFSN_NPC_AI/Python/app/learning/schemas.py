@@ -140,7 +140,7 @@ class TurnLog:
                signals: RewardSignals) -> 'TurnLog':
         """Create a turn log from components"""
         return cls(
-            timestamp=datetime.now(timezone.utc).isoformat() + "Z",
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             npc_id=npc_id,
             features=features.to_dict(),
             action_mode=action_mode.name,
