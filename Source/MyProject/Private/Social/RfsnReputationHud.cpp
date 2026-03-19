@@ -1,8 +1,8 @@
 // RFSN Reputation HUD Implementation
 
-#include "RfsnReputationHud.h"
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnReputationHud.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 

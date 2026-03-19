@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyProjectCharacter.h"
+#include "Core/MyProjectCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -9,15 +9,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
-#include "IslandDirectorSubsystem.h"
-#include "IslandGameInstanceSubsystem.h"
-#include "IslandInteractorComponent.h"
-#include "IslandInventoryComponent.h"
-#include "IslandNoiseLibrary.h"
-#include "IslandStealthComponent.h"
-#include "IslandVitalityComponent.h"
+#include "Island/IslandDirectorSubsystem.h"
+#include "Island/IslandGameInstanceSubsystem.h"
+#include "Island/IslandInteractorComponent.h"
+#include "Island/IslandInventoryComponent.h"
+#include "Island/IslandNoiseLibrary.h"
+#include "Island/IslandStealthComponent.h"
+#include "Island/IslandVitalityComponent.h"
 #include "MyProject.h"
-#include "RfsnDialogueManager.h"
+#include "Dialogue/RfsnDialogueManager.h"
 
 AMyProjectCharacter::AMyProjectCharacter() {
   PrimaryActorTick.bCanEverTick = true;

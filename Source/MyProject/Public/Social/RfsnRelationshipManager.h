@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "RfsnRelationshipSaveData.h"
+#include "Social/RfsnRelationshipSaveData.h"
 #include "RfsnRelationshipManager.generated.h"
 
 class URfsnNpcClientComponent;

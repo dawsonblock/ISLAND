@@ -1,9 +1,9 @@
 // RFSN Relationship Manager Implementation
 
-#include "RfsnRelationshipManager.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnRelationshipSaveData.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnRelationshipManager.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Social/RfsnRelationshipSaveData.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 
 void URfsnRelationshipManager::Initialize(FSubsystemCollectionBase& Collection)

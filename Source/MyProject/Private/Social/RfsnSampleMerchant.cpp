@@ -1,8 +1,8 @@
 // RFSN Sample Merchant Implementation
 
-#include "RfsnSampleMerchant.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnNpcDialogueTrigger.h"
+#include "Social/RfsnSampleMerchant.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcDialogueTrigger.h"
 
 ARfsnSampleMerchant::ARfsnSampleMerchant()
 {

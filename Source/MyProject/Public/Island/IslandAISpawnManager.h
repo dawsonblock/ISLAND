@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "IslandDirectorSubsystem.h"
-#include "IslandRadioTower.h"
+#include "Island/IslandDirectorSubsystem.h"
+#include "Island/IslandRadioTower.h"
 #include "IslandAISpawnManager.generated.h"
 
 UCLASS()

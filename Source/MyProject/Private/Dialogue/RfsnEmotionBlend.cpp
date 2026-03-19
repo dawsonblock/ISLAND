@@ -1,11 +1,11 @@
 // RFSN Emotion Blending Implementation
 
-#include "RfsnEmotionBlend.h"
+#include "Dialogue/RfsnEmotionBlend.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EngineUtils.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnLogging.h"
 
 // ─────────────────────────────────────────────────────────────
 // FRfsnEmotionAxis Implementation
@@ -628,7 +628,7 @@ float URfsnEmotionBlend::GetVoiceVolumeModifier() const
 // Persistence Implementation
 // ─────────────────────────────────────────────────────────────
 
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"

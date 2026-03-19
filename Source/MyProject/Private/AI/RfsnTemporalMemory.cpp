@@ -1,8 +1,8 @@
 // RFSN Temporal Context Memory Implementation
 
-#include "RfsnTemporalMemory.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "AI/RfsnTemporalMemory.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 
 URfsnTemporalMemory::URfsnTemporalMemory()

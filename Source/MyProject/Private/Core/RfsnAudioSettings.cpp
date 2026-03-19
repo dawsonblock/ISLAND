@@ -1,8 +1,8 @@
 // RFSN Audio Settings Implementation
 
-#include "RfsnAudioSettings.h"
-#include "RfsnTtsAudioComponent.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnAudioSettings.h"
+#include "Dialogue/RfsnTtsAudioComponent.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"

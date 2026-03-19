@@ -1,8 +1,8 @@
 // RFSN Ambient Chatter Implementation
 
-#include "RfsnAmbientChatter.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnAmbientChatter.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 

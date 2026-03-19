@@ -1,10 +1,10 @@
 // RFSN Player Dialogue Input Widget Implementation
 
-#include "RfsnPlayerInputWidget.h"
+#include "Dialogue/RfsnPlayerInputWidget.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 void URfsnPlayerInputWidget::NativeConstruct() {
   Super::NativeConstruct();

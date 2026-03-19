@@ -1,4 +1,4 @@
-#include "IslandVitalityComponent.h"
+#include "Island/IslandVitalityComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Actor.h"
 

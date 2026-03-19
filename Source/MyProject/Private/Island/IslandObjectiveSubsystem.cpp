@@ -1,4 +1,4 @@
-#include "IslandObjectiveSubsystem.h"
+#include "Island/IslandObjectiveSubsystem.h"
 
 void UIslandObjectiveSubsystem::SetObjectiveActive(bool bActive, const FVector& Location)
 {

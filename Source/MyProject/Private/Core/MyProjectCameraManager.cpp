@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "MyProjectCameraManager.h"
+#include "Core/MyProjectCameraManager.h"
 
 AMyProjectCameraManager::AMyProjectCameraManager()
 {

@@ -1,4 +1,4 @@
-#include "IslandStealthComponent.h"
+#include "Island/IslandStealthComponent.h"
 
 UIslandStealthComponent::UIslandStealthComponent()
 {

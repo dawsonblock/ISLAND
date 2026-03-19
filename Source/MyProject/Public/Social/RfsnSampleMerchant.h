@@ -4,9 +4,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MyProjectCharacter.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnNpcDialogueTrigger.h"
+#include "Core/MyProjectCharacter.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcDialogueTrigger.h"
 #include "RfsnSampleMerchant.generated.h"
 
 /**

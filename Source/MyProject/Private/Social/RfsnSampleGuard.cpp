@@ -1,7 +1,7 @@
 // RFSN Sample Guard Implementation
 
-#include "RfsnSampleGuard.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnSampleGuard.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 ARfsnSampleGuard::ARfsnSampleGuard() {
   // ShooterNPC already creates RfsnClient

@@ -1,4 +1,4 @@
-#include "IslandHUDWidget.h"
+#include "Island/IslandHUDWidget.h"
 
 void UIslandHUDWidget::ApplyHudState(const FIslandHUDState& NewState)
 {

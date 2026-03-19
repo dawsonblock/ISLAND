@@ -4,8 +4,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MyProjectCharacter.h"
-#include "RfsnNpcClientComponent.h"
+#include "Core/MyProjectCharacter.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "HorrorNPC.generated.h"
 
 class URfsnNpcClientComponent;

@@ -1,8 +1,8 @@
 // RFSN Instant Bark System - Implementation
 
-#include "RfsnInstantBark.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "Dialogue/RfsnInstantBark.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"

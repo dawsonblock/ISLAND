@@ -1,8 +1,8 @@
 // RFSN Dynamic Pricing Implementation
 
-#include "RfsnDynamicPricing.h"
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnDynamicPricing.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
 #include "Engine/GameInstance.h"
 
 URfsnDynamicPricing::URfsnDynamicPricing()

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "IslandLifeStateInterface.h"
+#include "Island/IslandLifeStateInterface.h"
 #include "Logging/LogMacros.h"
 #include "MyProjectCharacter.generated.h"
 

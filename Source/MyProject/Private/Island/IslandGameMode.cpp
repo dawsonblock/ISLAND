@@ -1,13 +1,13 @@
-#include "IslandGameMode.h"
+#include "Island/IslandGameMode.h"
 #include "EngineUtils.h"
-#include "IslandAISpawnManager.h"
-#include "IslandExtractionZone.h"
-#include "IslandGameInstanceSubsystem.h"
-#include "IslandHUD.h"
-#include "IslandObjectiveSubsystem.h"
+#include "Island/IslandAISpawnManager.h"
+#include "Island/IslandExtractionZone.h"
+#include "Island/IslandGameInstanceSubsystem.h"
+#include "Island/IslandHUD.h"
+#include "Island/IslandObjectiveSubsystem.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyProjectCharacter.h"
-#include "MyProjectPlayerController.h"
+#include "Core/MyProjectCharacter.h"
+#include "Core/MyProjectPlayerController.h"
 
 AIslandGameMode::AIslandGameMode()
 {

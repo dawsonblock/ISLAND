@@ -1,8 +1,8 @@
 // RFSN NPC Memory Implementation
 
-#include "RfsnNpcMemory.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnNpcMemory.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"

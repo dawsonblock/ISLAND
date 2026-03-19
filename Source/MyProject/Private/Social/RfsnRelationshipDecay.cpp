@@ -1,8 +1,8 @@
 // RFSN Relationship Decay Implementation
 
-#include "RfsnRelationshipDecay.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnRelationshipDecay.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnRelationshipDecay::URfsnRelationshipDecay()
 {

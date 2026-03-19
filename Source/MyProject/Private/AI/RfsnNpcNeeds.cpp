@@ -1,8 +1,8 @@
 // RFSN NPC Needs Implementation
 
-#include "RfsnNpcNeeds.h"
-#include "RfsnEmotionBlend.h"
-#include "RfsnLogging.h"
+#include "AI/RfsnNpcNeeds.h"
+#include "Dialogue/RfsnEmotionBlend.h"
+#include "Core/RfsnLogging.h"
 
 URfsnNpcNeeds::URfsnNpcNeeds()
 {

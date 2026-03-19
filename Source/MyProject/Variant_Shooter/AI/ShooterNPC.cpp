@@ -7,7 +7,7 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "ShooterGameMode.h"
 #include "ShooterWeapon.h"
 #include "TimerManager.h"

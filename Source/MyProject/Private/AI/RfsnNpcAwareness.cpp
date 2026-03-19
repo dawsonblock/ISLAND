@@ -1,9 +1,9 @@
 // RFSN NPC Awareness Implementation
 
-#include "RfsnNpcAwareness.h"
+#include "AI/RfsnNpcAwareness.h"
 #include "GameFramework/Pawn.h"
-#include "IslandStealthComponent.h"
-#include "RfsnLogging.h"
+#include "Island/IslandStealthComponent.h"
+#include "Core/RfsnLogging.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"

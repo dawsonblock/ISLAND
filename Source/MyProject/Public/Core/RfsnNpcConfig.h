@@ -5,8 +5,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnAmbientChatter.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Social/RfsnAmbientChatter.h"
 #include "RfsnNpcConfig.generated.h"
 
 /**

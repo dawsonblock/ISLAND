@@ -1,6 +1,6 @@
-#include "IslandNoiseLibrary.h"
+#include "Island/IslandNoiseLibrary.h"
 
-#include "CultistCharacter.h"
+#include "AI/CultistCharacter.h"
 #include "EngineUtils.h"
 
 void UIslandNoiseLibrary::EmitNoise(UObject* WorldContextObject, FVector Location, float Loudness, AActor* Source)

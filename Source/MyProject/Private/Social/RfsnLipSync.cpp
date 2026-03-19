@@ -1,8 +1,8 @@
 // RFSN Lip Sync Implementation
 
-#include "RfsnLipSync.h"
-#include "RfsnLogging.h"
-#include "RfsnTtsAudioComponent.h"
+#include "Social/RfsnLipSync.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnTtsAudioComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 

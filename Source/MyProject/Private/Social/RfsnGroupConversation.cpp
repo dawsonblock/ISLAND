@@ -1,8 +1,8 @@
 // RFSN Group Conversation Implementation
 
-#include "RfsnGroupConversation.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnGroupConversation.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 

@@ -1,8 +1,8 @@
 // RFSN Dialogue Camera Implementation
 
-#include "RfsnDialogueCamera.h"
-#include "RfsnDialogueManager.h"
-#include "RfsnLogging.h"
+#include "Dialogue/RfsnDialogueCamera.h"
+#include "Dialogue/RfsnDialogueManager.h"
+#include "Core/RfsnLogging.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"

@@ -1,7 +1,7 @@
 // RFSN NPC Barks Implementation
 
-#include "RfsnNpcBarks.h"
-#include "RfsnLogging.h"
+#include "Dialogue/RfsnNpcBarks.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 

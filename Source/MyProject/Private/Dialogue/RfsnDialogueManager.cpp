@@ -1,11 +1,11 @@
 // RFSN Dialogue Manager Implementation
 
-#include "RfsnDialogueManager.h"
+#include "Dialogue/RfsnDialogueManager.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
-#include "IslandHUD.h"
+#include "Island/IslandHUD.h"
 #include "Kismet/GameplayStatics.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 void URfsnDialogueManager::Initialize(FSubsystemCollectionBase &Collection) {
   Super::Initialize(Collection);

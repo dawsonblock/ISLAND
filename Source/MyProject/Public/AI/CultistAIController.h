@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "RfsnNpcAwareness.h"
+#include "AI/RfsnNpcAwareness.h"
 #include "CultistAIController.generated.h"
 
 class ACultistCharacter;

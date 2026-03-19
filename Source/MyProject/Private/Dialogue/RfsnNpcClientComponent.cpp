@@ -1,10 +1,10 @@
 // RFSN NPC Client Component Implementation
 // HTTP SSE streaming client for RFSN Orchestrator
 
-#include "RfsnNpcClientComponent.h"
-#include "RfsnBackstoryGenerator.h"
-#include "RfsnEmotionBlend.h"
-#include "RfsnRelationshipManager.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Social/RfsnBackstoryGenerator.h"
+#include "Dialogue/RfsnEmotionBlend.h"
+#include "Social/RfsnRelationshipManager.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"

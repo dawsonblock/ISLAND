@@ -1,13 +1,13 @@
 // RFSN NPC Config Implementation
 
-#include "RfsnNpcConfig.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnNpcDialogueTrigger.h"
-#include "RfsnNpcLookAt.h"
-#include "RfsnDialogueCamera.h"
-#include "RfsnAmbientChatter.h"
-#include "RfsnAudioSettings.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnNpcConfig.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcDialogueTrigger.h"
+#include "Social/RfsnNpcLookAt.h"
+#include "Dialogue/RfsnDialogueCamera.h"
+#include "Social/RfsnAmbientChatter.h"
+#include "Core/RfsnAudioSettings.h"
+#include "Core/RfsnLogging.h"
 
 void URfsnNpcConfig::ApplyToNpc(URfsnNpcClientComponent* Client)
 {

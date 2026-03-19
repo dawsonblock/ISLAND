@@ -1,8 +1,8 @@
 // RFSN NPC Look-At Implementation
 
-#include "RfsnNpcLookAt.h"
-#include "RfsnDialogueManager.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnNpcLookAt.h"
+#include "Dialogue/RfsnDialogueManager.h"
+#include "Core/RfsnLogging.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"

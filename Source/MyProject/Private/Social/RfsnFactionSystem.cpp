@@ -1,7 +1,7 @@
 // RFSN Faction System Implementation
 
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
 
 void URfsnFactionSystem::Initialize(FSubsystemCollectionBase& Collection)
 {

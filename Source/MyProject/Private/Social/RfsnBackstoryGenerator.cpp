@@ -1,6 +1,6 @@
 // RFSN Procedural Backstory Generator Implementation
 
-#include "RfsnBackstoryGenerator.h"
+#include "Social/RfsnBackstoryGenerator.h"
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "HttpModule.h"
@@ -9,10 +9,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnTemporalMemory.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "AI/RfsnTemporalMemory.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"

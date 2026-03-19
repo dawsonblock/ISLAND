@@ -1,10 +1,10 @@
 // RFSN Player Choice Widget Implementation
 
-#include "RfsnChoiceWidget.h"
+#include "Dialogue/RfsnChoiceWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 void URfsnChoiceWidget::NativeConstruct()
 {

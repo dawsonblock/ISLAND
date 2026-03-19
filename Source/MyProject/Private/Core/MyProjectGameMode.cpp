@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyProjectGameMode.h"
+#include "Core/MyProjectGameMode.h"
 
 AMyProjectGameMode::AMyProjectGameMode()
 {

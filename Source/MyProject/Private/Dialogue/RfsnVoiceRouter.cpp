@@ -1,9 +1,9 @@
 // RFSN Voice Router Implementation
 
-#include "RfsnVoiceRouter.h"
-#include "RfsnEmotionBlend.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnVoiceRouter.h"
+#include "Dialogue/RfsnEmotionBlend.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"

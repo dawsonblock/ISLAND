@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "RfsnTemporalMemory.generated.h"
 
 /**

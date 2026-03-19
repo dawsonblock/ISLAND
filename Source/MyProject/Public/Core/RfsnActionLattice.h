@@ -5,8 +5,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnTemporalMemory.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "AI/RfsnTemporalMemory.h"
 #include "RfsnActionLattice.generated.h"
 
 /**

@@ -1,9 +1,9 @@
-#include "IslandTutorialTrigger.h"
+#include "Island/IslandTutorialTrigger.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/HUD.h"
-#include "IslandHUD.h"
+#include "Island/IslandHUD.h"
 
 AIslandTutorialTrigger::AIslandTutorialTrigger()
 {

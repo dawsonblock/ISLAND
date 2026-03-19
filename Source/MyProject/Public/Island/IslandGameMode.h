@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "IslandRadioTower.h"
+#include "Island/IslandRadioTower.h"
 #include "IslandGameMode.generated.h"
 
 class AIslandExtractionZone;

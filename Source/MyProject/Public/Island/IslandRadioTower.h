@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "IslandInteractableInterface.h"
-#include "IslandInventoryComponent.h"
+#include "Island/IslandInteractableInterface.h"
+#include "Island/IslandInventoryComponent.h"
 #include "NiagaraSystem.h"
 #include "IslandRadioTower.generated.h"
 

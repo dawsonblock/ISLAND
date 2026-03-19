@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "RfsnBlueprintLibrary.generated.h"
 
 class URfsnDialogueManager;

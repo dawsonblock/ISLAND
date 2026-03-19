@@ -1,12 +1,12 @@
 // RFSN Director Bridge Implementation
 // Connects RFSN Orchestrator decisions to Island game systems
 
-#include "RfsnDirectorBridge.h"
+#include "Core/RfsnDirectorBridge.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
-#include "IslandDirectorSubsystem.h"
+#include "Island/IslandDirectorSubsystem.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "TimerManager.h"

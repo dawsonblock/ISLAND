@@ -1,10 +1,10 @@
 // RFSN Performance Metrics Implementation
 
-#include "RfsnMetrics.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnDialogueManager.h"
-#include "RfsnNpcConversation.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnMetrics.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnDialogueManager.h"
+#include "Dialogue/RfsnNpcConversation.h"
+#include "Core/RfsnLogging.h"
 #include "EngineUtils.h"
 #include "TimerManager.h"
 #include "Engine/World.h"

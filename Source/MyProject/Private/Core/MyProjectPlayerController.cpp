@@ -1,11 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "MyProjectPlayerController.h"
+#include "Core/MyProjectPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
-#include "MyProjectCameraManager.h"
+#include "Core/MyProjectCameraManager.h"
 #include "Blueprint/UserWidget.h"
 #include "MyProject.h"
 #include "Widgets/Input/SVirtualJoystick.h"

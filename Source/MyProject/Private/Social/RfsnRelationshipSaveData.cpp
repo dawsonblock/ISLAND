@@ -1,6 +1,6 @@
 // RFSN Relationship Save Data Implementation
 
-#include "RfsnRelationshipSaveData.h"
+#include "Social/RfsnRelationshipSaveData.h"
 
 FRfsnNpcRelationship &
 URfsnRelationshipSaveData::GetOrCreateRelationship(const FString &NpcId) {

@@ -1,4 +1,4 @@
-#include "IslandInventoryComponent.h"
+#include "Island/IslandInventoryComponent.h"
 
 UIslandInventoryComponent::UIslandInventoryComponent()
 {

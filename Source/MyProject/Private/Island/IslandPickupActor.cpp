@@ -1,4 +1,4 @@
-#include "IslandPickupActor.h"
+#include "Island/IslandPickupActor.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"

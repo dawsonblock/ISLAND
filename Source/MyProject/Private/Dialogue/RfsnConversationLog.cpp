@@ -1,7 +1,7 @@
 // RFSN Conversation Log Implementation
 
-#include "RfsnConversationLog.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnConversationLog.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnConversationLog::URfsnConversationLog() {
   PrimaryComponentTick.bCanEverTick = false;

@@ -1,8 +1,8 @@
 // RFSN Replicated Dialogue Implementation
 
-#include "RfsnReplicatedDialogue.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "Dialogue/RfsnReplicatedDialogue.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Actor.h"
 

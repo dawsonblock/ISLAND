@@ -61,5 +61,5 @@
 // ─────────────────────────────────────────────────────────────
 // RFSN Forward Declarations
 // ─────────────────────────────────────────────────────────────
-#include "RfsnForwardDeclarations.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnForwardDeclarations.h"
+#include "Core/RfsnLogging.h"

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "IslandInteractableInterface.h"
+#include "Island/IslandInteractableInterface.h"
 #include "IslandInteractorComponent.generated.h"
 
 UCLASS(ClassGroup=(Island), meta=(BlueprintSpawnableComponent))

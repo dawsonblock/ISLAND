@@ -2,9 +2,9 @@
 
 #include "Variant_Horror/HorrorNPC.h"
 #include "Components/AudioComponent.h"
-#include "RfsnDialogueWidget.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnNpcDialogueTrigger.h"
+#include "Dialogue/RfsnDialogueWidget.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcDialogueTrigger.h"
 
 AHorrorNPC::AHorrorNPC() {
   // Create RFSN client

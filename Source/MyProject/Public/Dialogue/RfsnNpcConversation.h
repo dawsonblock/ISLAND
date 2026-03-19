@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "RfsnNpcConversation.generated.h"
 
 UENUM(BlueprintType)

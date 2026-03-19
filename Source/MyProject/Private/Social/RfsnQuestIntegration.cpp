@@ -1,8 +1,8 @@
 // RFSN Quest Integration Implementation
 
-#include "RfsnQuestIntegration.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnQuestIntegration.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnQuestIntegration::URfsnQuestIntegration()
 {

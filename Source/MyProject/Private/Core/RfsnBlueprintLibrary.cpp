@@ -1,9 +1,9 @@
 // RFSN Blueprint Function Library Implementation
 
-#include "RfsnBlueprintLibrary.h"
-#include "RfsnDialogueManager.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnBlueprintLibrary.h"
+#include "Dialogue/RfsnDialogueManager.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "RfsnDialogueManager.generated.h"
 

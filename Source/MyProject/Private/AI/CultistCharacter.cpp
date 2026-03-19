@@ -1,9 +1,9 @@
-#include "CultistCharacter.h"
+#include "AI/CultistCharacter.h"
 
 #include "Animation/AnimMontage.h"
-#include "CultistAIController.h"
+#include "AI/CultistAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "IslandVitalityComponent.h"
+#include "Island/IslandVitalityComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 

@@ -1,11 +1,11 @@
 // RFSN NPC Portrait Implementation
 
-#include "RfsnNpcPortrait.h"
-#include "RfsnBackstoryGenerator.h"
-#include "RfsnEmotionBlend.h"
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnNpcPortrait.h"
+#include "Social/RfsnBackstoryGenerator.h"
+#include "Dialogue/RfsnEmotionBlend.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 

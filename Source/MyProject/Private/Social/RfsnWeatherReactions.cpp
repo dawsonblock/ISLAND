@@ -1,8 +1,8 @@
 // RFSN Weather Reactions Implementation
 
-#include "RfsnWeatherReactions.h"
-#include "RfsnLogging.h"
-#include "RfsnEmotionBlend.h"
+#include "Social/RfsnWeatherReactions.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnEmotionBlend.h"
 
 URfsnWeatherReactions::URfsnWeatherReactions()
 {

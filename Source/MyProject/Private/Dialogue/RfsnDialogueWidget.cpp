@@ -1,6 +1,6 @@
 // RFSN Dialogue Widget Implementation
 
-#include "RfsnDialogueWidget.h"
+#include "Dialogue/RfsnDialogueWidget.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 

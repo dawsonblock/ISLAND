@@ -1,9 +1,9 @@
 // RFSN Quest Bridge Implementation
 
-#include "RfsnQuestBridge.h"
+#include "Social/RfsnQuestBridge.h"
 #include "Engine/World.h"
-#include "IslandObjectiveSubsystem.h"
-#include "RfsnNpcClientComponent.h"
+#include "Island/IslandObjectiveSubsystem.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnQuestBridge::URfsnQuestBridge() {
   PrimaryComponentTick.bCanEverTick = false;

@@ -5,7 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
-#include "MyProjectCameraManager.h"
+#include "Core/MyProjectCameraManager.h"
 #include "HorrorCharacter.h"
 #include "HorrorUI.h"
 #include "MyProject.h"

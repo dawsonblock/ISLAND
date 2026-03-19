@@ -1,7 +1,7 @@
 // RFSN Action Lattice Implementation
 
-#include "RfsnActionLattice.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnActionLattice.h"
+#include "Core/RfsnLogging.h"
 
 // ─────────────────────────────────────────────────────────────
 // FRfsnExpandedAction

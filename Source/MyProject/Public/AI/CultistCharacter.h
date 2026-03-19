@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "RfsnNpcAwareness.h"
+#include "AI/RfsnNpcAwareness.h"
 #include "CultistCharacter.generated.h"
 
 class UIslandVitalityComponent;

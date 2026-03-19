@@ -1,6 +1,6 @@
 // RFSN Logging Categories Implementation
 
-#include "RfsnLogging.h"
+#include "Core/RfsnLogging.h"
 
 // Define logging categories
 DEFINE_LOG_CATEGORY(LogRfsn);

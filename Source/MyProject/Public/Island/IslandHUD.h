@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "IslandHUDWidget.h"
-#include "RfsnNpcClientComponent.h"
+#include "Island/IslandHUDWidget.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "IslandHUD.generated.h"
 
 class UIslandHUDWidget;

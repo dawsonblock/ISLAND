@@ -1,11 +1,11 @@
 // RFSN Debug HUD Implementation
 
-#include "RfsnDebugHud.h"
+#include "Core/RfsnDebugHud.h"
 #include "Engine/Canvas.h"
 #include "Engine/World.h"
 #include "GameFramework/HUD.h"
-#include "RfsnDialogueManager.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnDialogueManager.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnDebugHud::URfsnDebugHud()
 {

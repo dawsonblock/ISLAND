@@ -1,7 +1,7 @@
 // RFSN NPC Schedule Implementation
 
-#include "RfsnNpcSchedule.h"
-#include "RfsnLogging.h"
+#include "Social/RfsnNpcSchedule.h"
+#include "Core/RfsnLogging.h"
 #include "Kismet/GameplayStatics.h"
 
 URfsnNpcSchedule::URfsnNpcSchedule()

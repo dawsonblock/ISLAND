@@ -1,8 +1,8 @@
 // RFSN TTS Audio Component Implementation
 
-#include "RfsnTtsAudioComponent.h"
-#include "RfsnVoiceRouter.h"
-#include "RfsnEmotionBlend.h"
+#include "Dialogue/RfsnTtsAudioComponent.h"
+#include "Dialogue/RfsnVoiceRouter.h"
+#include "Dialogue/RfsnEmotionBlend.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundWaveProcedural.h"

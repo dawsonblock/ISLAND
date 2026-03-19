@@ -1,4 +1,4 @@
-#include "IslandDirectorSubsystem.h"
+#include "Island/IslandDirectorSubsystem.h"
 #include "TimerManager.h"
 
 void UIslandDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)

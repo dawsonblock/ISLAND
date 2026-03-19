@@ -6,7 +6,7 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "RfsnDirectorBridge.generated.h"
 
 class UIslandDirectorSubsystem;

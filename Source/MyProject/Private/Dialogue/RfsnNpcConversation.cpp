@@ -1,8 +1,8 @@
 // RFSN NPC Conversation Implementation
 
-#include "RfsnNpcConversation.h"
-#include "RfsnNpcClientComponent.h"
-#include "RfsnLogging.h"
+#include "Dialogue/RfsnNpcConversation.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
+#include "Core/RfsnLogging.h"
 #include "EngineUtils.h"
 #include "TimerManager.h"
 #include "Engine/World.h"

@@ -1,12 +1,12 @@
 // RFSN NPC Dialogue Trigger Implementation
 
-#include "RfsnNpcDialogueTrigger.h"
+#include "Dialogue/RfsnNpcDialogueTrigger.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
-#include "RfsnDialogueWidget.h"
-#include "RfsnNpcClientComponent.h"
+#include "Dialogue/RfsnDialogueWidget.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 
 URfsnNpcDialogueTrigger::URfsnNpcDialogueTrigger() {
   PrimaryComponentTick.bCanEverTick = true;

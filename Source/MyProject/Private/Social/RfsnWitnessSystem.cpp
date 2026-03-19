@@ -1,9 +1,9 @@
 // RFSN Witness System Implementation
 
-#include "RfsnWitnessSystem.h"
-#include "RfsnFactionSystem.h"
-#include "RfsnLogging.h"
-#include "RfsnNpcClientComponent.h"
+#include "Social/RfsnWitnessSystem.h"
+#include "Social/RfsnFactionSystem.h"
+#include "Core/RfsnLogging.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 

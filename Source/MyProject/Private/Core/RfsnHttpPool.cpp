@@ -1,7 +1,7 @@
 // RFSN HTTP Connection Pool Implementation
 
-#include "RfsnHttpPool.h"
-#include "RfsnLogging.h"
+#include "Core/RfsnHttpPool.h"
+#include "Core/RfsnLogging.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 
