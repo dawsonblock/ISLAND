@@ -1,6 +1,1 @@
-def main():
-    print("Hello from python!")
-
-
-if __name__ == "__main__":
-    main()
+from app.api.main import *  # noqa: F401,F403
