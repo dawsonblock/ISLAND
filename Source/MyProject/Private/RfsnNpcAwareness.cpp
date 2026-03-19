@@ -1,6 +1,7 @@
 // RFSN NPC Awareness Implementation
 
 #include "RfsnNpcAwareness.h"
+#include "GameFramework/Pawn.h"
 #include "IslandStealthComponent.h"
 #include "RfsnLogging.h"
 #include "DrawDebugHelpers.h"
@@ -190,7 +191,12 @@ void URfsnNpcAwareness::ReportSound(FVector SoundLocation, float Loudness, AActo
 	AwarenessValue = FMath::Min(1.0f, AwarenessValue + AwarenessGain);
 	LastKnownLocation = SoundLocation;
 
-	if (Source && !CurrentTarget)
+	const APawn* SourcePawn = Cast<APawn>(Source);
+	const bool bSourceLooksLikePlayer =
+	    SourcePawn ? SourcePawn->IsPlayerControlled()
+	               : (Source && Source->FindComponentByClass<UIslandStealthComponent>() != nullptr);
+
+	if (bSourceLooksLikePlayer && !CurrentTarget)
 	{
 		CurrentTarget = Source;
 	}

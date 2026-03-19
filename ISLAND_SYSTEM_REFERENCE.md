@@ -1,5 +1,10 @@
 # Island Survival System - File Structure
 
+> **Note**
+> This reference predates the current first playable slice runtime.
+> For the live hookup and runtime expectations, use
+> [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md).
+
 ## Created Files
 
 ### VS Code Configuration

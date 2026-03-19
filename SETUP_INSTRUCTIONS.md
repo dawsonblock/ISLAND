@@ -1,5 +1,10 @@
 # Island Survival System - Setup Instructions
 
+> **Note**
+> For the current first playable island loop setup, start with
+> [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md).
+> This file still contains older prototype-oriented instructions.
+
 ## Prerequisites
 
 1. **Set the UE_PATH environment variable**

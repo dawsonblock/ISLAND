@@ -1,268 +1,93 @@
-# Island Survival System - Quick Start Guide
+# ISLAND Quick Start
 
-## 🚀 Quick Setup (5 minutes)
+This repo now has a concrete first playable slice:
 
-### 1. Set Up Environment (One-time)
+**spawn on beach -> scavenge tower parts -> repair under cult pressure -> transmit -> survive convergence -> extract**
 
-Run the setup script:
+For the full current hookup guide, read:
+
+- [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md)
+
+## Fast path
+
+### 1. Set your Unreal path
+
 ```bash
-cd "/Users/dawsonblock/Documents/Unreal Projects/MyProject"
 ./setup_environment.sh
-source ~/.zshrc
+source "${HOME}/.bashrc"  # or ~/.zshrc depending on your shell
 ```
 
-Or manually add to `~/.zshrc`:
-```bash
-export UE_PATH="/Users/Shared/Epic Games/UE_5.3"
-```
-
-### 2. Build the Project
-
-In VS Code:
-- Press `Cmd+Shift+B` to build
-- OR run task: "UE: Build Editor (macOS)"
-
-Expected output: "Build succeeded" or similar
-
-### 3. Add Life State to Your Character
-
-Open your player character header (e.g., `MyProjectCharacter.h`):
-
-```cpp
-#include "IslandLifeStateInterface.h"
-
-UCLASS()
-class MYPROJECT_API AMyProjectCharacter : public ACharacter, public IIslandLifeStateInterface
-{
-    GENERATED_BODY()
-    
-public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Life")
-    bool bDowned = false;
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Life")
-    bool bDead = false;
-    
-    virtual bool IsDowned_Implementation() const override { return bDowned; }
-    virtual bool IsDead_Implementation() const override { return bDead; }
-};
-```
-
-### 4. Add Interaction Component
-
-In your character header:
-```cpp
-#include "IslandInteractorComponent.h"
-
-protected:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Island")
-    TObjectPtr<UIslandInteractorComponent> Interactor;
-```
-
-In your character constructor (`.cpp`):
-```cpp
-Interactor = CreateDefaultSubobject<UIslandInteractorComponent>(TEXT("Interactor"));
-```
-
-In your input setup:
-```cpp
-void AMyProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
-    
-    // Add your interact binding
-    PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMyProjectCharacter::OnInteract);
-}
-
-void AMyProjectCharacter::OnInteract()
-{
-    if (Interactor)
-    {
-        Interactor->TryInteract();
-    }
-}
-```
-
-### 5. Rebuild After Character Changes
+Or set it manually:
 
 ```bash
-# In VS Code
-Cmd+Shift+B
+export UE_PATH="/Users/Shared/Epic Games/UE_5.7"
 ```
 
-### 6. Configure in Unreal Editor
+### 2. Build and open the project
 
-1. Open Unreal Editor
-2. **Set GameMode**:
-   - Edit → Project Settings → Maps & Modes
-   - Default GameMode → `IslandGameMode`
-
-3. **Place Actors**:
-   - Place Actors panel → search "IslandRadioTower"
-   - Drag into level
-   - Place Actors panel → search "IslandExtractionZone"
-   - Drag into level
-
-4. **Test**:
-   - Press Play
-   - Look at tower
-   - See "[E] Power Radio" prompt
-   - Press E to interact
-
----
-
-## 📋 What Got Created
-
-### Core Systems
-- ✅ **Alert System** - Tracks player threat level
-- ✅ **Director Subsystem** - Manages alert decay
-- ✅ **Objective Subsystem** - For AI targeting
-- ✅ **Radio Tower** - Multi-state objective with interaction
-- ✅ **Extraction Zone** - Win condition with timer
-- ✅ **Run Management** - Save/load, stats tracking
-- ✅ **GameMode** - Wires everything together
-- ✅ **HUD** - Shows alert, tower state, extraction timer
-- ✅ **Interaction System** - Press E to use objects
-
-### Files Created (20 files)
-- 10 header files (`.h`) in `Source/MyProject/Public/`
-- 8 implementation files (`.cpp`) in `Source/MyProject/Private/`
-- 1 build configuration (`.vscode/tasks.json`)
-- 1 Build.cs update
-
----
-
-## 🎮 How It Works
-
-### The Loop
-1. **Early Game**: Survive, alert is low
-2. **Mid Game**: Alert rises, can power tower
-3. **Tower Phase**: Interact to power, then transmit
-4. **Transmission**: 30s of pulses, attracts enemies
-5. **Extract Window**: 60s to reach extraction zone
-6. **Win/Lose**: Extract successfully or die trying
-
-### Key Mechanics
-- **Alert Level**: 0-100%, gates tower usage
-- **Tower States**: Unpowered → Powered → Transmitting → ExtractWindow → Cooldown
-- **Extraction**: Hold in zone for 3 seconds
-- **Eligibility**: Must be alive and not downed
-
----
-
-## 🔧 VS Code Workflow
-
-### Build Commands
 ```bash
-# Default build (Cmd+Shift+B)
-Cmd+Shift+B
-
-# Clean build
-Terminal → Run Task → "UE: Clean Build"
-
-# Generate project files (after adding files)
-Terminal → Run Task → "UE: Generate Project Files"
+./launch_game.sh
 ```
 
-### Common Tasks
-- **Add new C++ class**: Create in `Source/MyProject/Public/` or `Private/`
-- **After adding files**: Run "Generate Project Files" task
-- **Build errors**: Try clean build, then rebuild
-- **IntelliSense issues**: Regenerate project files
+### 3. Use the island runtime
 
----
+Make sure the active map uses:
 
-## 🐛 Troubleshooting
+- `IslandGameMode`
 
-### Build Fails: "Cannot find UE_PATH"
-```bash
-# Check if set
-echo $UE_PATH
+The game mode now sets:
 
-# If empty, run setup script again
-./setup_environment.sh
-source ~/.zshrc
+- `MyProjectCharacter` as the default pawn
+- `MyProjectPlayerController` as the player controller
+- `IslandHUD` as the HUD
 
-# Restart VS Code
-```
+### 4. Place the required actors in the level
 
-### Build Fails: Missing includes
-```bash
-# Regenerate project files
-Tools → Refresh Visual Studio Code Project (in Unreal Editor)
-# Then rebuild
-```
+- `IslandRadioTower`
+- `IslandExtractionZone`
+- `IslandAISpawnManager`
+- three `IslandPickupActor` instances configured as:
+  - `TowerFuse`
+  - `TowerFuel`
+  - `AntennaCrank`
 
-### HUD Not Showing
-- Verify GameMode is `IslandGameMode`
-- Check Project Settings → Maps & Modes
-- Ensure HUD is enabled in PlayerController
+### 5. Verify the loop in PIE
 
-### Can't Interact with Tower
-- Character must have `IslandInteractorComponent`
-- Input must be bound to call `TryInteract()`
-- Tower must have collision enabled
-- Must be within 350 units of tower
+1. collect fuse, fuel, and crank
+2. interact with the tower to install parts and begin timed repair
+3. survive cult investigation during repair
+4. power the tower
+5. transmit the distress signal
+6. survive the pressure spike
+7. extract after transmission completes
 
-### Extraction Not Working
-- Tower must complete transmission (30s)
-- Extraction zone must be placed in level
-- Character must implement `IslandLifeStateInterface`
-- Must stand in zone for 3 seconds
+## Controls the slice expects
 
----
+- `InteractAction` -> recommended: `E`
+- `SprintAction` -> recommended: `Left Shift`
+- `FlashlightAction` -> recommended: `F`
 
-## 📚 Documentation Files
+Make sure the input mapping context on `MyProjectPlayerController` includes those actions.
 
-1. **SETUP_INSTRUCTIONS.md** - Detailed setup guide
-2. **ISLAND_SYSTEM_REFERENCE.md** - Complete system architecture
-3. **This file** - Quick start guide
+## Main troubleshooting
 
----
+### No interact prompt
+- the player is not using `MyProjectCharacter`
+- `InteractAction` is not assigned
+- the pickup/tower mesh is not blocking `Visibility`
 
-## 🎯 Next Steps
+### No cultists
+- `IslandAISpawnManager` is missing
+- `CultistClass` is not assigned
+- there is no navmesh around the spawn area
 
-### Essential
-- [ ] Implement interface on your character
-- [ ] Bind interact input
-- [ ] Test basic loop (power → transmit → extract)
+### Extraction never activates
+- transmission did not complete
+- the level is overriding `IslandGameMode`
+- `IslandExtractionZone` is missing
 
-### Polish
-- [ ] Add visual feedback to tower (lights, particles)
-- [ ] Add sound effects for pulses
-- [ ] Style the HUD (UMG widgets)
-- [ ] Add extraction progress indicator
+### Build script cannot find Unreal
+- confirm `echo $UE_PATH`
+- or rerun `./setup_environment.sh`
 
-### Gameplay
-- [ ] AI enemies that respond to alert
-- [ ] Loot system
-- [ ] Health/stamina
-- [ ] Multiple towers/extraction points
-
----
-
-## 💡 Tips
-
-- **Alert Management**: Keep alert low early game
-- **Timing**: Plan extraction route before transmitting
-- **Safety**: Clear extraction zone area before transmitting
-- **Testing**: Use HUD to monitor all systems
-
----
-
-## ✨ Features Summary
-
-| Feature | Status | Location |
-|---------|--------|----------|
-| Alert System | ✅ | IslandDirectorSubsystem |
-| Radio Tower | ✅ | IslandRadioTower |
-| Extraction | ✅ | IslandExtractionZone |
-| Interaction | ✅ | IslandInteractorComponent |
-| HUD | ✅ | IslandHUD |
-| Run Tracking | ✅ | IslandGameInstanceSubsystem |
-| Save System | ✅ | IslandRunSaveGame |
-| Life State | ✅ | IslandLifeStateInterface |
-
----
-
-**You're all set! Build the project and start testing.** 🎉
+For the exact editor-side setup checklist, use `FIRST_PLAYABLE_SLICE_SETUP.md`.

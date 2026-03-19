@@ -173,12 +173,16 @@ bool AIslandAISpawnManager::SpawnCultistAroundLocation(const FVector& Origin, FV
 			{
 				AliveCultistCount++;
 				Cultist->OnCultistDied.AddDynamic(this, &AIslandAISpawnManager::RegisterCultistDeath);
+				if (!Cultist->GetController())
+				{
+					Cultist->SpawnDefaultController();
+				}
 
 				if (ACultistAIController* CultistController = Cast<ACultistAIController>(Cultist->GetController()))
 				{
 					if (bGuardTower)
 					{
-						CultistController->SetInvestigationLocation(Origin);
+						CultistController->SetGuardLocation(Origin);
 					}
 					if (ForcedInvestigationLocation)
 					{

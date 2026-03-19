@@ -28,6 +28,8 @@ public:
 	void ClearCurrentTarget();
 	void SetInvestigationLocation(const FVector& Location);
 	void ClearInvestigationLocation();
+	void SetGuardLocation(const FVector& Location);
+	void ClearGuardLocation();
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
@@ -39,9 +41,12 @@ private:
 	TObjectPtr<ACultistCharacter> ControlledCultist;
 
 	FVector HomeLocation = FVector::ZeroVector;
+	FVector GuardLocation = FVector::ZeroVector;
 	float SearchEndTime = 0.0f;
 	float NextPatrolMoveTime = 0.0f;
 	float NextAttackTime = 0.0f;
+	float NextSearchMoveTime = 0.0f;
+	bool bHasGuardLocation = false;
 
 	UFUNCTION()
 	void OnAwarenessChanged(ERfsnAwarenessLevel NewLevel, ERfsnAwarenessLevel OldLevel);
@@ -54,4 +59,5 @@ private:
 
 	void UpdateBehavior();
 	void MoveToPatrolPoint();
+	void MoveAroundLocation(const FVector& Location, float Radius);
 };

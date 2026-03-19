@@ -39,6 +39,16 @@ ISLAND is **not** "an NPC with an LLM." It's a **bounded decision system** where
 
 This script auto-compiles and opens the Unreal Editor.
 
+### Current Playable Slice
+
+The active island loop is:
+
+**spawn -> collect fuse/fuel/crank -> repair tower -> transmit -> survive cult convergence -> extract**
+
+For the up-to-date runtime hookup guide, see:
+
+- [`FIRST_PLAYABLE_SLICE_SETUP.md`](./FIRST_PLAYABLE_SLICE_SETUP.md)
+
 ### Prerequisites
 
 | Requirement | Version |
@@ -67,10 +77,11 @@ cd ../..
 
 ### In Unreal Editor
 
-1. Press **Play** (Alt+P)
-2. Walk up to an NPC
-3. Press **E** to interact
-4. Type and chat!
+1. Make sure the map uses `IslandGameMode`
+2. Place an `IslandRadioTower`, `IslandExtractionZone`, and `IslandAISpawnManager`
+3. Place three `IslandPickupActor` instances for fuse, fuel, and crank
+4. Press **Play**
+5. Press **E** to scavenge parts and interact with the tower
 
 ---
 

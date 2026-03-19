@@ -59,7 +59,7 @@ void ACultistAIController::Tick(float DeltaSeconds)
 void ACultistAIController::SetCurrentTarget(AActor* Target)
 {
 	CurrentTarget = Target;
-	bHasInvestigationLocation = false;
+	ClearInvestigationLocation();
 	SearchEndTime = 0.0f;
 }
 
@@ -73,6 +73,7 @@ void ACultistAIController::SetInvestigationLocation(const FVector& Location)
 	InvestigationLocation = Location;
 	bHasInvestigationLocation = true;
 	SearchEndTime = 0.0f;
+	NextSearchMoveTime = 0.0f;
 }
 
 void ACultistAIController::ClearInvestigationLocation()
@@ -80,6 +81,19 @@ void ACultistAIController::ClearInvestigationLocation()
 	bHasInvestigationLocation = false;
 	InvestigationLocation = FVector::ZeroVector;
 	SearchEndTime = 0.0f;
+	NextSearchMoveTime = 0.0f;
+}
+
+void ACultistAIController::SetGuardLocation(const FVector& Location)
+{
+	GuardLocation = Location;
+	bHasGuardLocation = true;
+}
+
+void ACultistAIController::ClearGuardLocation()
+{
+	bHasGuardLocation = false;
+	GuardLocation = FVector::ZeroVector;
 }
 
 void ACultistAIController::OnAwarenessChanged(ERfsnAwarenessLevel NewLevel, ERfsnAwarenessLevel OldLevel)
@@ -112,7 +126,8 @@ void ACultistAIController::OnAwarenessChanged(ERfsnAwarenessLevel NewLevel, ERfs
 	default:
 		if (!CurrentTarget && !bHasInvestigationLocation)
 		{
-			ControlledCultist->SetCultState(ECultistState::ReturnToRoute);
+			ControlledCultist->SetCultState(bHasGuardLocation ? ECultistState::GuardTower
+			                                                  : ECultistState::ReturnToRoute);
 		}
 		break;
 	}
@@ -211,11 +226,16 @@ void ACultistAIController::UpdateBehavior()
 			}
 
 			ControlledCultist->SetCultState(ECultistState::Search);
-			StopMovement();
+			if (World->GetTimeSeconds() >= NextSearchMoveTime)
+			{
+				MoveAroundLocation(InvestigationLocation, ControlledCultist->PatrolRadius * 0.35f);
+				NextSearchMoveTime = World->GetTimeSeconds() + 1.75f;
+			}
 			if (World->GetTimeSeconds() >= SearchEndTime)
 			{
 				ClearInvestigationLocation();
-				ControlledCultist->SetCultState(ECultistState::ReturnToRoute);
+				ControlledCultist->SetCultState(bHasGuardLocation ? ECultistState::GuardTower
+				                                                  : ECultistState::ReturnToRoute);
 				NextPatrolMoveTime = 0.0f;
 			}
 		}
@@ -223,6 +243,22 @@ void ACultistAIController::UpdateBehavior()
 		{
 			MoveToLocation(InvestigationLocation, ControlledCultist->InvestigationAcceptanceRadius);
 			ControlledCultist->SetCultState(ECultistState::Investigate);
+		}
+		return;
+	}
+
+	if (bHasGuardLocation)
+	{
+		const float DistanceToGuard = FVector::Dist(ControlledCultist->GetActorLocation(), GuardLocation);
+		ControlledCultist->SetCultState(ECultistState::GuardTower);
+		if (DistanceToGuard > ControlledCultist->PatrolRadius * 0.75f)
+		{
+			MoveToLocation(GuardLocation, ControlledCultist->InvestigationAcceptanceRadius);
+		}
+		else if (World->GetTimeSeconds() >= NextPatrolMoveTime)
+		{
+			MoveAroundLocation(GuardLocation, ControlledCultist->PatrolRadius * 0.4f);
+			NextPatrolMoveTime = World->GetTimeSeconds() + 4.0f;
 		}
 		return;
 	}
@@ -248,6 +284,23 @@ void ACultistAIController::MoveToPatrolPoint()
 		if (NavSys->GetRandomReachablePointInRadius(HomeLocation, ControlledCultist->PatrolRadius, PatrolPoint))
 		{
 			MoveToLocation(PatrolPoint.Location, ControlledCultist->InvestigationAcceptanceRadius);
+		}
+	}
+}
+
+void ACultistAIController::MoveAroundLocation(const FVector& Location, float Radius)
+{
+	if (!ControlledCultist)
+	{
+		return;
+	}
+
+	if (UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
+	{
+		FNavLocation SearchPoint;
+		if (NavSys->GetRandomReachablePointInRadius(Location, Radius, SearchPoint))
+		{
+			MoveToLocation(SearchPoint.Location, ControlledCultist->InvestigationAcceptanceRadius);
 		}
 	}
 }

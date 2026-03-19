@@ -6,11 +6,15 @@
 #include "IslandHUD.h"
 #include "IslandObjectiveSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "MyProjectCharacter.h"
+#include "MyProjectPlayerController.h"
 
 AIslandGameMode::AIslandGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	HUDClass = AIslandHUD::StaticClass();
+	DefaultPawnClass = AMyProjectCharacter::StaticClass();
+	PlayerControllerClass = AMyProjectPlayerController::StaticClass();
 }
 
 void AIslandGameMode::BeginPlay()
