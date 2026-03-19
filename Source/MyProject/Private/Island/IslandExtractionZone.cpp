@@ -1,6 +1,5 @@
 #include "Island/IslandExtractionZone.h"
 #include "Island/IslandLifeStateInterface.h"
-#include "Island/IslandGameInstanceSubsystem.h"
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/Pawn.h"
@@ -170,12 +169,5 @@ void AIslandExtractionZone::TriggerWin(APawn* Pawn)
 	}
 
 	SetActive(false, 0.0f);
-
-	if (UGameInstance* GI = GetGameInstance())
-	{
-		if (UIslandGameInstanceSubsystem* Run = GI->GetSubsystem<UIslandGameInstanceSubsystem>())
-		{
-			Run->EndRun(true, EIslandRunEndReason::Escaped);
-		}
-	}
+	OnExtractionSuccess.Broadcast();
 }

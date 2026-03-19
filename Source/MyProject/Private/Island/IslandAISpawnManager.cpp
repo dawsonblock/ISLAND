@@ -33,7 +33,7 @@ void AIslandAISpawnManager::OnIntensityChanged(EIslandIntensityState NewState)
 {
 	CurrentIntensity = NewState;
 	
-	if (CurrentIntensity != EIslandIntensityState::Passive)
+	if (ShouldSpawnForDirectorIntensity())
 	{
 		StartSpawning();
 	}
@@ -45,7 +45,9 @@ void AIslandAISpawnManager::OnIntensityChanged(EIslandIntensityState NewState)
 
 void AIslandAISpawnManager::OnTowerStateChanged(ERadioTowerState NewState)
 {
-	if (NewState == ERadioTowerState::Transmitting || NewState == ERadioTowerState::ExtractWindow)
+	const bool bTowerPressure = NewState == ERadioTowerState::Transmitting ||
+	                           NewState == ERadioTowerState::ExtractWindow;
+	if (bTowerPressure)
 	{
 		SpawnCultistNearTower();
 		StartSpawning();
@@ -98,15 +100,14 @@ void AIslandAISpawnManager::TrySpawnCultist()
 	}
 
 	UIslandDirectorSubsystem* Director = GetWorld()->GetSubsystem<UIslandDirectorSubsystem>();
-	const bool bTowerPressure = CachedTower &&
-	                            (CachedTower->State == ERadioTowerState::Transmitting ||
-	                             CachedTower->State == ERadioTowerState::ExtractWindow);
+	const bool bTowerPressure = ShouldSpawnForTowerPressure();
+	const bool bDirectorPressure = ShouldSpawnForDirectorIntensity();
 	const int32 DesiredCultists =
-	    Director ? FMath::Max(Director->GetDesiredActiveCultists(), bTowerPressure ? 3 : 0)
-	             : (bTowerPressure ? 3 : 0);
+	    Director ? FMath::Max(Director->GetDesiredActiveCultists(), GetDesiredPressureSpawnCount())
+	             : GetDesiredPressureSpawnCount();
 	if (AliveCultistCount >= FMath::Min(MaxAliveCultists, DesiredCultists))
 	{
-		if (CurrentIntensity != EIslandIntensityState::Passive || bTowerPressure)
+		if (bDirectorPressure || bTowerPressure)
 		{
 			StartSpawning();
 		}
@@ -129,10 +130,27 @@ void AIslandAISpawnManager::TrySpawnCultist()
 		SpawnCultistAroundLocation(PlayerPawn->GetActorLocation(), &InvestigationLocation, false);
 	}
 
-	if (CurrentIntensity != EIslandIntensityState::Passive || bTowerPressure)
+	if (bDirectorPressure || bTowerPressure)
 	{
 		StartSpawning();
 	}
+}
+
+int32 AIslandAISpawnManager::GetDesiredPressureSpawnCount() const
+{
+	return ShouldSpawnForTowerPressure() ? 3 : 0;
+}
+
+bool AIslandAISpawnManager::ShouldSpawnForTowerPressure() const
+{
+	return CachedTower &&
+	       (CachedTower->State == ERadioTowerState::Transmitting ||
+	        CachedTower->State == ERadioTowerState::ExtractWindow);
+}
+
+bool AIslandAISpawnManager::ShouldSpawnForDirectorIntensity() const
+{
+	return CurrentIntensity != EIslandIntensityState::Passive;
 }
 
 bool AIslandAISpawnManager::SpawnCultistAroundLocation(const FVector& Origin, FVector* ForcedInvestigationLocation,

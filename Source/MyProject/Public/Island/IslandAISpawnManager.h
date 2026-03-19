@@ -55,6 +55,9 @@ private:
 	void StartSpawning();
 	void StopSpawning();
 	void TrySpawnCultist();
+	int32 GetDesiredPressureSpawnCount() const;
+	bool ShouldSpawnForTowerPressure() const;
+	bool ShouldSpawnForDirectorIntensity() const;
 	bool SpawnCultistAroundLocation(const FVector& Origin, FVector* ForcedInvestigationLocation = nullptr,
 	                                bool bGuardTower = false);
 	

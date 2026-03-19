@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
 #include "Island/IslandDirectorSubsystem.h"
+#include "Island/IslandGameMode.h"
 #include "Island/IslandGameInstanceSubsystem.h"
 #include "Island/IslandInteractorComponent.h"
 #include "Island/IslandInventoryComponent.h"
@@ -121,13 +122,21 @@ void AMyProjectCharacter::HandleDeath(bool bIsFatal) {
     DisableInput(PC);
   }
 
+  const EIslandRunEndReason Reason =
+      VitalityComponent && VitalityComponent->GetHungerNormalized() <= 0.0f
+          ? EIslandRunEndReason::Starved
+          : EIslandRunEndReason::KilledByCult;
+
+  if (AIslandGameMode *IslandGameMode =
+          GetWorld() ? Cast<AIslandGameMode>(GetWorld()->GetAuthGameMode())
+                     : nullptr) {
+    IslandGameMode->HandlePlayerDeath(Reason);
+    return;
+  }
+
   if (UGameInstance *GI = GetGameInstance()) {
     if (UIslandGameInstanceSubsystem *Run =
             GI->GetSubsystem<UIslandGameInstanceSubsystem>()) {
-      const EIslandRunEndReason Reason =
-          VitalityComponent && VitalityComponent->GetHungerNormalized() <= 0.0f
-              ? EIslandRunEndReason::Starved
-              : EIslandRunEndReason::KilledByCult;
       Run->EndRun(false, Reason);
     }
   }

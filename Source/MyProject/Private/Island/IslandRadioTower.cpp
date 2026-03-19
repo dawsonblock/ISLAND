@@ -3,7 +3,6 @@
 #include "Island/IslandInventoryComponent.h"
 #include "Island/IslandLifeStateInterface.h"
 #include "Island/IslandNoiseLibrary.h"
-#include "Island/IslandObjectiveSubsystem.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -142,13 +141,6 @@ void AIslandRadioTower::StartTransmit()
 		Director->AddAlertFromTransmissionPulse(25.0f);
 	}
 
-	// Activate objective marker
-	if (UIslandObjectiveSubsystem* Obj = World->GetSubsystem<UIslandObjectiveSubsystem>())
-	{
-		Obj->SetObjectiveActive(true, GetActorLocation());
-		Obj->SetObjectiveText(FText::FromString(TEXT("Hold the radio tower while the distress signal transmits.")));
-	}
-
 	// Start transmit timer
 	World->GetTimerManager().SetTimer(TransmitTimer, this, &AIslandRadioTower::OnTransmitComplete, TransmitDurationSeconds, false);
 
@@ -171,12 +163,6 @@ void AIslandRadioTower::OnTransmitComplete()
 
 	// Stop pulses
 	World->GetTimerManager().ClearTimer(PulseTimer);
-
-	// Deactivate objective
-	if (UIslandObjectiveSubsystem* Obj = World->GetSubsystem<UIslandObjectiveSubsystem>())
-	{
-		Obj->SetObjectiveActive(false, FVector::ZeroVector);
-	}
 
 	if (TransmitCompleteSound)
 	{

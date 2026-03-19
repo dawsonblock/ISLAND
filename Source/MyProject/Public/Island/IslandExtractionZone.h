@@ -13,6 +13,8 @@ class UPrimitiveComponent;
 class USceneComponent;
 class APawn;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIslandExtractionSuccessSignature);
+
 UCLASS()
 class MYPROJECT_API AIslandExtractionZone : public AActor
 {
@@ -50,6 +52,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
 	TObjectPtr<USoundBase> SuccessSound;
+
+	UPROPERTY(BlueprintAssignable, Category = "Extraction")
+	FIslandExtractionSuccessSignature OnExtractionSuccess;
 
 	UFUNCTION(BlueprintCallable, Category="Extraction")
 	void SetActive(bool bInActive, float WindowSeconds);
