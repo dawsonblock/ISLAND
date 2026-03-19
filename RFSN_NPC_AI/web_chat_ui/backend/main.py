@@ -19,7 +19,7 @@ load_dotenv()
 # Configuration
 ORCHESTRATOR_BASE_URL = os.getenv("ORCHESTRATOR_BASE_URL", "http://127.0.0.1:8000")
 ORCHESTRATOR_STREAM_PATH = os.getenv("ORCHESTRATOR_STREAM_PATH", "/api/dialogue/stream")
-EPISODES_DIR = Path("episodes")
+EPISODES_DIR = Path(os.getenv("RFSN_WEBCHAT_EPISODES_DIR", Path(__file__).resolve().parent / "var" / "episodes"))
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO)

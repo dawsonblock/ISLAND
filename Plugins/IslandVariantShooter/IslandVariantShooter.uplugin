@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Island Variant Shooter",
+  "Description": "Optional shooter variant for ISLAND.",
+  "Category": "Gameplay",
+  "CanContainContent": true,
+  "EnabledByDefault": false,
+  "Modules": [
+    {
+      "Name": "IslandVariantShooter",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

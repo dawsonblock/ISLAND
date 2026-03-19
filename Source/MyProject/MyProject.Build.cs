@@ -95,13 +95,7 @@ public class MyProject : ModuleRules
 		});
 		
 		PrivateIncludePaths.AddRange(new string[] {
-			"MyProject/Private",
-			"MyProject/Variant_Horror",
-			"MyProject/Variant_Horror/UI",
-			"MyProject/Variant_Shooter",
-			"MyProject/Variant_Shooter/AI",
-			"MyProject/Variant_Shooter/UI",
-			"MyProject/Variant_Shooter/Weapons"
+			"MyProject/Private"
 		});
 	}
 }
