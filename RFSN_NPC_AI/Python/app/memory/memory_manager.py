@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
-from utils.sanitize import safe_filename_token
+from ..safety.sanitize import safe_filename_token
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
