@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Set, Tuple
 from enum import Enum
 import logging
+from runtime_paths import runtime_dir
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class LearningContract:
             snapshot_dir: Directory to store snapshots for rollback
         """
         self.constraints = constraints or LearningConstraints()
-        self.snapshot_dir = snapshot_dir or Path("data/learning/snapshots")
+        self.snapshot_dir = snapshot_dir or runtime_dir("learning", "snapshots")
         self.snapshot_dir.mkdir(parents=True, exist_ok=True)
         
         # Current learnable state

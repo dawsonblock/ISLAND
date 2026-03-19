@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from world_model import NPCAction, PlayerSignal, StateSnapshot
+from runtime_paths import runtime_file
 
 
 @dataclass(frozen=True)
@@ -79,7 +80,7 @@ class NPCActionBandit:
     PRIOR_SCALE = 20.0        # Scale factor to normalize scorer values into bump range
 
     def __init__(self, path: Optional[Path] = None, min_trials_before_exploit: int = 3):
-        self.path = path or Path("data/learning/npc_action_bandit.json")
+        self.path = path or runtime_file("learning", "npc_action_bandit.json")
         self.min_trials_before_exploit = min_trials_before_exploit
         self._arms: Dict[str, Dict[str, Dict[str, float]]] = {}  # key -> action -> {alpha,beta}
         self.load()

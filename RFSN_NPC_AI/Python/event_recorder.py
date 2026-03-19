@@ -13,6 +13,7 @@ from typing import Dict, Any, Optional, List, Callable
 from pathlib import Path
 from enum import Enum
 import logging
+from runtime_paths import runtime_dir
 
 try:
     import numpy as np
@@ -106,7 +107,7 @@ class EventRecorder:
             str(time.time()).encode()
         ).hexdigest()[:16]
         
-        self.output_dir = output_dir or Path("data/recordings")
+        self.output_dir = output_dir or runtime_dir("recordings")
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         self._events: List[RecordedEvent] = []

@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional, List, Callable, Tuple
 from pathlib import Path
 from enum import Enum
 import logging
+from runtime_paths import runtime_file
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +236,7 @@ class StateMachine:
         self._drift_detector = DriftDetector()
         self._lock = threading.RLock()
         
-        self.audit_log_path = audit_log_path or Path("data/audit/state_audit.jsonl")
+        self.audit_log_path = audit_log_path or runtime_file("audit", "state_audit.jsonl")
         self.audit_log_path.parent.mkdir(parents=True, exist_ok=True)
         
         logger.info("StateMachine initialized")

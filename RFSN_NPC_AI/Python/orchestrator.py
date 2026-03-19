@@ -5,6 +5,7 @@ Complete system with Kokoro TTS, Ollama LLM, security, metrics, and multi-NPC su
 """
 from version import ORCHESTRATOR_VERSION, STREAMING_ENGINE_VERSION, get_version_string
 from runtime_state import Runtime, RuntimeState
+from runtime_paths import runtime_dir, runtime_file
 
 import asyncio
 import json
@@ -273,12 +274,12 @@ async def startup_event():
     constraints = LearningConstraints()
     learning_contract = LearningContract(
         constraints=constraints,
-        snapshot_dir=Path(__file__).parent.parent / "data" / "learning" / "snapshots"
+        snapshot_dir=runtime_dir("learning", "snapshots")
     )
     
     # Initialize MemoryGovernance
     memory_governance = MemoryGovernance(
-        storage_path=Path(__file__).parent.parent / "data" / "memory" / "governed"
+        storage_path=runtime_dir("memory", "governed")
     )
     
     # Initialize MemoryConsolidator (using simple LLM shim)
@@ -339,7 +340,7 @@ async def startup_event():
     # Initialize EventRecorder for deterministic replay
     event_recorder = EventRecorder(
         session_id=str(int(time.time())),
-        output_dir=Path(__file__).parent.parent / "data" / "recordings"
+        output_dir=runtime_dir("recordings")
     )
     
     # Initialize StateMachine for RFSN state invariants
@@ -365,7 +366,7 @@ async def startup_event():
 
     # Initialize NPCActionBandit for behavioral learning
     npc_action_bandit = NPCActionBandit(
-        path=Path(__file__).parent.parent / "data" / "learning" / "npc_action_bandit.json"
+        path=runtime_file("learning", "npc_action_bandit.json")
     )
 
     logger.info("Learning layer initialized (Policy Adapter, Reward Model, Trainer, LearningContract, MemoryGovernance, IntentGate, StreamingPipeline, Observability, EventRecorder, StateMachine, NPCActionBandit)")

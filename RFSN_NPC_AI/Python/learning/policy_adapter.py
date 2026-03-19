@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from .schemas import ActionMode, FeatureVector
 import logging
+from runtime_paths import runtime_file
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class PolicyAdapter:
         self.last_action_mode = ActionMode.TERSE_DIRECT
         
         # Load weights if path provided
-        self.weights_path = weights_path or Path("data/policy/policy_weights.json")
+        self.weights_path = weights_path or runtime_file("policy", "policy_weights.json")
         if self.weights_path.exists():
             self.load_weights()
     

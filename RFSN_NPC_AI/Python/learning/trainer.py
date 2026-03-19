@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional
 from .schemas import FeatureVector, ActionMode, TurnLog
 import logging
+from runtime_paths import runtime_file
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class Trainer:
         self.update_count = 0
         
         # Logging
-        self.log_path = log_path or Path("data/policy/turn_logs.jsonl")
+        self.log_path = log_path or runtime_file("policy", "turn_logs.jsonl")
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
     
     def update(self, weights: np.ndarray, features: FeatureVector, 

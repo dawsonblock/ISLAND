@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+from runtime_paths import runtime_file
 
 
 @dataclass
@@ -270,7 +271,7 @@ class BanditCore:
             strategy_params: Optional parameters for the strategy
         """
         self.strategy_name = strategy
-        self.path = path or Path("data/learning/bandit_core.json")
+        self.path = path or runtime_file("learning", "bandit_core.json")
         self.seed = seed
         
         if seed is not None:
