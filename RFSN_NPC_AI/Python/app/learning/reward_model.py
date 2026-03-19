@@ -61,7 +61,7 @@ class RewardModel:
         # Clamp to bounds
         reward = max(self.MIN_REWARD, min(self.MAX_REWARD, reward))
         
-        logger.info(f"Computed reward: {reward:.2f}")
+        logger.debug(f"Computed reward: {reward:.2f}")
         return reward
     
     @staticmethod
