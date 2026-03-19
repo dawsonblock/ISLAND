@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Island Variant Horror",
+  "Description": "Optional horror variant for ISLAND.",
+  "Category": "Gameplay",
+  "CanContainContent": true,
+  "EnabledByDefault": false,
+  "Modules": [
+    {
+      "Name": "IslandVariantHorror",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

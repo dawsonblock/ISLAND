@@ -4,21 +4,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Variant_Shooter/AI/ShooterNPC.h"
+#include "Core/MyProjectCharacter.h"
+#include "Dialogue/RfsnNpcClientComponent.h"
 #include "RfsnSampleGuard.generated.h"
 
 /**
  * Sample guard NPC with RFSN dialogue.
  * Can be hostile or neutral based on player actions.
- * Inherits from ShooterNPC for combat capability.
  */
 UCLASS(Blueprintable)
-class MYPROJECT_API ARfsnSampleGuard : public AShooterNPC
+class MYPROJECT_API ARfsnSampleGuard : public AMyProjectCharacter
 {
 	GENERATED_BODY()
 
 public:
 	ARfsnSampleGuard();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RFSN")
+	TObjectPtr<URfsnNpcClientComponent> RfsnClient;
 
 	/** Guard patrol mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Guard")
@@ -35,8 +38,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	/** Handle RFSN action - override from parent */
-	virtual void OnRfsnNpcAction(ERfsnNpcAction Action) override;
+	UFUNCTION()
+	void OnRfsnNpcAction(ERfsnNpcAction Action);
 
 private:
 	void ConfigureAsHostileGuard();

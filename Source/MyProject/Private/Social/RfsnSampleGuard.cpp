@@ -4,11 +4,16 @@
 #include "Dialogue/RfsnNpcClientComponent.h"
 
 ARfsnSampleGuard::ARfsnSampleGuard() {
-  // ShooterNPC already creates RfsnClient
+  RfsnClient = CreateDefaultSubobject<URfsnNpcClientComponent>(TEXT("RfsnClient"));
 }
 
 void ARfsnSampleGuard::BeginPlay() {
   Super::BeginPlay();
+
+  if (RfsnClient) {
+    RfsnClient->OnNpcActionReceived.AddDynamic(this,
+                                               &ARfsnSampleGuard::OnRfsnNpcAction);
+  }
 
   // Configure RFSN based on initial patrol state
   if (bOnPatrol) {
@@ -40,9 +45,6 @@ void ARfsnSampleGuard::ConfigureAsNeutralGuard() {
 }
 
 void ARfsnSampleGuard::OnRfsnNpcAction(ERfsnNpcAction Action) {
-  // Let parent handle basic action mapping
-  Super::OnRfsnNpcAction(Action);
-
   // Guard-specific behavior
   switch (Action) {
   case ERfsnNpcAction::Warn:
@@ -72,7 +74,6 @@ void ARfsnSampleGuard::OnRfsnNpcAction(ERfsnNpcAction Action) {
     bOnPatrol = false;
     ConfigureAsHostileGuard();
     UE_LOG(LogTemp, Log, TEXT("[Guard] Engaging player!"));
-    // Parent class handles attack behavior
     break;
 
   default:
