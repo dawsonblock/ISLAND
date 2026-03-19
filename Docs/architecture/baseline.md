@@ -1,12 +1,16 @@
 # ISLAND baseline
 
+This document captures the repo state at the start of the runtime-boundary
+refactor. It is intentionally historical, not a description of the current
+branch head after subsequent cleanup.
+
 ## Repo/runtime snapshot
 
 - Unreal project: `MyProject.uproject`
 - Current Unreal runtime module: `MyProject`
 - Current PCH: `Source/MyProject/MyProjectPCH.h`
 - Unreal Engine association in repo: `5.5`
-- Variant source still lives inside the main module:
+- At baseline, variant source still lived inside the main module:
   - `Source/MyProject/Variant_Horror/*`
   - `Source/MyProject/Variant_Shooter/*`
 - Python backend root: `RFSN_NPC_AI/Python`
@@ -27,7 +31,7 @@ The launcher expects `UE_PATH` to point at an Unreal installation if it cannot a
 
 ### Python backend
 
-Current backend entrypoint remains the flat orchestrator module:
+At baseline, the backend entrypoint remained the flat orchestrator module:
 
 ```bash
 cd RFSN_NPC_AI/Python
@@ -43,7 +47,7 @@ cd RFSN_NPC_AI/Python
 python3 -m pytest tests/test_bandit_learner.py tests/test_fidelity.py -q
 ```
 
-Current failures:
+Baseline failures:
 
 - `tests/test_bandit_learner.py::TestStateActionBandit::test_persistence_save`
 - `tests/test_bandit_learner.py::TestStateActionBandit::test_banned_all_actions_fallback`
@@ -63,4 +67,6 @@ Before this refactor pass, committed runtime data was present under:
 - `RFSN_NPC_AI/data/audit/`
 - `RFSN_NPC_AI/web_chat_ui/backend/episodes/`
 
-This pass redirects new Python-side runtime output toward ignored `var/` directories so recordings, audit logs, policy logs, and learning snapshots stop polluting diffs.
+The refactor redirected new Python-side runtime output toward ignored `var/`
+directories so recordings, audit logs, policy logs, and learning snapshots stop
+polluting diffs.
