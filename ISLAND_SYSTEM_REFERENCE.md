@@ -68,8 +68,10 @@ Source/MyProject/MyProject.Build.cs          # Updated with required dependencie
 ### Actors
 
 **AIslandRadioTower**
-- States: Unpowered → Powered → Transmitting → ExtractWindow → Cooldown
+- States: NeedsParts → Broken/Repairing → Unpowered → Powered → Transmitting → ExtractWindow → Cooldown
 - Implements IIslandInteractableInterface
+- Consumes real tower parts from the player inventory
+- Runs a timed, noisy repair sequence
 - Sends alert pulses during transmission
 - Broadcasts state change events
 
@@ -88,6 +90,8 @@ Source/MyProject/MyProject.Build.cs          # Updated with required dependencie
 **AIslandHUD**
 - Displays alert level
 - Shows tower state
+- Shows required tower parts and repair progress
+- Shows player stealth noise / visibility
 - Shows extraction timer
 - Shows interact prompts
 
@@ -120,23 +124,25 @@ Source/MyProject/MyProject.Build.cs          # Updated with required dependencie
        └─> Generate seed, reset timer
 
 2. Gameplay
-   ├─> Alert increases from player actions
-   ├─> Alert decays over time (IslandDirectorSubsystem)
-   └─> Player can use tower when alert is sufficient
+   ├─> Player scavenges fuse, fuel, and crank
+   ├─> Player movement and tower work create noise / alert
+   └─> Cultists investigate, search, chase, and attack
 
 3. Tower Interaction
    ├─> Player presses E → IslandInteractorComponent::TryInteract()
-   ├─> Tower powered → State: Powered
-   └─> Player presses E again → StartTransmit()
+   ├─> Tower consumes required parts
+   ├─> Timed repair completes → State: Unpowered
+   ├─> Player powers tower → State: Powered
+   └─> Player transmits → StartTransmit()
 
 4. Transmission Phase
    ├─> Tower sends pulses every 3s
-   ├─> Each pulse adds alert
-   ├─> Objective becomes active at tower location
+   ├─> Each pulse adds alert and noise pressure
+   ├─> Objective becomes active at tower/extraction locations
    └─> After 30s → ExtractWindow state
 
 5. Extraction Phase
-   ├─> Extraction zone activates
+   ├─> Extraction zone activates only after transmission completes
    ├─> Player enters zone
    ├─> Hold for 3 seconds
    └─> Success → EndRun(true)
@@ -160,6 +166,16 @@ IslandDirectorSubsystem
 
 ### Tower State Machine
 ```
+NeedsParts
+  └─> [Player has fuse/fuel/crank] → Broken
+
+Broken
+  └─> [Player Interact] → Repairing
+
+Repairing
+  ├─> [Timed repair completes] → Unpowered
+  └─> [Player leaves / dies] → Broken
+
 Unpowered
   └─> [Player Interact] → Powered
 
@@ -168,7 +184,7 @@ Powered
 
 Transmitting
   ├─> Sends pulses (every 3s)
-  ├─> Objective active
+  ├─> Objective active + cult convergence pressure
   └─> [After 30s] → ExtractWindow
 
 ExtractWindow
@@ -273,13 +289,20 @@ void AMyProjectCharacter::Die()
 - [ ] IslandGameMode is set as default game mode
 - [ ] Radio tower placed in level
 - [ ] Extraction zone placed in level
-- [ ] Player can look at tower and see prompt
+- [ ] AI spawn manager placed in level
+- [ ] Fuse, fuel, and crank pickups placed in level
+- [ ] Player can collect all three parts
+- [ ] Player can look at tower and see the correct prompt
+- [ ] Pressing E after collecting parts starts timed repair
+- [ ] Repair can complete into the unpowered state
 - [ ] Pressing E powers the tower
 - [ ] Pressing E again starts transmission
 - [ ] HUD shows alert level
-- [ ] HUD shows tower state
+- [ ] HUD shows tower state, repair progress, and parts state
 - [ ] Transmission pulses increase alert
 - [ ] After transmission, extraction zone activates
 - [ ] HUD shows extraction timer
+- [ ] Cultists patrol, investigate, chase, and attack
 - [ ] Standing in zone for 3s ends run
+- [ ] Player death ends the run
 - [ ] Level restarts after extraction

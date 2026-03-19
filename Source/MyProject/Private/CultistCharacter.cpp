@@ -20,6 +20,18 @@ ACultistCharacter::ACultistCharacter()
 	bUseControllerRotationYaw = false;
 }
 
+float ACultistCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent,
+                                    AController* EventInstigator, AActor* DamageCauser)
+{
+	const float AppliedDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (AppliedDamage > 0.0f && !IsDead())
+	{
+		OnDamagedByActor(AppliedDamage, DamageCauser, EventInstigator);
+	}
+
+	return AppliedDamage;
+}
+
 void ACultistCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -154,6 +166,7 @@ void ACultistCharacter::HandleDeath(bool bFatal)
 		return;
 	}
 
+	OnDeathStarted(bFatal);
 	CurrentState = ECultistState::Dead;
 	GetCharacterMovement()->DisableMovement();
 	SetActorEnableCollision(false);
@@ -218,6 +231,7 @@ bool ACultistCharacter::PerformAttack(AActor* Target, AController* InstigatorCon
 
 	if (!CanAttackTarget(Target))
 	{
+		OnAttackMissed(Target);
 		return false;
 	}
 

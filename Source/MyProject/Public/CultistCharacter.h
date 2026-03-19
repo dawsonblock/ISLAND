@@ -34,6 +34,9 @@ class MYPROJECT_API ACultistCharacter : public ACharacter
 public:
 	ACultistCharacter();
 
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent,
+	                         AController* EventInstigator, AActor* DamageCauser) override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Cult")
 	TObjectPtr<URfsnNpcAwareness> AwarenessComponent;
 
@@ -123,6 +126,15 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Cult")
 	void OnAttackConnected(AActor* Target);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Cult")
+	void OnAttackMissed(AActor* Target);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Cult")
+	void OnDamagedByActor(float Damage, AActor* DamageCauser, AController* EventInstigator);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Cult")
+	void OnDeathStarted(bool bFatal);
 
 protected:
 	virtual void BeginPlay() override;

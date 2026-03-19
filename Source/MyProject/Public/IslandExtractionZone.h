@@ -8,6 +8,10 @@
 class USoundBase;
 class UAudioComponent;
 class UNiagaraComponent;
+class UBoxComponent;
+class UPrimitiveComponent;
+class USceneComponent;
+class APawn;
 
 UCLASS()
 class MYPROJECT_API AIslandExtractionZone : public AActor
