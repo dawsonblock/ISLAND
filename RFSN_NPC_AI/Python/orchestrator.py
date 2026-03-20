@@ -1,1 +1,5 @@
-from app.api.main import *  # noqa: F401,F403
+"""Compatibility shim. Real implementation: app.api.main."""
+
+from app.api.main import app, health_check
+
+__all__ = ["app", "health_check"]
