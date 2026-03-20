@@ -121,20 +121,21 @@ See `Docs/ai/offline_mode.md` for the current degraded-mode behavior.
 
 Verified on this branch:
 
-- `python3 -m pytest tests/test_bandit_learner.py -q`
-- `python3 -m pytest tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py -q`
-- `python3 -m pytest tests/test_bandit_learner.py tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py tests/test_streaming_fixes.py -q`
+- `cd RFSN_NPC_AI/Python && python3 -m py_compile app/voice/streaming_voice_system.py`
+- `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_action_prompts.py -q`
+- `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_npc_action_bandit.py -q`
+- `cd RFSN_NPC_AI/Python && python3 -m pytest --continue-on-collection-errors -q`
 
 Current verified result:
 
-- 57 targeted backend tests passed
-- previously failing `test_bandit_learner.py` and `test_fidelity.py` defects are fixed on this branch
+- Python backend full suite is green in this cloud environment
+- current result: 258 passed, 1 skipped
+- the package-move regressions in voice import, action prompt compatibility, and NPC action bandit contract are fixed on this branch
 
 Not yet revalidated in this cloud environment:
 
 - full Unreal compile/open gate (requires local Unreal installation)
 - map launch and asset reference validation in-editor
-- full Python suite beyond the targeted backend regression set above
 
 ## Key docs
 

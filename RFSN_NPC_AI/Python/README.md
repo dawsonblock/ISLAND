@@ -40,6 +40,16 @@ Runtime output defaults to ignored `var/` directories rather than checked-in `da
 
 ## Verified backend tests on this branch
 
-- `python3 -m pytest tests/test_bandit_learner.py -q`
-- `python3 -m pytest tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py -q`
-- `python3 -m pytest tests/test_bandit_learner.py tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py tests/test_streaming_fixes.py -q`
+- `python3 -m py_compile app/voice/streaming_voice_system.py`
+- `python3 -m pytest tests/test_action_prompts.py -q`
+- `python3 -m pytest tests/test_npc_action_bandit.py -q`
+- `python3 -m pytest tests/test_dashboard_ui.py tests/test_operational.py -q`
+- `python3 -m pytest --continue-on-collection-errors -q`
+
+Current validated state in this cloud environment:
+
+- the packaged `app/` layout and legacy root shims both import cleanly
+- the voice streaming import blocker is fixed
+- the legacy action prompt contract is restored on top of the packaged prompt module
+- the NPC action bandit contract is aligned with the current world model and tests
+- full backend result: 258 passed, 1 skipped

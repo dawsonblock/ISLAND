@@ -4,11 +4,11 @@
 
 | Area | Command | Result |
 |---|---|---|
-| Baseline failure capture | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_bandit_learner.py tests/test_fidelity.py -q` | observed 4 failures before defect fixes |
-| Learner contract | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_bandit_learner.py -q` | 28 passed |
-| Tokenizer/fidelity | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py -q` | 10 passed |
-| Expanded backend regression | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_bandit_learner.py tests/test_fidelity.py tests/test_tokenizer_boundaries.py tests/test_flush_semantics.py tests/test_streaming_fixes.py -q` | 57 passed |
-| Python syntax after package move | targeted `py_compile` over changed files | passed |
+| Voice import gate | `cd RFSN_NPC_AI/Python && python3 -m py_compile app/voice/streaming_voice_system.py` | passed |
+| Action prompt compatibility | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_action_prompts.py -q` | 10 passed |
+| NPC action bandit contract | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_npc_action_bandit.py -q` | 14 passed |
+| Dashboard route regression | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_dashboard_ui.py tests/test_operational.py -q` | 5 passed |
+| Full Python backend | `cd RFSN_NPC_AI/Python && python3 -m pytest --continue-on-collection-errors -q` | 258 passed, 1 skipped |
 
 ## Not verified here
 
@@ -25,5 +25,5 @@
 - Gate B - Unreal structure only: source tree and include wiring changed, but full compile still needs local verification
 - Gate C - gameplay ownership cleanup: code path updated; in-editor validation still pending
 - Gate D - dialogue reliability: targeted backend/client code updated; Unreal runtime validation still pending
-- Gate E - Python backend: targeted confirmed defects fixed and verified
+- Gate E - Python backend: full suite green in this cloud environment
 - Gate F - full vertical slice: still requires local map playthrough
