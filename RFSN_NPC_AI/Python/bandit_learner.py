@@ -1,1 +1,5 @@
-from app.learning.bandit_learner import *  # noqa: F401,F403
+"""Compatibility shim. Real implementation: app.learning.bandit_learner."""
+
+from app.learning.bandit_learner import ArmStats, BanditConfig, StateActionBandit
+
+__all__ = ["ArmStats", "BanditConfig", "StateActionBandit"]

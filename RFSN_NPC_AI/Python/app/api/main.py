@@ -1593,12 +1593,19 @@ Respond in this JSON format exactly:
 
 
 # Mount Dashboard (Must be after API routes to avoid masking)
-DASHBOARD_DIR = Path(__file__).parent.parent / "Dashboard"
-if DASHBOARD_DIR.exists():
+_DASHBOARD_CANDIDATES = (
+    Path(__file__).resolve().parents[3] / "Dashboard",
+    Path(__file__).resolve().parents[2] / "Dashboard",
+)
+DASHBOARD_DIR = next((path for path in _DASHBOARD_CANDIDATES if path.exists()), None)
+if DASHBOARD_DIR is not None:
     app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
     logger.info(f"Dashboard mounted at / from {DASHBOARD_DIR}")
 else:
-    logger.warning(f"Dashboard directory not found at {DASHBOARD_DIR}")
+    logger.warning(
+        "Dashboard directory not found; checked %s",
+        ", ".join(str(path) for path in _DASHBOARD_CANDIDATES),
+    )
 
 
 if __name__ == "__main__":
