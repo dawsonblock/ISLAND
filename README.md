@@ -124,7 +124,7 @@ Verified on this branch:
 - `cd RFSN_NPC_AI/Python && python3 -m py_compile app/voice/streaming_voice_system.py`
 - `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_action_prompts.py -q`
 - `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_npc_action_bandit.py -q`
-- `cd RFSN_NPC_AI/Python && python3 -m pytest --continue-on-collection-errors -q`
+- `cd RFSN_NPC_AI/Python && python3 -m pytest -q`
 
 Current verified result:
 
