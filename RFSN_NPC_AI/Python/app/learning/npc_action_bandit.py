@@ -5,11 +5,10 @@ Learns which NPCAction to choose per state context bucket.
 from __future__ import annotations
 
 import json
-import math
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from ..dialogue.world_model import NPCAction, PlayerSignal, StateSnapshot
 from runtime_paths import runtime_file
@@ -18,43 +17,44 @@ from runtime_paths import runtime_file
 @dataclass(frozen=True)
 class BanditKey:
     """
-    Coarse bucket so learning generalizes without exploding state space.
+    Public compatibility key used by legacy callers and tests.
     """
-    combat_bucket: str
-    relationship_bucket: str
-    threat_bucket: str
+    mood: str
+    relationship: str
+    affinity_band: str
+    player_signal: str
+    combat: bool
+    quest: bool
+
+    @staticmethod
+    def _affinity_band(value: float) -> str:
+        if value <= -0.7:
+            return "very_neg"
+        if value <= -0.2:
+            return "neg"
+        if value < 0.2:
+            return "neutral"
+        if value < 0.7:
+            return "pos"
+        return "very_pos"
 
     @classmethod
     def from_state(cls, s: StateSnapshot, sig: PlayerSignal) -> "BanditKey":
-        # Discretize into coarse buckets to reduce state explosion
-        
-        # Combat bucket
-        c_bucket = "combat" if s.combat_active else "social"
-        
-        # Relationship bucket
-        # "hostile" (very_neg, neg), "neutral" (neutral), "friendly" (pos, very_pos)
-        aff = float(s.affinity)
-        if aff <= -0.2:
-            r_bucket = "hostile"
-        elif aff >= 0.2:
-            r_bucket = "friendly"
-        else:
-            r_bucket = "neutral"
-            
-        # Threat bucket
-        # armed if weapon drawn (WEAPON_DRAWN, ATTACKING) vs unarmed (WEAPON_LOWERED, HOLSTERED, NEUTRAL)
-        t_bucket = "unarmed"
-        if sig in (PlayerSignal.WEAPON_DRAWN, PlayerSignal.ATTACKING, PlayerSignal.CASTING):
-            t_bucket = "armed"
-
         return cls(
-            combat_bucket=c_bucket,
-            relationship_bucket=r_bucket,
-            threat_bucket=t_bucket,
+            mood=s.mood,
+            relationship=s.relationship,
+            affinity_band=cls._affinity_band(float(s.affinity)),
+            player_signal=sig.value,
+            combat=bool(s.combat_active),
+            quest=bool(s.quest_active),
         )
 
     def to_str(self) -> str:
-        return f"{self.combat_bucket}:{self.relationship_bucket}:{self.threat_bucket}"
+        return (
+            f"{self.mood}|{self.relationship}|{self.affinity_band}|{self.player_signal}|"
+            f"{'combat' if self.combat else 'no_combat'}|"
+            f"{'quest' if self.quest else 'no_quest'}"
+        )
 
 
 def _recover_tmp_files(path: Path):
@@ -75,9 +75,9 @@ class NPCActionBandit:
     """
     
     # Prior blending constants
-    PRIOR_BLEND_MIN = -0.05  # Min bump from scorer priors
-    PRIOR_BLEND_MAX = 0.05   # Max bump from scorer priors
-    PRIOR_SCALE = 20.0        # Scale factor to normalize scorer values into bump range
+    PRIOR_BLEND_MIN = -0.15  # Min bump from scorer priors
+    PRIOR_BLEND_MAX = 0.15   # Max bump from scorer priors
+    PRIOR_SCALE = 10.0       # Scale factor to normalize scorer values into bump range
 
     def __init__(self, path: Optional[Path] = None, min_trials_before_exploit: int = 3):
         self.path = path or runtime_file("learning", "npc_action_bandit.json")
@@ -160,6 +160,7 @@ class NPCActionBandit:
         arm["alpha"] += r
         arm["beta"] += (1.0 - r)
         arm["n"] += 1.0
+        self.save()
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
