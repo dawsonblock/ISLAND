@@ -44,7 +44,7 @@ Runtime output defaults to ignored `var/` directories rather than checked-in `da
 - `python3 -m pytest tests/test_action_prompts.py -q`
 - `python3 -m pytest tests/test_npc_action_bandit.py -q`
 - `python3 -m pytest tests/test_dashboard_ui.py tests/test_operational.py -q`
-- `python3 -m pytest --continue-on-collection-errors -q`
+- `python3 -m pytest -q`
 
 Current validated state in this cloud environment:
 
