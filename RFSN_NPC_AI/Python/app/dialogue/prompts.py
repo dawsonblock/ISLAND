@@ -2,7 +2,11 @@
 Strict LLM action sub-prompts for RFSN Orchestrator.
 Each action has a control block with constraints, style, and output format.
 """
-from .world_model import NPCAction
+from .world_model import NPCAction, PlayerSignal, StateSnapshot
+
+
+HIGH_RISK_ACTIONS = {NPCAction.ATTACK, NPCAction.THREATEN, NPCAction.BETRAY}
+MODERATE_RISK_ACTIONS = {NPCAction.DEFEND, NPCAction.FLEE, NPCAction.INSULT}
 
 
 def render_action_block(
@@ -229,3 +233,129 @@ DON'T:
     )
 
     return f"{header}\n{body}".strip()
+
+
+def _derive_mode(state: StateSnapshot) -> str:
+    if state.combat_active:
+        return "combat"
+    if state.quest_active:
+        return "quest"
+    if state.fear_level >= 0.7:
+        return "stealth"
+    return "dialogue"
+
+
+def _derive_safety(action: NPCAction, state: StateSnapshot) -> str:
+    if action in HIGH_RISK_ACTIONS:
+        return "HIGH_RISK"
+    if action in MODERATE_RISK_ACTIONS or state.combat_active:
+        return "MODERATE_RISK"
+    return "LOW_RISK"
+
+
+def _state_summary(state: StateSnapshot) -> str:
+    return (
+        f"mood={state.mood}|"
+        f"rel={state.relationship}|"
+        f"aff={state.affinity:+.2f}|"
+        f"combat={state.combat_active}|"
+        f"quest={state.quest_active}"
+    )
+
+
+def _legacy_action_spec(npc_action: NPCAction) -> str:
+    action_name = npc_action.value.upper()
+    intent_map = {
+        NPCAction.GREET: "Open the interaction and set tone.",
+        NPCAction.FAREWELL: "Close the interaction cleanly.",
+        NPCAction.AGREE: "Confirm alignment with the player.",
+        NPCAction.DISAGREE: "Push back without changing topic.",
+        NPCAction.APOLOGIZE: "Acknowledge fault and de-escalate.",
+        NPCAction.INSULT: "Deliver a sharp in-character slight.",
+        NPCAction.COMPLIMENT: "Offer a specific positive remark.",
+        NPCAction.THREATEN: "Issue a warning and create pressure.",
+        NPCAction.REQUEST: "Ask for a concrete thing or behavior.",
+        NPCAction.OFFER: "Present a concrete offer.",
+        NPCAction.REFUSE: "Decline clearly and briefly.",
+        NPCAction.ACCEPT: "Accept the player's request or offer.",
+        NPCAction.ATTACK: "Signal immediate hostility.",
+        NPCAction.DEFEND: "Protect yourself without overextending.",
+        NPCAction.FLEE: "Retreat from danger.",
+        NPCAction.HELP: "Provide assistance within current scope.",
+        NPCAction.BETRAY: "Reveal a turn against the player.",
+        NPCAction.IGNORE: "Withhold engagement.",
+        NPCAction.INQUIRE: "Ask one focused question.",
+        NPCAction.EXPLAIN: "Provide concise clarifying information.",
+    }
+    allowed_map = {
+        NPCAction.ATTACK: "- hostile intent\n- terse combat language",
+        NPCAction.FLEE: "- fear or urgency\n- retreat language",
+        NPCAction.THREATEN: "- one clear warning\n- intimidating tone",
+        NPCAction.IGNORE: "- silence or minimal acknowledgement",
+    }
+    forbidden_map = {
+        NPCAction.ATTACK: "- graphic violence\n- off-topic dialogue",
+        NPCAction.FLEE: "- standing your ground\n- extended conversation",
+        NPCAction.THREATEN: "- explicit real-world harm\n- long monologues",
+        NPCAction.IGNORE: "- helpful exposition\n- starting a new topic",
+    }
+    allowed = allowed_map.get(
+        npc_action,
+        "- stay in character\n- keep to the selected action",
+    )
+    forbidden = forbidden_map.get(
+        npc_action,
+        "- break character\n- invent unrelated goals",
+    )
+    intent = intent_map.get(npc_action, "Perform the selected action cleanly.")
+    return (
+        f"ACTION: {action_name}\n"
+        f"INTENT: {intent}\n"
+        f"ALLOWED CONTENT:\n{allowed}\n"
+        f"FORBIDDEN CONTENT:\n{forbidden}"
+    )
+
+
+def build_action_subprompt(
+    npc_action: NPCAction,
+    state: StateSnapshot,
+    player_signal: PlayerSignal,
+    context: dict | None = None,
+) -> str:
+    """
+    Compatibility wrapper retained for legacy callers and tests.
+    """
+    context = context or {}
+    npc_name = context.get("npc_name", "NPC")
+    mode = _derive_mode(state)
+    safety = _derive_safety(npc_action, state)
+    summary = _state_summary(state)
+    rendered = render_action_block(
+        npc_action=npc_action,
+        npc_name=npc_name,
+        mood=state.mood,
+        relationship=state.relationship,
+        affinity=state.affinity,
+        player_signal=player_signal.value,
+    )
+    spec = _legacy_action_spec(npc_action)
+    return (
+        "[ACTION_SUBPROMPT]\n"
+        f"ACTION={npc_action.value}\n"
+        f"MODE={mode}\n"
+        f"SAFETY={safety}\n"
+        f"STATE_SUMMARY={summary}\n\n"
+        f"Player just did: {player_signal.value}\n\n"
+        "STYLE CONSTRAINTS:\n"
+        f"- Stay in character as {npc_name}\n"
+        f"- mood={state.mood}\n"
+        f"- relationship={state.relationship}\n"
+        f"- affinity={state.affinity:+.2f}\n"
+        "- 1-3 sentences maximum\n\n"
+        f"{spec}\n\n"
+        f"{rendered}\n"
+        "[/ACTION_SUBPROMPT]"
+    )
+
+
+__all__ = ["build_action_subprompt", "render_action_block"]
