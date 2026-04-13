@@ -3,6 +3,10 @@ name: C/C++ CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'Source/**'
+      - '*.uproject'
+      - '.github/workflows/**'
   pull_request:
     branches: [ "main" ]
 
