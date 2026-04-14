@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data directories (keep patterns from .gitignore)
+data/episodes/
+data/memory/
+data/logs/
+data/audit/
+data/policy/
+data/recordings/
+data/learning/
+var/
+Models/
+memory/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docs
+README.md
+*.md
+Docs/
+docs/
+CHANGELOG.md
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build artifacts
+*.o
+*.a
+*.so
+.so
+*.dylib
+dist/
+build/
+
+# Environment files (specific to dev)
+.env.local
+.env.*.local

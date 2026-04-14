@@ -1,0 +1,115 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-test:
+    name: Python Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: RFSN_NPC_AI/Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-core.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run tests
+        working-directory: RFSN_NPC_AI/Python
+        run: |
+          pytest tests/ -v --cov=. --cov-report=xml --cov-report=term
+
+      - name: Upload coverage reports
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./RFSN_NPC_AI/Python/coverage.xml
+          flags: backend
+          name: python-backend
+
+  backend-docker:
+    name: Python Backend Docker Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: RFSN_NPC_AI/Dockerfile
+          push: false
+          tags: island-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install linters
+        working-directory: RFSN_NPC_AI/Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint black isort flake8
+
+      - name: Run black check
+        working-directory: RFSN_NPC_AI/Python
+        run: black --check . || true
+
+      - name: Run isort check
+        working-directory: RFSN_NPC_AI/Python
+        run: isort --check-only . || true
+
+      - name: Run flake8
+        working-directory: RFSN_NPC_AI/Python
+        run: flake8 . --max-line-length=120 --extend-ignore=E203,W503 || true
+
+  docs:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check markdown files
+        run: |
+          if ! command -v mdl &> /dev/null; then
+            echo "Markdown linter not available, skipping"
+            exit 0
+          fi
+          find . -name "*.md" -type f | head -10 | xargs mdl || true

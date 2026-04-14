@@ -1,0 +1,41 @@
+# Unreal Engine
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+
+# Python virtual environments
+RFSN_NPC_AI/.venv/
+RFSN_NPC_AI/__pycache__/
+RFSN_NPC_AI/Python/__pycache__/
+RFSN_NPC_AI/Python/data/
+RFSN_NPC_AI/Python/var/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Documentation
+Docs/
+docs/
+README.md
+*.md
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db

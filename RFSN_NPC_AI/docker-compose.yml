@@ -46,3 +46,5 @@ services:
 volumes:
   models:
   memory:
+  ollama_data:
+  redis_data:
