@@ -1,8 +1,8 @@
-# RFSN Orchestrator - Production Instructions
+# RFSN Orchestrator Instructions
 
 ## Overview
 
-The RFSN (Roleplay Fantasy Social Network) Orchestrator is a production-ready AI system for managing NPC dialogue, learning, and state management in roleplay scenarios. It integrates multiple production modules for governance, observability, and deterministic replay.
+The RFSN (Roleplay Fantasy Social Network) Orchestrator is the Python backend used for NPC dialogue, learning, and state management experiments in this repo. The canonical FastAPI entrypoint is `Python/app/api/main.py`; `Python/orchestrator.py` and `Python/main.py` remain compatibility-only wrappers for older imports and launch targets.
 
 **Version:** v9.0
 
@@ -43,56 +43,49 @@ cd RFSN-ORCHESTRATOR
 ### 2. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate
+pip install -r Python/requirements-core.txt
+pip install kokoro-onnx
 ```
 
-### 3. Setup Configuration
+### 3. Review Seed Configuration
 
-Copy the example configuration:
+Review the checked-in seed configuration:
 
 ```bash
-cp config.example.json config.json
+cat config.json
 ```
 
-Edit `config.json` with your settings:
+On first startup, the backend copies `config.json` to a writable runtime location:
 
-```json
-{
-  "llm_provider": "openai",
-  "llm_model": "gpt-4",
-  "temperature": 0.7,
-  "max_tokens": 80,
-  "memory_enabled": true,
-  "learning_enabled": true,
-  "intent_gate_enabled": true
-}
-```
+- `Python/var/config/config.json` by default
+- `$RFSN_RUNTIME_ROOT/config/config.json` when the runtime root override is set
 
-### 4. Setup API Keys
+### 4. Runtime API Keys
 
-Create `api_keys.json`:
+The backend creates its runtime API-key file on first startup if it does not already exist:
 
-```bash
-# The system will auto-generate an admin key on first run
-# Or generate manually:
-python -c "from security import api_key_manager; print(api_key_manager.generate_key('admin', ['admin_role']))"
-```
+- `Python/var/security/api_keys.json` by default
+- `$RFSN_RUNTIME_ROOT/security/api_keys.json` when the runtime root override is set
 
 ---
 
 ## Configuration
 
-### Core Settings
+### Common Seed Settings
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `llm_provider` | LLM provider (openai, anthropic, local) | openai |
-| `llm_model` | Model name | gpt-4 |
-| `temperature` | Response randomness (0.0-1.0) | 0.7 |
-| `max_tokens` | Max tokens per response | 80 |
-| `memory_enabled` | Enable conversation memory | true |
-| `learning_enabled` | Enable learning layer | true |
-| `intent_gate_enabled` | Enable intent validation | true |
+| `llm.backend` | LLM backend | `ollama` |
+| `llm.ollama_model` | Local model served by Ollama | `llama3.2` |
+| `llm.temperature` | Response randomness | `0.7` |
+| `llm.max_tokens` | Max tokens per response | `150` |
+| `tts.backend` | TTS backend | `kokoro` |
+| `memory_enabled` | Enable conversation memory | `true` |
+| `server.host` | Bind host | `127.0.0.1` |
+| `server.port` | Bind port | `8000` |
+| `performance.backpressure_queue_size` | Streaming queue size | `10` |
 
 ### Hot Configuration
 
@@ -134,14 +127,12 @@ docker run -p 8000:8000 \
 
 ### Verify Startup
 
-Look for these log messages:
+Look for these conditions:
 
 ```
-RFSN ORCHESTRATOR v8.2 - STARTING UP
-======================================================================
-Learning layer initialized (Policy Adapter, Reward Model, Trainer, LearningContract, MemoryGovernance, IntentGate, StreamingPipeline, Observability, EventRecorder, StateMachine)
-Runtime state initialized atomically
-Startup complete!
+- no import or model-path errors
+- runtime config seeded under the configured runtime root
+- startup completes without lifecycle exceptions
 ```
 
 ---
@@ -151,30 +142,29 @@ Startup complete!
 ### Health Check
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/health
 ```
 
-Response:
-```json
-{
-  "status": "healthy",
-  "components": {
-    "streaming_engine": true,
-    "piper_engine": true,
-    "xva_engine": false
-  }
-}
-```
+Returns JSON service-health data for the canonical FastAPI app.
 
 ### Chat Endpoint
 
 ```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+curl -N -X POST http://localhost:8000/api/dialogue/stream \
   -H "Content-Type: application/json" \
   -d '{
-    "npc_name": "Serana",
-    "user_input": "Hello, how are you?"
+    "user_input": "Hello, how are you?",
+    "npc_state": {
+      "mood": "neutral",
+      "affinity": 0.0,
+      "relationship": "stranger",
+      "recent_sentiment": 0.0,
+      "combat_active": false,
+      "quest_active": false,
+      "trust_level": 0.5,
+      "fear_level": 0.0
+    },
+    "enable_voice": false
   }'
 ```
 
@@ -212,7 +202,7 @@ Enforces learning boundaries with write gate and rollback.
 **Configuration:**
 
 ```python
-# In orchestrator.py startup_event
+# In app/api/main.py startup_event
 constraints = LearningConstraints(
     max_step_size=0.1,
     cooldown_seconds=5.0,
@@ -251,7 +241,7 @@ Manages memory with provenance, confidence, TTL, and quarantine.
 
 **Storage Location:**
 ```
-data/memory/governed/
+var/memory/governed/
 ```
 
 **Usage:**
@@ -365,7 +355,7 @@ Records events for deterministic replay and debugging.
 
 **Storage Location:**
 ```
-data/recordings/
+var/recordings/
 ```
 
 **Usage:**
@@ -455,26 +445,24 @@ policy_adapter.save_weights()
 
 ### Conversation Memory
 
-Stored in `memory/` directory:
+Stored under the configured runtime root, typically `var/memory/conversations/`:
 
 ```
-memory/
-├── conversations/
-│   ├── Serana.json
-│   ├── Aela.json
-│   └── ...
-└── backups/
+var/memory/conversations/
+├── Serana.json
+├── Aela.json
+└── ...
 ```
 
 ### Governed Memory
 
-Stored in `data/memory/governed/`:
+Stored under the configured runtime root, typically `var/memory/governed/`:
 
 ```
-data/memory/governed/
-├── memories.json
-├── quarantine.json
-└── index.json
+var/memory/governed/
+├── <memory-id>.json
+├── <memory-id>.json
+└── ...
 ```
 
 ### Memory Retrieval
@@ -518,7 +506,7 @@ python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 **Problem:** Conversations not being saved
 
 **Solution:**
-- Check `memory/` directory permissions
+- Check `var/memory/conversations/` or the configured runtime-root equivalent
 - Verify `memory_enabled: true` in config.json
 - Check disk space
 
@@ -552,7 +540,7 @@ LOG_LEVEL=DEBUG python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ### Health Check
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/health
 ```
 
 ### View Logs
@@ -602,7 +590,7 @@ black Python/
 
 1. Create module file in `Python/`
 2. Add to `RuntimeState` in `runtime_state.py`
-3. Initialize in `orchestrator.py` startup_event
+3. Initialize in `app/api/main.py` startup_event
 4. Add to atomic swap in `runtime.swap()`
 5. Write tests in `tests/test_production.py`
 
@@ -619,7 +607,7 @@ For code changes, restart the server:
 
 ```bash
 # Kill and restart
-pkill -f orchestrator.py
+pkill -f "app.api.main:app" || pkill -f "orchestrator:app"
 python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -658,7 +646,7 @@ services:
 ### Monitoring
 
 - **Prometheus:** `http://localhost:8000/metrics`
-- **Health:** `http://localhost:8000/health`
+- **Health:** `http://localhost:8000/api/health`
 - **Logs:** `logs/orchestrator.log`
 
 ---

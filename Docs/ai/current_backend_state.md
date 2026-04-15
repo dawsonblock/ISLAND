@@ -4,8 +4,8 @@
 
 - Backend root: `RFSN_NPC_AI/Python`
 - Canonical FastAPI implementation: `app/api/main.py`
-- Compatibility launch shim: `orchestrator.py`
-- Compatibility wrapper: `main.py`
+- Compatibility-only launch shim: `orchestrator.py`
+- Compatibility-only wrapper: `main.py`
 - Current Unreal client route: `/api/dialogue/stream`
 
 `app/api/main.py` is the only canonical backend authority. `orchestrator.py` and `main.py` exist only to preserve historical imports and launch targets.

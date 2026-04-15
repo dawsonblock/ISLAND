@@ -78,8 +78,9 @@ class StateActionBandit:
       - If thompson_binary=True: reward>0 => success, else failure (recommended).
       
     Example usage:
+        >>> from runtime_paths import runtime_file
         >>> config = BanditConfig(mode="thompson", thompson_binary=True)
-        >>> bandit = StateActionBandit("data/bandit_state.json", config)
+        >>> bandit = StateActionBandit(str(runtime_file("learning", "bandit_state.json")), config)
         >>> 
         >>> # Select an action
         >>> action = bandit.select_action("FRIENDLY", ["GREET", "HELP", "EXPLAIN"])

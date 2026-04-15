@@ -6,7 +6,7 @@ Use this after building the first playable slice in Unreal Editor.
 
 ### Map and mode
 - [ ] The active map uses `IslandGameMode`
-- [ ] `World Settings` does not override the map back to an older prototype game mode
+- [ ] `World Settings` does not override the map back to `MyProjectGameMode` or another legacy prototype mode
 - [ ] `GlobalDefaultGameMode` still points at `IslandGameMode`
 
 ### Required level actors

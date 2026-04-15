@@ -69,8 +69,8 @@ This PR successfully implements all requirements from the problem statement for 
   - RFSN outputs topic ID + variant number
   - Pre-authored lines in Creation Kit
   - Conditions based on RFSN global variables
-  - **Pros:** Stable, shippable, no SKSE required
-  - **Status:** Production-ready
+  - **Pros:** Stable, lower-risk, no SKSE required
+  - **Status:** Recommended bounded integration path
 
 - **Path B: Dynamic Speech (Advanced)**
   - SKSE plugin bridges Skyrim ↔ RFSN
@@ -123,7 +123,7 @@ This PR successfully implements all requirements from the problem statement for 
 from bandit_learner import StateActionBandit, BanditConfig
 
 config = BanditConfig(thompson_binary=True, epsilon=0.1)
-bandit = StateActionBandit("data/bandit_state.json", config)
+bandit = StateActionBandit("var/learning/bandit_state.json", config)
 
 # Select action
 action = bandit.select_action("FRIENDLY", ["GREET", "HELP", "WARN"])

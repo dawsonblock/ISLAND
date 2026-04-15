@@ -48,13 +48,12 @@ For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `
 **Volumes**:
 
 - Optional legacy `Models/` seed mount (read-only)
-- `var/` runtime mount for conversation history, API keys, runtime config copies, and downloaded models
-- ollama_data (persistent, for local LLM cache)
-- redis_data (persistent, for caching layer)
+- `var/` runtime mount for conversation history, API keys, runtime config copies, recordings, and downloaded models
+- `ollama_data` and `redis_data` are still declared in the compose file, but the current services do not mount them
 
 **Features**:
 
-- Auto-pull latest images (`--pull always`)
+- Canonical backend entrypoint via `app.api.main:app`
 - Memory limits: 2GB request, 8GB hard cap
 - Health check integration
 - Restart policy: unless-stopped
@@ -280,9 +279,10 @@ Created `.dockerignore` files:
 │   ├── .dockerignore
 │   ├── docker-compose.yml                # Updated services
 │   └── Python/
-│       ├── orchestrator.py
+│       ├── app/api/main.py
+│       ├── orchestrator.py               # Compatibility-only shim
 │       ├── requirements-core.txt
-│       └── tests/                        # 142 tests
+│       └── tests/                        # Backend test suite
 └── ... (original project structure)
 ```
 
@@ -294,7 +294,7 @@ Created `.dockerignore` files:
 
 ```bash
 cd RFSN_NPC_AI
-docker compose up --pull always
+docker compose up --build
 # http://127.0.0.1:8000
 ```
 
@@ -434,7 +434,7 @@ Manual deployment to K8s/ECS/Cloud Run
 
 ✅ **Kubernetes**
 
-- Production-ready manifests with resource limits
+- Deployment manifests with resource limits
 - Auto-scaling configured (2-10 replicas)
 - Network policies for security
 - Pod disruption budgets for availability

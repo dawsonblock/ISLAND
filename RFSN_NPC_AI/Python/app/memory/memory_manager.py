@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-RFSN Memory Manager v8.1 - Production Ready
-Persistent conversation memory with safe reset and backup functionality.
-"""
+"""Persistent conversation memory with safe reset and backup functionality."""
 
 import json
 import logging

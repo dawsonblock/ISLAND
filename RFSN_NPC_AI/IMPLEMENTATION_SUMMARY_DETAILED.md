@@ -101,7 +101,7 @@ FORBIDDEN CONTENT:
 ```python
 bandit = BanditCore(
     strategy="thompson_beta",  # or "softmax", "ucb1"
-    path=Path("data/learning/bandit_core.json"),
+   path=Path("var/learning/bandit_core.json"),
     seed=42,  # Optional for determinism
     strategy_params={"temperature": 0.1}  # Strategy-specific
 )
@@ -229,7 +229,7 @@ bandit.save()
 
 4. **Game Engine Integration**:
    - Complete specification documents
-   - Production-ready adapter code
+   - Adapter code included
    - Clear data contracts
    - Error handling strategies
 
@@ -266,7 +266,7 @@ bandit.save()
 
 ## Files Modified
 
-1. `Python/orchestrator.py`: Fixed syntax errors (lines 700-708, 933-942)
+1. `Python/orchestrator.py`: Fixed syntax errors (lines 700-708, 933-942); this file now remains compatibility-only while `Python/app/api/main.py` is canonical
 2. `Python/learning/npc_action_bandit.py`: Fixed load() method (lines 161-173)
 3. `Python/tests/test_npc_action_bandit.py`: Fixed test assertion (line 133)
 4. `README.md`: Added episode runner section
@@ -343,7 +343,7 @@ bandit.save()
 python Python/run_episode.py
 
 # Analyze results
-python Python/analyze_episode.py data/episodes/npc_001_20240116_123456.jsonl
+python Python/analyze_episode.py Python/var/episodes/npc_001_20240116_123456.jsonl
 ```
 
 ### Unity Integration
@@ -362,7 +362,7 @@ python Python/analyze_episode.py data/episodes/npc_001_20240116_123456.jsonl
 
 ## Conclusion
 
-This upgrade transforms the RFSN-ORCHESTRATOR from a research prototype with syntax errors into a production-ready NPC dialogue system with:
+This upgrade transforms the RFSN-ORCHESTRATOR from a research prototype with syntax errors into a more complete NPC dialogue system with:
 
 - **Fixed syntax errors** enabling the system to run
 - **Enhanced LLM control** via machine-readable action prompts
@@ -370,4 +370,4 @@ This upgrade transforms the RFSN-ORCHESTRATOR from a research prototype with syn
 - **Game engine integration** via complete specifications and adapters
 - **Episode simulation** for testing and evaluation
 
-All components are tested, documented, and ready for deployment in Unity or Skyrim projects.
+All components are tested, documented, and ready for further Unity or Skyrim integration work.

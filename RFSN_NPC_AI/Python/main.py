@@ -1,4 +1,4 @@
-"""Compatibility wrapper. Canonical implementation: app.api.main."""
+"""Compatibility-only wrapper. Canonical implementation: app.api.main."""
 
 from app.api import main as _main
 

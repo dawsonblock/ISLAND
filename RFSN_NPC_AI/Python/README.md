@@ -29,7 +29,7 @@ cd RFSN_NPC_AI/Python
 python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Compatibility launch surface, still supported:
+Compatibility-only launch surface, still supported:
 
 ```bash
 cd RFSN_NPC_AI/Python
@@ -63,4 +63,4 @@ Current validated state in this cloud environment:
 - the voice streaming import blocker is fixed
 - the legacy action prompt contract is restored on top of the packaged prompt module
 - the NPC action bandit contract is aligned with the current world model and tests
-- full backend result: 261 passed, 1 skipped
+- full backend result: 261 passed, 1 skipped under an isolated `RFSN_RUNTIME_ROOT`

@@ -8,7 +8,7 @@ Repo: ISLAND
 
 This report tracks the current verified build surface only. Earlier reproduced failures were fixed during the repair pass and are preserved in git history rather than mixed into the current-state report.
 
-- Python backend: green. `261 passed, 1 skipped`.
+- Python backend: green. `261 passed, 1 skipped` under an isolated runtime root.
 - Docker build path: green from the repo root when `RFSN_NPC_AI` is used as the build context.
 - Local helper script: green for `test`; repo root resolution is fixed.
 - Unreal editor compile on the provisioned local machine: green when full Xcode is selected.

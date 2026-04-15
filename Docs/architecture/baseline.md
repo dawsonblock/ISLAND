@@ -31,7 +31,7 @@ The launcher expects `UE_PATH` to point at an Unreal installation if it cannot a
 
 ### Python backend
 
-At baseline, the backend entrypoint remained the flat compatibility surface rather than the package-local canonical module:
+At baseline, the backend launch command had already moved to the package-local canonical module:
 
 ```bash
 cd RFSN_NPC_AI/Python

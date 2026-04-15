@@ -22,7 +22,7 @@ Both paths maintain RFSN as the authoritative state machine while respecting Sky
 
 ## Path A: Bounded Dialogue (Recommended)
 
-This path uses Skyrim's native dialogue system with RFSN providing state management and action selection. **This is production-ready and shippable.**
+This path uses Skyrim's native dialogue system with RFSN providing state management and action selection. **This is the lower-risk integration path described in this spec.**
 
 ### How It Works
 
@@ -179,7 +179,7 @@ variant = random.choice(available) if available else random.choice(variants)
 ### Pros and Cons
 
 **Pros:**
-- ✅ Stable and production-ready
+- ✅ Stable and easier to validate
 - ✅ No voice synthesis required
 - ✅ Uses native Skyrim systems
 - ✅ Easy to author and test
@@ -314,7 +314,7 @@ public:
 
 #### 2. RFSN Service Endpoint
 
-**New endpoint in orchestrator.py**:
+**New endpoint in app/api/main.py**:
 
 ```python
 @app.post("/api/skyrim/dialogue")
@@ -549,7 +549,7 @@ EndFunction
 
 Bool Function IsRFSNAvailable()
     ; Check if service responds within timeout
-    Return CheckHTTPConnection("http://localhost:8000/health", 1.0)
+    Return CheckHTTPConnection("http://localhost:8000/api/health", 1.0)
 EndFunction
 ```
 
@@ -720,7 +720,7 @@ if npc_has_active_quest(npc_id):
 3. Add TTS generation
 4. Keep Path A as fallback
 
-This ensures a stable, shippable product while allowing future enhancement.
+This keeps the initial integration lower risk while allowing future enhancement.
 
 ---
 

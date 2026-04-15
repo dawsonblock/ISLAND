@@ -16,6 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "Python"))
 
 from bandit_learner import StateActionBandit, BanditConfig
+from runtime_paths import runtime_file
 
 
 def load_prompt_template():
@@ -53,7 +54,10 @@ def demo_bandit_learning():
         min_trials_before_exploit=3
     )
     
-    bandit = StateActionBandit("demo_bandit_state.json", config)
+    bandit = StateActionBandit(
+        str(runtime_file("learning", "demo_bandit_state.json")),
+        config,
+    )
     
     # Simulate learning across different NPC states
     states_actions = {

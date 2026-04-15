@@ -131,7 +131,7 @@ Verified on this branch:
 Current verified result:
 
 - Python backend full suite is green in this cloud environment
-- current result: 261 passed, 1 skipped
+- current result: 261 passed, 1 skipped under an isolated `RFSN_RUNTIME_ROOT`
 - the package-move regressions in voice import, action prompt compatibility, and NPC action bandit contract are fixed on this branch
 
 Not yet revalidated in this cloud environment:

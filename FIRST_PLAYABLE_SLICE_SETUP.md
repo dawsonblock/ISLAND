@@ -48,6 +48,7 @@ The playable slice assumes these C++ classes are in use:
 - **HUD:** `IslandHUD`
 
 `IslandGameMode` now sets the pawn/controller/HUD classes in code, so the main thing you need is for the map to use `IslandGameMode`.
+`MyProjectGameMode` remains in the repo only as a legacy prototype surface and should not be used as the active gameplay authority.
 
 In Unreal Editor:
 

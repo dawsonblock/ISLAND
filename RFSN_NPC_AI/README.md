@@ -2,15 +2,15 @@
 
 <div align="center">
 
-**Production-Ready Streaming AI System for Real-Time NPC Dialogue**
+**Streaming AI Backend for Real-Time NPC Dialogue**
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-142%20passing-success.svg)](Python/tests/)
+[![Tests](https://img.shields.io/badge/tests-261%20passed%20%7C%201%20skipped-success.svg)](Python/tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-optimized-brightgreen.svg)](Python/)
 
-*Production-ready streaming AI with semantic action selection, world model prediction, and real-time TTS*
+*Streaming AI with semantic action selection, world model prediction, and real-time TTS*
 
 [Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [API](#-api-reference) • [Performance](#-performance)
 
@@ -32,14 +32,12 @@
 - **🤖 Adaptive Learning** - Contextual bandit learns optimal dialogue styles per NPC
 - **🛡️ Safety Rules** - Hard overrides prevent learned stupidity in combat/trust/quest contexts
 
-### Production Hardening (v9.0)
+### Current Branch Proof (v9.0)
 
-- ✅ **142 Tests** - Comprehensive coverage including edge cases, learning layer, and world model integration
-- ✅ **Zero Race Conditions** - Deque+Condition queue pattern (no task_done/join bugs)
-- ✅ **Atomic State Swaps** - RuntimeState prevents half-applied config during reloads
-- ✅ **Single TTS Queue** - Unified backpressure (no double-buffering)
-- ✅ **Canonical Versioning** - Single source of truth for version strings
-- ✅ **Safety Rules** - Hard overrides prevent learned stupidity in critical states
+- ✅ **Backend suite validated** - `261 passed, 1 skipped` under an isolated `RFSN_RUNTIME_ROOT`
+- ✅ **Canonical entrypoint** - `Python/app/api/main.py` is primary; `orchestrator.py` and `main.py` are compatibility-only
+- ✅ **Runtime-root storage** - writable config, API keys, conversations, recordings, and runtime downloads default under `Python/var/`
+- ✅ **Compose surface clarified** - backend serves on 8000; the dashboard uses 8080
 
 ---
 
@@ -78,8 +76,8 @@ python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 **Server URL**: `http://127.0.0.1:8000`  
-**Dashboard**: `http://127.0.0.1:8000`
-**Mobile UI**: `http://127.0.0.1:8080` (run `python mobile_chat/server.py`)
+**Dashboard (docker compose)**: `http://127.0.0.1:8080`  
+**Mobile UI**: `python mobile_chat/server.py` also defaults to `http://127.0.0.1:8080`, so run it separately from the dashboard
 
 ### Docker (Optional)
 
@@ -121,7 +119,7 @@ docker run -p 8000:8000 rfsn-orchestrator
 
 | Component | Purpose | Location |
 |-----------|---------|----------|
-| **Orchestrator** | Canonical FastAPI server, request handling | `Python/app/api/main.py` |
+| **FastAPI app** | Canonical FastAPI server and lifecycle wiring | `Python/app/api/main.py` |
 | **Streaming Engine** | Token processing, sentence detection | `Python/streaming_engine.py` |
 | **DequeSpeechQueue** | Thread-safe bounded queue with drop policy | `Python/streaming_voice_system.py` |
 | **World Model** | Predicts state transitions from actions | `Python/world_model.py` |
@@ -226,13 +224,10 @@ cd Python
 python -m pytest tests/ -v
 ```
 
-### Test Coverage
+### Current Verified Result
 
-- **Core Functionality**: 105 tests
-- **Learning Layer**: 21 tests
-- **World Model Integration**: 3 tests
-- **Edge Cases**: 13 tests
-- **Total**: 142 tests (100% passing)
+- **Full backend suite**: `261 passed, 1 skipped` under an isolated `RFSN_RUNTIME_ROOT`
+- **Import compatibility**: canonical package layout and legacy root shims both import cleanly on this branch
 
 ### Test Categories
 
@@ -358,10 +353,10 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-from orchestrator import app
-from world_model import StateSnapshot, PlayerSignal, NPCAction
-from action_scorer import ActionScorer
-from learning.bandit_core import BanditCore
+from runtime_paths import runtime_dir
+from app.dialogue.world_model import StateSnapshot, PlayerSignal, NPCAction
+from app.dialogue.action_scorer import ActionScorer
+from app.learning.bandit_core import BanditCore
 
 
 async def run_episode(npc_id: str, num_turns: int = 100, output_file: str = None):
@@ -371,7 +366,8 @@ async def run_episode(npc_id: str, num_turns: int = 100, output_file: str = None
     Args:
         npc_id: Unique identifier for the NPC
         num_turns: Number of conversation turns to simulate
-        output_file: Path to save episode.jsonl (defaults to data/episodes/{npc_id}_{timestamp}.jsonl)
+        output_file: Optional path to save episode.jsonl.
+            Defaults to the runtime-root episodes directory under var/episodes/.
     """
     # Initialize components
     action_scorer = ActionScorer()
@@ -486,10 +482,10 @@ async def run_episode(npc_id: str, num_turns: int = 100, output_file: str = None
     # Save episode data
     if output_file is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = f"data/episodes/{npc_id}_{timestamp}.jsonl"
-    
-    output_path = Path(output_file)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path = runtime_dir("episodes") / f"{npc_id}_{timestamp}.jsonl"
+    else:
+        output_path = Path(output_file)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(output_path, "w") as f:
         for turn_data in episode_data:
@@ -601,7 +597,7 @@ if __name__ == "__main__":
 Run analysis:
 
 ```bash
-python analyze_episode.py data/episodes/lydia_001_20240116_123456.jsonl
+python analyze_episode.py var/episodes/lydia_001_20240116_123456.jsonl
 ```
 
 #### 5. Integration Testing with Real Orchestrator
@@ -609,8 +605,8 @@ python analyze_episode.py data/episodes/lydia_001_20240116_123456.jsonl
 For full end-to-end testing with the live orchestrator:
 
 ```bash
-# Start orchestrator
-python launch_optimized.py
+# Start the canonical backend
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 
 # In another terminal, run episode via HTTP API
 python -c "
@@ -619,11 +615,20 @@ import json
 
 for i in range(100):
     response = requests.post(
-        'http://localhost:8000/api/chat',
+        'http://localhost:8000/api/dialogue/stream',
         json={
-            'message': f'Turn {i+1} test message',
-            'npc_id': 'test_npc',
-            'context': {}
+            'user_input': f'Turn {i+1} test message',
+            'npc_state': {
+                'mood': 'neutral',
+                'affinity': 0.0,
+                'relationship': 'stranger',
+                'recent_sentiment': 0.0,
+                'combat_active': False,
+                'quest_active': False,
+                'trust_level': 0.5,
+                'fear_level': 0.0
+            },
+            'enable_voice': False
         }
     )
     print(f'Turn {i+1}: {response.status_code}')
@@ -696,7 +701,10 @@ export RFSN_LOG_LEVEL=DEBUG
 ```
 RFSN-ORCHESTRATOR/
 ├── Python/
-│   ├── orchestrator.py           # FastAPI server
+│   ├── app/
+│   │   └── api/
+│   │       └── main.py           # Canonical FastAPI app
+│   ├── orchestrator.py           # Compatibility-only shim
 │   ├── streaming_engine.py       # Core streaming logic
 │   ├── streaming_voice_system.py # DequeSpeechQueue (thread-safe)
 │   ├── runtime_state.py          # Atomic runtime management
@@ -710,7 +718,7 @@ RFSN-ORCHESTRATOR/
 │   │   ├── reward_model.py       # Reward computation
 │   │   └── trainer.py            # Online weight updates
 │   ├── requirements.txt          # Dependencies
-│   └── tests/                    # Test suite (139 tests)
+│   └── tests/                    # Backend test suite
 ├── Dashboard/
 │   └── index.html                # Metrics dashboard
 ├── Models/
