@@ -10,7 +10,7 @@ run_in_new_tab() {
 
 # 1. Start Main Orchestrator
 echo "Starting Main Orchestrator (Port 8000)..."
-run_in_new_tab "cd Python && python orchestrator.py" "RFSN-Orchestrator"
+run_in_new_tab "cd Python && python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000" "RFSN-Orchestrator"
 
 # 2. Start Web Chat Backend
 echo "Starting Web Chat Backend (Port 3001)..."

@@ -11,7 +11,6 @@ import json
 import logging
 import os
 from contextlib import asynccontextmanager
-import tempfile
 import time
 from pathlib import Path
 from typing import Optional
@@ -24,6 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+from ..runtime_paths import runtime_dir
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("chatterbox_server")
@@ -33,9 +34,10 @@ logger = logging.getLogger("chatterbox_server")
 # ─────────────────────────────────────────────────────────────
 
 DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-MODEL_CACHE_DIR = Path.home() / ".cache" / "chatterbox"
-OUTPUT_DIR = Path(tempfile.gettempdir()) / "rfsn_tts"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+MODEL_CACHE_DIR = runtime_dir("models", "chatterbox")
+OUTPUT_DIR = runtime_dir("tts", "chatterbox")
+os.environ.setdefault("HF_HOME", str(MODEL_CACHE_DIR))
+os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(MODEL_CACHE_DIR))
 
 # ─────────────────────────────────────────────────────────────
 # Models (lazy loaded)

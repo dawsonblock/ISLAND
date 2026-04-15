@@ -10,7 +10,7 @@ The ISLAND project includes automated testing and Docker build workflows.
 
 Runs on every push and PR:
 
-- **Python Tests** (3.10, 3.11, 3.12)
+- **Python Tests** (3.12)
   - 142 unit tests covering streaming, learning layer, world model
   - Code coverage with codecov
   - Run time: ~5-10 minutes
@@ -61,10 +61,11 @@ Configure in GitHub:
 
 1. Settings → Branches → Add rule
 2. Branch name pattern: `main`
+
 3. Require checks to pass:
-   - `backend-test (3.10, 3.11, 3.12)`
-   - `backend-docker`
-   - `lint`
+
+- `backend-test`
+- `backend-docker`
 
 ### Local Development
 
@@ -133,6 +134,8 @@ source .venv/bin/activate
 pip install -r requirements-core.txt
 pytest tests/ -v
 ```
+
+The backend CI and Docker images assume Python 3.12+, matching `RFSN_NPC_AI/Python/pyproject.toml` and the repo `.python-version` files.
 
 #### Run Specific Tests
 

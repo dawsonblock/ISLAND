@@ -9,7 +9,7 @@ A production-clean local web chat interface for the RFSN NPC Orchestrator.
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.12+
 - Node.js 18+
 - The **RFSN Orchestrator** must be running locally on port 8000.
   - Streaming Endpoint: `/api/dialogue/stream` (Discovered from repo analysis)

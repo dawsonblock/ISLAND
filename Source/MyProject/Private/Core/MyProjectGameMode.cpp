@@ -4,5 +4,5 @@
 
 AMyProjectGameMode::AMyProjectGameMode()
 {
-	// stub
+	// Legacy stub. IslandGameMode owns the active gameplay loop.
 }

@@ -3,13 +3,16 @@
 Semantic Memory Module
 Efficient vector-based memory retrieval using SentenceTransformers.
 """
+import os
 import json
 import logging
-import numpy as np
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any
-from dataclasses import dataclass
-import os
+
+import numpy as np
+
+from ..runtime_paths import runtime_dir
 
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
@@ -73,8 +76,8 @@ class SemanticMemory:
     Uses 'all-MiniLM-L6-v2' (lightweight, efficient) by default.
     """
     
-    def __init__(self, storage_dir: str = "data/memory/vectors", model_name: str = "all-MiniLM-L6-v2"):
-        self.storage_dir = Path(storage_dir)
+    def __init__(self, storage_dir: str | Path | None = None, model_name: str = "all-MiniLM-L6-v2"):
+        self.storage_dir = Path(storage_dir) if storage_dir is not None else runtime_dir("memory", "vectors")
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.model_name = model_name
         

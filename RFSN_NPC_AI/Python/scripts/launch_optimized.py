@@ -11,9 +11,9 @@ from pathlib import Path
 
 
 def check_python_version():
-    """Ensure Python 3.9+"""
-    if sys.version_info < (3, 9):
-        print("❌ Python 3.9+ required")
+    """Ensure Python 3.12+"""
+    if sys.version_info < (3, 12):
+        print("❌ Python 3.12+ required")
         print(f"   Current: {sys.version}")
         return False
     print(f"✅ Python {sys.version_info.major}.{sys.version_info.minor}")
@@ -73,17 +73,28 @@ def check_optional_dependencies():
 def check_model():
     """Check if LLM model exists"""
     script_dir = Path(__file__).parent
-    config_path = script_dir.parent / "config.json"
+    python_root = script_dir.parent
+    service_root = python_root.parent
+    config_path = service_root / "config.json"
     
     if config_path.exists():
         import json
         config = json.loads(config_path.read_text())
         model_path = Path(config.get("model_path", ""))
-        
-        if model_path.exists():
-            size_mb = model_path.stat().st_size / 1024 / 1024
-            print(f"✅ LLM model: {model_path.name} ({size_mb:.0f} MB)")
-            return True
+
+        candidates = []
+        if model_path:
+            if model_path.is_absolute():
+                candidates.append(model_path)
+            else:
+                candidates.append((service_root / model_path).resolve())
+                candidates.append((python_root / "var" / "models" / model_path.name).resolve())
+
+        for candidate in candidates:
+            if candidate.exists():
+                size_mb = candidate.stat().st_size / 1024 / 1024
+                print(f"✅ LLM model: {candidate.name} ({size_mb:.0f} MB)")
+                return True
     
     print("⚠️  LLM model not found (will run in mock mode)")
     return True
@@ -99,11 +110,12 @@ def check_piper():
     
     # Check Models directory
     script_dir = Path(__file__).parent
-    piper_dir = script_dir.parent / "Models" / "piper"
+    runtime_piper_dir = script_dir.parent / "var" / "models" / "piper"
+    legacy_piper_dir = script_dir.parent.parent / "Models" / "piper"
     
     for name in ["piper", "piper.exe"]:
-        if (piper_dir / name).exists():
-            print(f"✅ Piper TTS: found in Models/piper/")
+        if (runtime_piper_dir / name).exists() or (legacy_piper_dir / name).exists():
+            print("✅ Piper TTS: found in runtime or legacy model directories")
             return True
     
     print("⚠️  Piper TTS not installed (voice will be disabled)")
@@ -111,9 +123,8 @@ def check_piper():
 
 
 def start_server():
-    """Start the orchestrator server"""
+    """Start the canonical FastAPI server"""
     script_dir = Path(__file__).parent
-    orchestrator_path = script_dir / "orchestrator.py"
     
     print("\n" + "=" * 60)
     print("STARTING RFSN ORCHESTRATOR v8.1")
@@ -124,8 +135,17 @@ def start_server():
     print("=" * 60 + "\n")
     
     # Start server
-    os.chdir(script_dir)
-    subprocess.run([sys.executable, str(orchestrator_path)])
+    os.chdir(script_dir.parent)
+    subprocess.run([
+        sys.executable,
+        "-m",
+        "uvicorn",
+        "app.api.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+    ])
 
 
 def main():

@@ -4,7 +4,7 @@
 
 **Production-Ready Streaming AI System for Real-Time NPC Dialogue**
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg)](https://fastapi.tiangolo.com/)
 [![Tests](https://img.shields.io/badge/tests-142%20passing-success.svg)](Python/tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -47,7 +47,7 @@
 
 ### Prerequisites
 
-- Python 3.10+ (required for Kokoro TTS)
+- Python 3.12+
 - 4GB RAM minimum
 - macOS, Linux, or Windows
 - Ollama (for local LLM)
@@ -74,7 +74,7 @@ ollama pull llama3.2
 
 # Launch the server
 cd Python
-python -m uvicorn orchestrator:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 **Server URL**: `http://127.0.0.1:8000`  
@@ -121,7 +121,7 @@ docker run -p 8000:8000 rfsn-orchestrator
 
 | Component | Purpose | Location |
 |-----------|---------|----------|
-| **Orchestrator** | FastAPI server, request handling | `Python/orchestrator.py` |
+| **Orchestrator** | Canonical FastAPI server, request handling | `Python/app/api/main.py` |
 | **Streaming Engine** | Token processing, sentence detection | `Python/streaming_engine.py` |
 | **DequeSpeechQueue** | Thread-safe bounded queue with drop policy | `Python/streaming_voice_system.py` |
 | **World Model** | Predicts state transitions from actions | `Python/world_model.py` |

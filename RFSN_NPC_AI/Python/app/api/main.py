@@ -5,7 +5,14 @@ Complete system with Kokoro TTS, Ollama LLM, security, metrics, and multi-NPC su
 """
 from ..telemetry.version import ORCHESTRATOR_VERSION, STREAMING_ENGINE_VERSION, get_version_string
 from ..dialogue.runtime_state import Runtime, RuntimeState
-from ..runtime_paths import PYTHON_ROOT, runtime_dir, runtime_file
+from ..runtime_paths import (
+    PYTHON_ROOT,
+    SERVICE_ROOT,
+    runtime_dir,
+    runtime_file,
+    seeded_runtime_file,
+    service_path,
+)
 
 import asyncio
 import json
@@ -78,11 +85,15 @@ from ..latency_optimizations import (
 )
 
 # Configuration
-SERVICE_ROOT = PYTHON_ROOT.parent
-CONFIG_PATH = SERVICE_ROOT / "config.json"
-MEMORY_DIR = SERVICE_ROOT / "memory"
-MEMORY_DIR.mkdir(exist_ok=True)
-API_KEYS_PATH = SERVICE_ROOT / "api_keys.json"
+SERVICE_CONFIG_PATH = service_path("config.json")
+CONFIG_PATH = seeded_runtime_file(SERVICE_CONFIG_PATH, "config", "config.json")
+MEMORY_DIR = runtime_dir("memory", "conversations")
+API_KEYS_PATH = runtime_file("security", "api_keys.json")
+WORLD_TRANSITIONS_PATH = seeded_runtime_file(
+    PYTHON_ROOT / "data" / "world_transitions.json",
+    "world",
+    "transitions.json",
+)
 
 # Initialize Hot Config
 config_watcher = init_config(str(CONFIG_PATH))
@@ -252,7 +263,7 @@ async def startup_event():
     else:
         # Fallback to llama-cpp
         cfg_model_path = llm_config.get("model_path", config_watcher.get("model_path"))
-        resolved = ensure_llm_model_exists(cfg_model_path)
+        resolved = ensure_llm_model_exists(cfg_model_path, base_dir=SERVICE_ROOT)
         
         if resolved is None:
             logger.error(f"Configured model_path not found: {cfg_model_path}")
@@ -355,10 +366,9 @@ async def startup_event():
     state_machine = RFSNStateMachine()
 
     # Initialize WorldModel for consequence prediction
-    transitions_path = Path("data/world_transitions.json")
     world_model = WorldModel(
         retrieval_k=5,
-        transitions_path=transitions_path if transitions_path.exists() else None
+        transitions_path=WORLD_TRANSITIONS_PATH if WORLD_TRANSITIONS_PATH.exists() else None
     )
 
     # Initialize ActionScorer for decision pipeline

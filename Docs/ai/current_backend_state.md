@@ -5,9 +5,10 @@
 - Backend root: `RFSN_NPC_AI/Python`
 - Canonical FastAPI implementation: `app/api/main.py`
 - Compatibility launch shim: `orchestrator.py`
+- Compatibility wrapper: `main.py`
 - Current Unreal client route: `/api/dialogue/stream`
 
-`orchestrator.py` is no longer the real implementation surface. It exists to preserve the historical launch target and currently re-exports the FastAPI app from `app.api.main`.
+`app/api/main.py` is the only canonical backend authority. `orchestrator.py` and `main.py` exist only to preserve historical imports and launch targets.
 
 ## Package shape
 
@@ -27,18 +28,18 @@ That means the backend is not "mostly flat" anymore, even though a few top-level
 
 ## Supported launch commands
 
-Historical launch surface, still supported:
-
-```bash
-cd RFSN_NPC_AI/Python
-python3 -m uvicorn orchestrator:app --host 127.0.0.1 --port 8000
-```
-
-Equivalent direct entrypoint to the canonical module:
+Canonical launch surface:
 
 ```bash
 cd RFSN_NPC_AI/Python
 python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+```
+
+Historical compatibility surface, still supported:
+
+```bash
+cd RFSN_NPC_AI/Python
+python3 -m uvicorn orchestrator:app --host 127.0.0.1 --port 8000
 ```
 
 ## Current backend limits
@@ -46,7 +47,8 @@ python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 The authority surface is singular in practice and the package-local import surface is now stable:
 
 - `app/api/main.py` resolves runtime paths through the package-local `app.runtime_paths` surface and uses package-local bridges for legacy helper modules
-- service configuration, durable memory, models, dashboard assets, and API-key state are anchored to the `RFSN_NPC_AI/` service root instead of relying on the current working directory
+- committed service assets such as `RFSN_NPC_AI/config.json`, dashboard files, and optional legacy `RFSN_NPC_AI/Models/` content stay under the service root
+- runtime-created state such as config copies, API keys, durable memory, downloaded models, and recordings now defaults under `RFSN_NPC_AI/Python/var/` and can be relocated with `RFSN_RUNTIME_ROOT`
 
 The remaining proof limits are narrower now:
 

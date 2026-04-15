@@ -17,6 +17,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 
+from ..runtime_paths import runtime_dir
+
 logger = logging.getLogger(__name__)
 
 
@@ -79,11 +81,11 @@ class XVASynthEngine:
         self,
         host: str = DEFAULT_HOST,
         port: int = DEFAULT_PORT,
-        output_dir: str = "tts_output",
+        output_dir: str | Path | None = None,
         queue_size: int = 3
     ):
         self.base_url = f"http://{host}:{port}"
-        self.output_dir = Path(output_dir)
+        self.output_dir = Path(output_dir) if output_dir is not None else runtime_dir("tts", "xvasynth")
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         self.audio_queue = queue.Queue(maxsize=queue_size)

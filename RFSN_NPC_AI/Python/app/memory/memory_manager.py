@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
+
+from ..runtime_paths import runtime_dir
 from ..safety.sanitize import safe_filename_token
 
 logger = logging.getLogger(__name__)
@@ -48,10 +50,10 @@ class ConversationManager:
     - Stats and analytics
     """
     
-    def __init__(self, npc_name: str, memory_dir: str = "memory"):
+    def __init__(self, npc_name: str, memory_dir: str | Path | None = None):
         self.npc_name = npc_name
         self._file_token = safe_filename_token(npc_name)
-        self.memory_dir = Path(memory_dir)
+        self.memory_dir = Path(memory_dir) if memory_dir is not None else runtime_dir("memory", "conversations")
         self.memory_dir.mkdir(parents=True, exist_ok=True)
         
         self.memory_file = self.memory_dir / f"{self._file_token}.json"
@@ -226,12 +228,12 @@ class ConversationManager:
         return len(self.history)
 
 
-def list_backups(memory_dir: str = "memory", npc_name: str = None) -> List[Dict[str, Any]]:
+def list_backups(memory_dir: str | Path | None = None, npc_name: str = None) -> List[Dict[str, Any]]:
     """List all available backup files"""
-    memory_path = Path(memory_dir)
+    memory_path = Path(memory_dir) if memory_dir is not None else runtime_dir("memory", "conversations")
     
     if npc_name:
-        pattern = f"{npc_name}_backup_*.json"
+        pattern = f"{safe_filename_token(npc_name)}_backup_*.json"
     else:
         pattern = "*_backup_*.json"
     

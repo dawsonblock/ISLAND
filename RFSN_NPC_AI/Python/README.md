@@ -1,6 +1,6 @@
 # RFSN Python backend
 
-This directory now uses an `app/` package layout while keeping root-level compatibility shims for existing tests and launch commands.
+This directory now uses an `app/` package layout while keeping root-level compatibility shims for older tests and launch commands.
 
 ## Layout
 
@@ -22,7 +22,14 @@ Python/
 
 ## Entrypoints
 
-Existing commands still work through shims:
+Canonical launch command:
+
+```bash
+cd RFSN_NPC_AI/Python
+python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+```
+
+Compatibility launch surface, still supported:
 
 ```bash
 cd RFSN_NPC_AI/Python
@@ -33,6 +40,10 @@ python3 -m uvicorn orchestrator:app --host 127.0.0.1 --port 8000
 
 Runtime output defaults to ignored `var/` directories rather than checked-in `data/` logs for:
 
+- runtime config copies
+- API keys
+- conversation memory and backups
+- downloaded runtime models
 - recordings
 - audit logs
 - policy logs
@@ -52,4 +63,4 @@ Current validated state in this cloud environment:
 - the voice streaming import blocker is fixed
 - the legacy action prompt contract is restored on top of the packaged prompt module
 - the NPC action bandit contract is aligned with the current world model and tests
-- full backend result: 258 passed, 1 skipped
+- full backend result: 261 passed, 1 skipped

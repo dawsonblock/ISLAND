@@ -100,10 +100,12 @@ The launcher builds `MyProjectEditor` and opens `MyProject.uproject`. If autodis
 
 ```bash
 cd RFSN_NPC_AI/Python
-python3 -m uvicorn orchestrator:app --host 127.0.0.1 --port 8000
+python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 The Unreal dialogue client defaults to `http://127.0.0.1:8000/api/dialogue/stream`.
+
+Compatibility note: `orchestrator:app` and `main.py` still exist as shims for older tests and launch surfaces, but `app.api.main:app` is the canonical backend authority.
 
 ## Offline mode
 
@@ -129,7 +131,7 @@ Verified on this branch:
 Current verified result:
 
 - Python backend full suite is green in this cloud environment
-- current result: 258 passed, 1 skipped
+- current result: 261 passed, 1 skipped
 - the package-move regressions in voice import, action prompt compatibility, and NPC action bandit contract are fixed on this branch
 
 Not yet revalidated in this cloud environment:

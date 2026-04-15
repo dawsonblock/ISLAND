@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 LABEL maintainer="RFSN Team"
 LABEL version="8.2"
@@ -27,7 +27,7 @@ COPY config.json .
 COPY Dashboard/ ./Dashboard/
 
 # Create directories
-RUN mkdir -p Models/piper memory
+RUN mkdir -p Models /app/Python/var
 
 # Expose port
 EXPOSE 8000
@@ -40,6 +40,6 @@ ENV RFSN_ENV=production
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/status || exit 1
 
-# Change to Python directory and run orchestrator via uvicorn
+# Change to Python directory and run the canonical FastAPI entrypoint via uvicorn
 WORKDIR /app/Python
-CMD ["python", "-m", "uvicorn", "orchestrator:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

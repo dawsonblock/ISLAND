@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Optional
 import time
 
+from ..runtime_paths import runtime_dir, runtime_path, service_path
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -78,15 +80,21 @@ class KokoroTTSEngine:
                 self._kokoro = Kokoro(str(self.model_path), str(self.voices_path))
                 logger.info(f"[Kokoro] Model loaded: {self.model_path.name}")
             else:
-                # Try default paths
-                default_model = Path(__file__).parent.parent / "Models" / "kokoro" / "kokoro-v1.0.onnx"
-                default_voices = Path(__file__).parent.parent / "Models" / "kokoro" / "voices-v1.0.bin"
-                
-                if default_model.exists() and default_voices.exists():
-                    self._kokoro = Kokoro(str(default_model), str(default_voices))
-                    self.model_path = default_model
-                    self.voices_path = default_voices
-                    logger.info(f"[Kokoro] Model loaded from default path")
+                service_model = service_path("Models", "kokoro", "kokoro-v1.0.onnx")
+                service_voices = service_path("Models", "kokoro", "voices-v1.0.bin")
+                runtime_model = runtime_path("models", "kokoro", "kokoro-v1.0.onnx")
+                runtime_voices = runtime_path("models", "kokoro", "voices-v1.0.bin")
+
+                for candidate_model, candidate_voices in (
+                    (service_model, service_voices),
+                    (runtime_model, runtime_voices),
+                ):
+                    if candidate_model.exists() and candidate_voices.exists():
+                        self._kokoro = Kokoro(str(candidate_model), str(candidate_voices))
+                        self.model_path = candidate_model
+                        self.voices_path = candidate_voices
+                        logger.info("[Kokoro] Model loaded from %s", candidate_model.parent)
+                        break
                 else:
                     logger.warning("[Kokoro] Model not found. Run setup_kokoro_voice() to download.")
                     self._kokoro = None
@@ -265,12 +273,12 @@ class KokoroTTSEngine:
         ]
 
 
-def setup_kokoro_voice() -> tuple:
+def setup_kokoro_voice(model_dir: str | Path | None = None) -> tuple:
     """
     Download Kokoro model files if not present.
     Returns: (model_path, voices_path)
     """
-    kokoro_dir = Path(__file__).parent.parent / "Models" / "kokoro"
+    kokoro_dir = Path(model_dir) if model_dir is not None else runtime_dir("models", "kokoro")
     kokoro_dir.mkdir(parents=True, exist_ok=True)
     
     model_path = kokoro_dir / "kokoro-v1.0.onnx"

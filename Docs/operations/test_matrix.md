@@ -1,6 +1,6 @@
 # Test matrix
 
-Generated: 2026-04-14
+Generated: 2026-04-15
 
 ## Verified automated and scripted checks
 
@@ -11,7 +11,8 @@ Generated: 2026-04-14
 | NPC action bandit contract | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_npc_action_bandit.py -q` | 14 passed | Learning-layer contract checks |
 | Dashboard route regression | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_dashboard_ui.py tests/test_operational.py -q` | 5 passed | Dashboard and operational route smoke tests |
 | Targeted TTL regression | `cd RFSN_NPC_AI/Python && python3 -m pytest tests/test_production.py::TestMemoryGovernance::test_memory_ttl_expiration -q` | passed | Confirms the repaired TTL admission behavior |
-| Full Python backend | `cd RFSN_NPC_AI/Python && python3 -m pytest --continue-on-collection-errors -q` | 258 passed, 1 skipped | Full backend suite in the verified environment |
+| Runtime-root targeted backend slice | `cd RFSN_NPC_AI/Python && RFSN_RUNTIME_ROOT="$(mktemp -d)" python3 -m pytest tests/test_runtime_paths.py tests/test_integration.py tests/test_memory_manager.py tests/test_memory_leaks.py -q` | 33 passed, 1 skipped | Confirms isolated runtime-root behavior and core backend regressions |
+| Full Python backend | `cd RFSN_NPC_AI/Python && RFSN_RUNTIME_ROOT="$(mktemp -d)" python3 -m pytest --continue-on-collection-errors -q` | 261 passed, 1 skipped | Full backend suite in the verified environment under an isolated runtime root |
 | Helper script backend path | `cd /Users/dawsonblock/Documents/ISLAND && ./scripts/ci-cd.sh test` | passed | Confirms the local helper resolves the repo root correctly |
 | Docker build path | `cd /Users/dawsonblock/Documents/ISLAND && docker build -f RFSN_NPC_AI/Dockerfile -t island-backend:test-matrix RFSN_NPC_AI` | passed | Confirms the documented repo-root invocation uses the correct build context |
 

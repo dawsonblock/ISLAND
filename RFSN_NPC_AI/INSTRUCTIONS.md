@@ -23,7 +23,7 @@ The RFSN (Roleplay Fantasy Social Network) Orchestrator is a production-ready AI
 
 ## System Requirements
 
-- **Python:** 3.9+
+- **Python:** 3.12+
 - **Operating System:** Linux, macOS, or Windows with WSL2
 - **Memory:** 8GB RAM minimum (16GB recommended)
 - **Storage:** 5GB free space
@@ -118,14 +118,18 @@ python launch_optimized.py
 
 ```bash
 cd Python
-python orchestrator.py
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Using Docker
 
 ```bash
 docker build -t rfsn-orchestrator .
-docker run -p 8000:8000 -v $(pwd)/data:/app/data rfsn-orchestrator
+docker run -p 8000:8000 \
+  -v $(pwd)/Models:/app/Models:ro \
+  -v $(pwd)/var:/app/Python/var \
+  -e RFSN_RUNTIME_ROOT=/app/Python/var \
+  rfsn-orchestrator
 ```
 
 ### Verify Startup
@@ -497,7 +501,7 @@ matches = memory.search(npc_name, "dragon")
 ```bash
 cd Python
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-python orchestrator.py
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 #### 2. LLM API Failures
@@ -505,7 +509,7 @@ python orchestrator.py
 **Problem:** `OpenAI API error: Invalid API key`
 
 **Solution:**
-- Check `api_keys.json` exists
+- Check `var/security/api_keys.json` or the configured runtime-root equivalent exists
 - Verify API key is valid
 - Check environment variables if using env vars
 
@@ -542,7 +546,7 @@ Enable debug logging:
 
 ```python
 # In config.json or environment
-LOG_LEVEL=DEBUG python orchestrator.py
+LOG_LEVEL=DEBUG python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Health Check
@@ -616,7 +620,7 @@ For code changes, restart the server:
 ```bash
 # Kill and restart
 pkill -f orchestrator.py
-python orchestrator.py
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ---
@@ -630,7 +634,7 @@ gunicorn -w 4 -k uvicorn.workers.UvicornWorker \
   --bind 0.0.0.0:8000 \
   --access-logfile logs/access.log \
   --error-logfile logs/error.log \
-  orchestrator:app
+  app.api.main:app
 ```
 
 ### Using Docker Compose
@@ -643,10 +647,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data
-      - ./memory:/app/memory
+      - ./Models:/app/Models:ro
+      - ./var:/app/Python/var
     environment:
       - LOG_LEVEL=INFO
+      - RFSN_RUNTIME_ROOT=/app/Python/var
       - LEARNING_ENABLED=true
 ```
 

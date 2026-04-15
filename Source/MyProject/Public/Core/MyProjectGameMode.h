@@ -7,7 +7,8 @@
 #include "MyProjectGameMode.generated.h"
 
 /**
- *  Simple GameMode for a first person game
+ * Legacy migration stub retained for template redirect compatibility.
+ * The live gameplay authority is IslandGameMode, not this class.
  */
 UCLASS(config = Game, Blueprintable)
 class MYPROJECT_API AMyProjectGameMode : public AGameModeBase

@@ -17,6 +17,8 @@ from typing import Optional, Dict, Any, Callable
 from collections import defaultdict
 import threading
 
+from ..runtime_paths import runtime_file
+
 from fastapi import Request, HTTPException, Depends, Security
 from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -32,8 +34,8 @@ logger = logging.getLogger(__name__)
 class APIKeyManager:
     """Manages API keys for authentication"""
     
-    def __init__(self, keys_file: str = "api_keys.json"):
-        self.keys_file = keys_file
+    def __init__(self, keys_file: str | os.PathLike[str] | None = None):
+        self.keys_file = str(keys_file) if keys_file is not None else str(runtime_file("security", "api_keys.json"))
         self.keys: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
         self._load_keys()

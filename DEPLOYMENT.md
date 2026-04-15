@@ -60,17 +60,18 @@ docker build -t island-backend:latest -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Run standalone
 docker run -p 8000:8000 \
-  -v $(pwd)/RFSN_NPC_AI/Models:/app/Models \
-  -v $(pwd)/RFSN_NPC_AI/memory:/app/memory \
+  -v $(pwd)/RFSN_NPC_AI/Models:/app/Models:ro \
+  -v $(pwd)/RFSN_NPC_AI/var:/app/Python/var \
+  -e RFSN_RUNTIME_ROOT=/app/Python/var \
   -e JWT_SECRET=dev-secret \
   island-backend:latest
 ```
 
 ### Image Details
 
-- **Base**: `python:3.11-slim`
+- **Base**: `python:3.12-slim`
 - **Size**: ~1.2GB (with models)
-- **Entrypoint**: `python -m uvicorn orchestrator:app --host 0.0.0.0 --port 8000`
+- **Entrypoint**: `python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000`
 - **Healthcheck**: `/api/status` every 30s
 - **Exposed Port**: 8000
 

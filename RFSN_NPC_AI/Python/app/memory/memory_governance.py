@@ -12,6 +12,9 @@ from typing import Dict, Any, Optional, List, Set, Tuple
 from enum import Enum
 import logging
 
+from ..runtime_paths import runtime_dir
+from .semantic_memory import SemanticMemory
+
 logger = logging.getLogger(__name__)
 
 
@@ -259,7 +262,7 @@ class MemoryGovernance:
             storage_path: Path to store persisted memories
         """
         self.admission_policy = admission_policy or AdmissionPolicy()
-        self.storage_path = storage_path or Path("data/memory/governed")
+        self.storage_path = Path(storage_path) if storage_path is not None else runtime_dir("memory", "governed")
         self.storage_path.mkdir(parents=True, exist_ok=True)
         
         # Active memories
@@ -269,8 +272,9 @@ class MemoryGovernance:
         self._quarantine: Dict[str, GovernedMemory] = {}
         
         # Semantic Layers
-        from semantic_memory import SemanticMemory
-        self.semantic = SemanticMemory()
+        semantic_dir = self.storage_path.parent / "vectors"
+        semantic_dir.mkdir(parents=True, exist_ok=True)
+        self.semantic = SemanticMemory(storage_dir=semantic_dir)
         
         # Thread safety
         self._lock = threading.RLock()

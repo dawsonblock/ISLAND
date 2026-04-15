@@ -18,6 +18,7 @@ NC='\033[0m' # No Color
 
 # Kill any existing processes
 echo -e "${YELLOW}Stopping any existing servers...${NC}"
+pkill -f "uvicorn app.api.main" 2>/dev/null || true
 pkill -f "uvicorn orchestrator" 2>/dev/null || true
 pkill -f "web_chat_ui/backend/main.py" 2>/dev/null || true
 sleep 1
@@ -25,7 +26,7 @@ sleep 1
 # 1. Start Orchestrator (main API on port 8000)
 echo -e "${GREEN}[1/3] Starting Orchestrator on port 8000...${NC}"
 cd "$PROJECT_ROOT/Python"
-python -m uvicorn orchestrator:app --host 0.0.0.0 --port 8000 &
+python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000 &
 ORCHESTRATOR_PID=$!
 sleep 3
 

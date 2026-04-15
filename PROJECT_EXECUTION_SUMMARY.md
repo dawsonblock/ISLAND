@@ -9,7 +9,7 @@ For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `
 ### 1. ✅ Fixed Dockerfile Entrypoint
 
 **Before**: Incorrect command `python Python/orchestrator.py`  
-**After**: `python -m uvicorn orchestrator:app --host 0.0.0.0 --port 8000`
+**After**: `python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000`
 
 **Changes**:
 
@@ -24,7 +24,7 @@ For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `
 ### 2. ✅ Docker Build Testing
 
 **Status**: Docker image builds successfully when invoked from the repo root with `RFSN_NPC_AI` as the build context  
-**Base Image**: `python:3.11-slim`  
+**Base Image**: `python:3.12-slim`  
 **Layers**: 10 stages  
 **Key Steps**:
 
@@ -42,13 +42,13 @@ For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `
 
 **Updated Services**:
 
-- **orchestrator**: Python backend on 8000
+- **orchestrator**: Python backend on 8000 via `app.api.main:app`
 - **dashboard**: Nginx on 8080 (metrics UI)
 
 **Volumes**:
 
-- Models (persistent, for LLM/TTS files)
-- memory (persistent, for conversation history)
+- Optional legacy `Models/` seed mount (read-only)
+- `var/` runtime mount for conversation history, API keys, runtime config copies, and downloaded models
 - ollama_data (persistent, for local LLM cache)
 - redis_data (persistent, for caching layer)
 
@@ -71,7 +71,7 @@ For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `
 
 **Jobs**:
 
-1. **Python Backend Tests** (Matrix: 3.10, 3.11, 3.12)
+1. **Python Backend Tests** (Python 3.12)
    - Installs requirements-core.txt
    - Runs pytest with coverage
    - Uploads to codecov

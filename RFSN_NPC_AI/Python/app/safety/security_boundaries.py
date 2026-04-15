@@ -295,10 +295,10 @@ class SecurityBoundary:
     def _setup_defaults(self):
         """Setup default security constraints"""
         # Default safe paths
-        self._path_allowlist.add_read_path("memory/*")
+        self._path_allowlist.add_read_path("var/*")
         self._path_allowlist.add_read_path("data/*")
-        self._path_allowlist.add_write_path("memory/*")
-        self._path_allowlist.add_write_path("data/*")
+        self._path_allowlist.add_read_path("config.json")
+        self._path_allowlist.add_write_path("var/*")
         
         # Deny sensitive paths
         self._path_allowlist.add_denied_path("/etc/*")
@@ -616,13 +616,12 @@ def create_default_config(output_path: Path):
             }
         ],
         "allowed_read_paths": [
-            "memory/*",
+            "var/*",
             "data/*",
             "config.json"
         ],
         "allowed_write_paths": [
-            "memory/*",
-            "data/*"
+            "var/*"
         ],
         "denied_paths": [
             "/etc/*",

@@ -31,11 +31,11 @@ The launcher expects `UE_PATH` to point at an Unreal installation if it cannot a
 
 ### Python backend
 
-At baseline, the backend entrypoint remained the flat orchestrator module:
+At baseline, the backend entrypoint remained the flat compatibility surface rather than the package-local canonical module:
 
 ```bash
 cd RFSN_NPC_AI/Python
-python3 -m uvicorn orchestrator:app --host 127.0.0.1 --port 8000
+python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## Known failing Python tests

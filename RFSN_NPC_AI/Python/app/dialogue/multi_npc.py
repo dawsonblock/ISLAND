@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
 
+from ..runtime_paths import runtime_file
+
 logger = logging.getLogger(__name__)
 
 
@@ -224,7 +226,7 @@ class VoiceMapper:
         if custom_mappings:
             self.mappings.update(custom_mappings)
         
-        self.config_file = Path("voice_mappings.json")
+        self.config_file = runtime_file("config", "voice_mappings.json")
         self._load_custom_mappings()
     
     def _load_custom_mappings(self):

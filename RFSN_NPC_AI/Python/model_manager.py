@@ -16,6 +16,8 @@ from typing import Optional, Dict, Any, Callable
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from runtime_paths import SERVICE_ROOT, runtime_dir, runtime_path
+
 try:
     import requests
     from tqdm import tqdm
@@ -106,8 +108,8 @@ class ModelManager:
     DEFAULT_BACKOFF = 2.0
     CHUNK_SIZE = 8192
     
-    def __init__(self, models_dir: str = "Models"):
-        self.models_dir = Path(models_dir)
+    def __init__(self, models_dir: str | Path | None = None):
+        self.models_dir = Path(models_dir) if models_dir is not None else runtime_dir("models")
         self.models_dir.mkdir(parents=True, exist_ok=True)
         
         self.llm_dir = self.models_dir
@@ -372,7 +374,7 @@ def setup_models(download_llm: bool = True, download_tts: bool = True) -> Dict[s
             paths["llm"] = manager.download_llm()
         except DownloadError as e:
             logger.error(f"LLM download failed: {e}")
-            logger.info("You can manually download and place the model in Models/")
+            logger.info("You can manually download and place the model in the configured runtime models directory")
     
     return paths
 
@@ -423,7 +425,7 @@ if __name__ == "__main__":
             print(f"  {name}: {path}")
 
 
-def ensure_llm_model_exists(target_path: str) -> Optional[Path]:
+def ensure_llm_model_exists(target_path: str, base_dir: str | Path | None = None) -> Optional[Path]:
     """
     Ensure the configured LLM model exists locally.
     We do NOT guess URLs for arbitrary GGUFs.
@@ -432,15 +434,24 @@ def ensure_llm_model_exists(target_path: str) -> Optional[Path]:
     if not target_path or not str(target_path).strip():
         return None
 
-    p = Path(str(target_path).strip()).expanduser().resolve()
+    configured = Path(str(target_path).strip()).expanduser()
+    candidates = []
 
-    if p.exists():
-        return p
+    if configured.is_absolute():
+        candidates.append(configured)
+    else:
+        if base_dir is not None:
+            candidates.append(Path(base_dir) / configured)
+        candidates.append(SERVICE_ROOT / configured)
+        candidates.append(Path.cwd() / configured)
 
-    # If config points outside, also try ./Models/<filename>
-    alt = Path("Models") / p.name
-    if alt.exists():
-        return alt
+    candidates.append(runtime_path("models", configured.name))
+    candidates.append(SERVICE_ROOT / "Models" / configured.name)
+
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved.exists():
+            return resolved
 
     return None
 
