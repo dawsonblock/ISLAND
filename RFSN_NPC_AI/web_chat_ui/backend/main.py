@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -28,7 +29,15 @@ logger = logging.getLogger("web-chat-backend")
 # Ensure episodes directory exists
 EPISODES_DIR.mkdir(exist_ok=True)
 
-app = FastAPI(title="RFSN Web Chat Proxy")
+
+@asynccontextmanager
+async def app_lifespan(_app: FastAPI):
+    logger.info(f"Orchestrator Base URL: {ORCHESTRATOR_BASE_URL}")
+    logger.info(f"Orchestrator Stream Path: {ORCHESTRATOR_STREAM_PATH}")
+    logger.info(f"Episodes Directory: {EPISODES_DIR.absolute()}")
+    yield
+
+app = FastAPI(title="RFSN Web Chat Proxy", lifespan=app_lifespan)
 
 # Mount episodes directory for downloading logs
 from fastapi.staticfiles import StaticFiles
@@ -50,12 +59,6 @@ class ChatRequest(BaseModel):
     npc_state: Dict[str, Any]
     session_id: str
     enable_voice: bool = False
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info(f"Orchestrator Base URL: {ORCHESTRATOR_BASE_URL}")
-    logger.info(f"Orchestrator Stream Path: {ORCHESTRATOR_STREAM_PATH}")
-    logger.info(f"Episodes Directory: {EPISODES_DIR.absolute()}")
 
 def log_event(session_id: str, event_type: str, data: Any):
     """Append event to session JSONL file"""

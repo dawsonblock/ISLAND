@@ -15,9 +15,9 @@ The repo-side build issues identified in the initial analysis have now been fixe
 
 Remaining non-fatal issues:
 
-- FastAPI deprecation warnings remain in `app/api/main.py` because the app still uses `@app.on_event(...)`.
-- Python teardown emits a `multiprocess.resource_tracker` `AttributeError` after tests complete, but it does not fail the suite.
-- GitHub workflow validation warns about secret references in `.github/workflows/docker-push.yml`; those are expected if the secrets are not defined in the current repo configuration.
+- FastAPI lifecycle warnings have been removed by switching the API to a lifespan handler.
+- The Python 3.12 `multiprocess.resource_tracker` teardown warning has been patched around in semantic memory startup.
+- The Docker publish workflow has been tightened to GHCR-only, removing undeclared Docker Hub secret dependencies.
 
 ## Revalidation after fixes
 
@@ -81,7 +81,7 @@ Interpretation:
 
 Secondary Python observations:
 
-- `RFSN_NPC_AI/Python/app/api/main.py` emits FastAPI deprecation warnings because it still uses `@app.on_event("startup")` and `@app.on_event("shutdown")`.
+- `RFSN_NPC_AI/Python/app/api/main.py` originally emitted FastAPI deprecation warnings because it used startup and shutdown event decorators instead of a lifespan handler.
 - These warnings are not currently breaking the build, but they are technical debt and will matter on future FastAPI upgrades.
 
 ### 2. Docker status: image build is valid, automation is wrong

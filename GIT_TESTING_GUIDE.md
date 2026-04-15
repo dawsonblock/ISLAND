@@ -16,6 +16,7 @@ This guide covers testing the ISLAND project locally before pushing to GitHub, v
 ```
 
 This runs:
+
 1. Python backend tests (142 tests)
 2. Docker build
 3. Start services with docker-compose
@@ -258,7 +259,8 @@ gh pr create --title "My Feature" --body "Description"
 
 When you push or create a PR:
 
-#### `build-test.yml` Runs:
+#### `build-test.yml` Runs
+
 1. **Python Tests** (Matrix: 3.10, 3.11, 3.12)
    - Installs dependencies
    - Runs `pytest tests/ -v --cov`
@@ -278,11 +280,13 @@ When you push or create a PR:
 ### View CI/CD Results
 
 #### In GitHub UI
-```
+
+```text
 Repository → Actions → [workflow name] → [run]
 ```
 
 #### Via GitHub CLI
+
 ```bash
 # List recent runs
 gh run list
@@ -298,6 +302,7 @@ gh run view <run_id>
 ```
 
 #### Via Git Hooks (After Push)
+
 ```bash
 # Check status locally
 gh run list --branch feature/my-feature
@@ -306,6 +311,7 @@ gh run list --branch feature/my-feature
 ### Fix CI/CD Failures
 
 #### Python Test Failure
+
 ```bash
 # Run locally to reproduce
 cd RFSN_NPC_AI/Python
@@ -324,6 +330,7 @@ git push
 ```
 
 #### Docker Build Failure
+
 ```bash
 # Build locally to reproduce
 docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
@@ -344,6 +351,7 @@ git push
 ```
 
 #### Lint Failure (Code Style)
+
 ```bash
 # Fix automatically
 cd RFSN_NPC_AI/Python
@@ -606,8 +614,8 @@ git push origin --delete feature/my-feature
 ### Branch Protection (Already Configured)
 
 After merging to main, Docker Push workflow runs:
+
 - Builds image
-- Pushes to Docker Hub: `username/island-backend:main`
 - Pushes to GHCR: `ghcr.io/owner/island/backend:main`
 
 ---
@@ -623,10 +631,6 @@ git push origin v1.0.0
 
 # Monitor CI/CD (docker-push.yml runs)
 gh run list --branch main
-
-# Check Docker Hub
-docker search island-backend
-docker pull island-backend:v1.0.0
 ```
 
 ### Verify Release
@@ -634,7 +638,6 @@ docker pull island-backend:v1.0.0
 ```bash
 # Check pushed images
 docker pull ghcr.io/owner/island/backend:v1.0.0
-docker pull docker.io/username/island-backend:v1.0.0
 
 # Check release on GitHub
 gh release view v1.0.0
@@ -709,6 +712,7 @@ git stash clear
 **Problem**: Pre-commit hooks fail, commit blocked
 
 **Solution**:
+
 ```bash
 # Option 1: Fix issues and retry
 # Hooks report the issue, fix code
@@ -727,6 +731,7 @@ pre-commit run --all-files
 **Problem**: Tests pass locally but fail in GitHub Actions
 
 **Solution**:
+
 ```bash
 # Check Python version mismatch
 python --version
@@ -747,6 +752,7 @@ env | grep PATH
 **Problem**: Docker build times out
 
 **Solution**:
+
 ```bash
 # Increase timeout
 docker build --timeout=600 -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
@@ -763,6 +769,7 @@ docker pull python:3.11-slim
 **Problem**: `git push` rejected
 
 **Solution**:
+
 ```bash
 # Pull latest from remote first
 git pull origin branch-name
@@ -780,11 +787,13 @@ git push -f origin feature/my-feature  # USE WITH CAUTION
 ## Summary: Quick Reference
 
 ### Before Committing
+
 ```bash
 ./scripts/ci-cd.sh all              # Test everything locally
 ```
 
 ### Before Pushing
+
 ```bash
 git status                           # Check what's changed
 git add .                            # Stage changes
@@ -793,12 +802,14 @@ git push -u origin feature/branch    # Push to GitHub
 ```
 
 ### Monitor CI/CD
+
 ```bash
 gh run watch                         # Watch live
 gh run list --branch main            # See recent runs
 ```
 
 ### Merge to Main
+
 ```bash
 gh pr create --title "Title"         # Create PR
 # Wait for ✓ all checks
@@ -807,6 +818,7 @@ gh pr merge <number>                 # Merge after review
 ```
 
 ### Deploy (After Merge)
+
 ```bash
 # Option 1: K8s (manual)
 kubectl set image deployment/island-backend \
@@ -819,4 +831,3 @@ aws ecs update-service --cluster island --service island-backend-service --force
 # Option 3: Cloud Run (manual)
 gcloud run deploy island-backend --image gcr.io/PROJECT/backend:main
 ```
-

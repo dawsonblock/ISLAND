@@ -12,6 +12,7 @@ import json
 import logging
 import time
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
@@ -113,11 +114,21 @@ class PerformanceSettings(BaseModel):
     max_tokens: Optional[int] = None
 
 
+@asynccontextmanager
+async def app_lifespan(_app: FastAPI):
+    await startup_event()
+    try:
+        yield
+    finally:
+        await shutdown_event()
+
+
 # FastAPI App
 app = FastAPI(
     title=f"RFSN GenAI Orchestrator v{ORCHESTRATOR_VERSION}",
     description="Production-hardened streaming system with Security, Metrics, and Multi-NPC capabilities",
-    version=ORCHESTRATOR_VERSION
+    version=ORCHESTRATOR_VERSION,
+    lifespan=app_lifespan,
 )
 
 # Setup Security (CORS + Rate Limiting)
@@ -160,7 +171,6 @@ optimized_pipeline: Optional[OptimizedPipeline] = None
 clause_tokenizer: Optional[ClauseTokenizer] = None
 
 
-@app.on_event("startup")
 async def startup_event():
     """Initialize all engines on startup"""
     global streaming_engine, tts_engine, xva_engine
@@ -408,7 +418,6 @@ async def startup_event():
     logger.info("Startup complete!")
 
 
-@app.on_event("shutdown")
 async def shutdown_event():
     """Graceful shutdown"""
     logger.info("Shutting down engines...")

@@ -15,7 +15,7 @@ Runs on every push and PR:
   - Code coverage with codecov
   - Run time: ~5-10 minutes
 
-- **Docker Build** 
+- **Docker Build**
   - Builds backend image from Dockerfile
   - Caches layers for speed
   - Run time: ~15-30 minutes (first run), ~2-5 minutes (cached)
@@ -30,8 +30,7 @@ Runs on every push and PR:
 
 Runs on push to `main` or tags:
 
-- Logs into Docker Hub (requires `DOCKER_USERNAME`, `DOCKER_PASSWORD`)
-- Logs into GitHub Container Registry (auto)
+- Logs into GitHub Container Registry (auto via `GITHUB_TOKEN`)
 - Pushes with semantic versioning tags
 - Tags: branch, semver (v1.2.3), commit SHA
 
@@ -39,12 +38,7 @@ Runs on push to `main` or tags:
 
 #### GitHub Secrets
 
-Required for Docker Push workflow:
-
-```bash
-DOCKER_USERNAME=your_docker_hub_username
-DOCKER_PASSWORD=your_docker_hub_password (or personal access token)
-```
+No additional secrets are required for the Docker Push workflow when publishing to GHCR.
 
 Optional (for Kubernetes deployment):
 
@@ -56,10 +50,9 @@ AWS_ROLE_TO_ASSUME=arn:aws:iam::123456789:role/github-actions
 ```
 
 Add secrets via:
+
 ```bash
 # GitHub UI: Settings → Secrets and variables → Actions
-# Or CLI:
-gh secret set DOCKER_PASSWORD --body "<token>"
 ```
 
 #### Branch Protection
@@ -214,22 +207,25 @@ gh run watch
 ```
 
 Or via GitHub UI:
+
 - Actions tab → Select workflow → Recent runs
 
 ### Deployment Strategy
 
 **Development** (push to `develop`):
+
 - Build image with tag `develop`
 - Deploy to dev cluster/Fargate
 - Run integration tests
 
 **Staging** (merge to `staging` branch):
+
 - Build image with tag `staging`
 - Deploy to staging cluster
 - Run smoke tests + performance tests
 
 **Production** (tag with `v*`):
+
 - Build image with semver tag (v1.0.0, v1.0.1)
 - Deploy to prod after manual approval
 - Run canary deployment (5% traffic, then 25%, then 100%)
-

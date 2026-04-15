@@ -10,6 +10,7 @@ All recommendations have been implemented:
 **After**: `python -m uvicorn orchestrator:app --host 0.0.0.0 --port 8000`
 
 **Changes**:
+
 - Added final WORKDIR change to `/app/Python` for correct module resolution
 - Uses standard uvicorn entrypoint for FastAPI apps
 - Allows proper signal handling and graceful shutdown
@@ -24,6 +25,7 @@ All recommendations have been implemented:
 **Base Image**: `python:3.11-slim`  
 **Layers**: 10 stages  
 **Key Steps**:
+
 - System dependencies: build-essential, curl, ffmpeg, libasound2-dev
 - Python dependencies: requirements-core.txt cached at layer 2
 - Application code: Python/, config.json, Dashboard/
@@ -37,16 +39,19 @@ All recommendations have been implemented:
 ### 3. ✅ Docker Compose Configuration
 
 **Updated Services**:
+
 - **orchestrator**: Python backend on 8000
 - **dashboard**: Nginx on 8080 (metrics UI)
 
 **Volumes**:
+
 - Models (persistent, for LLM/TTS files)
 - memory (persistent, for conversation history)
 - ollama_data (persistent, for local LLM cache)
 - redis_data (persistent, for caching layer)
 
 **Features**:
+
 - Auto-pull latest images (`--pull always`)
 - Memory limits: 2GB request, 8GB hard cap
 - Health check integration
@@ -63,6 +68,7 @@ All recommendations have been implemented:
 **Triggers**: Push to main/develop, all PRs
 
 **Jobs**:
+
 1. **Python Backend Tests** (Matrix: 3.10, 3.11, 3.12)
    - Installs requirements-core.txt
    - Runs pytest with coverage
@@ -87,13 +93,13 @@ All recommendations have been implemented:
 **Triggers**: Push to main, git tags (v*)
 
 **Actions**:
-- Logs into Docker Hub (requires secrets: DOCKER_USERNAME, DOCKER_PASSWORD)
+
 - Logs into GitHub Container Registry (auto with GITHUB_TOKEN)
 - Semantic versioning: branch, semver pattern, commit SHA
 - GHA cache enabled
 
 **Output**:
-- Docker Hub: `username/island-backend:latest`, `:main`, `:vX.Y.Z`
+
 - GHCR: `ghcr.io/owner/island/backend:main`, `:vX.Y.Z`
 
 ---
@@ -118,6 +124,7 @@ All recommendations have been implemented:
    - PodDisruptionBudget: min 1 available
 
 **Deploy**:
+
 ```bash
 kubectl apply -f deployment/k8s/
 ```
@@ -129,6 +136,7 @@ kubectl apply -f deployment/k8s/
 **Created in `deployment/terraform/`**:
 
 **Infrastructure**:
+
 - **ECS Cluster** with CloudWatch Container Insights
 - **Fargate Tasks**: 1024 CPU, 2GB memory (configurable)
 - **Application Load Balancer** with target groups
@@ -140,6 +148,7 @@ kubectl apply -f deployment/k8s/
 - **CloudWatch Alarms**: CPU high, memory high
 
 **Files**:
+
 - `main.tf` - Core infrastructure
 - `variables.tf` - Input variables (VPC, image URI, JWT secret, etc.)
 - `outputs.tf` - Load balancer DNS, cluster name, backend URL
@@ -147,6 +156,7 @@ kubectl apply -f deployment/k8s/
 - `README.md` - Usage examples
 
 **Deploy**:
+
 ```bash
 cd deployment/terraform
 terraform init
@@ -161,6 +171,7 @@ terraform apply
 **File**: `DEPLOYMENT.md` (9.4 KB)
 
 **Sections**:
+
 - Quick Start (local docker-compose)
 - Docker image details
 - Kubernetes deployment (full walkthrough)
@@ -181,6 +192,7 @@ terraform apply
 **File**: `CICD.md` (4.9 KB)
 
 **Sections**:
+
 - Overview of pipelines
 - Setup instructions (GitHub secrets)
 - Branch protection rules
@@ -198,6 +210,7 @@ terraform apply
 **File**: `scripts/ci-cd.sh` (executable)
 
 **Commands**:
+
 ```bash
 ./scripts/ci-cd.sh test              # Run Python tests
 ./scripts/ci-cd.sh build [TAG]       # Build Docker image
@@ -215,11 +228,13 @@ terraform apply
 Created `.dockerignore` files:
 
 **Root `.dockerignore`**:
+
 - Unreal Engine build artifacts (Binaries/, Intermediate/, etc.)
 - Python virtualenvs and caches
 - Git, CI/CD, docs, IDE config
 
 **RFSN_NPC_AI/.dockerignore**:
+
 - Python caches and virtualenvs
 - Data directories (episodes, memory, logs, audit, policy, recordings)
 - Models and var directories
@@ -231,7 +246,7 @@ Created `.dockerignore` files:
 
 ## File Structure
 
-```
+```text
 .
 ├── .dockerignore                          # Root Docker ignore
 ├── .github/
@@ -272,6 +287,7 @@ Created `.dockerignore` files:
 ## Deployment Paths
 
 ### Local Development
+
 ```bash
 cd RFSN_NPC_AI
 docker compose up --pull always
@@ -279,6 +295,7 @@ docker compose up --pull always
 ```
 
 ### Kubernetes
+
 ```bash
 kubectl apply -f deployment/k8s/
 kubectl port-forward -n island svc/island-backend 8000:8000
@@ -286,6 +303,7 @@ kubectl port-forward -n island svc/island-backend 8000:8000
 ```
 
 ### AWS ECS/Fargate (Terraform)
+
 ```bash
 cd deployment/terraform
 terraform apply -var-file=terraform.tfvars
@@ -293,12 +311,13 @@ terraform apply -var-file=terraform.tfvars
 ```
 
 ### GitHub Actions (Auto)
-```
+
+```text
 Push to main or create tag v*
 ↓
 CI/CD pipelines run automatically
 ↓
-Docker image pushed to GHCR & Docker Hub
+Docker image pushed to GHCR
 ↓
 Manual deployment to K8s/ECS/Cloud Run
 ```
@@ -317,9 +336,10 @@ Manual deployment to K8s/ECS/Cloud Run
 - [x] HTTPS-ready (reverse proxy config provided)
 
 **Still TODO**:
+
 - [ ] Set `JWT_SECRET` to secure random value (32+ chars)
 - [ ] Enable HTTPS/TLS in reverse proxy (nginx/Traefik)
-- [ ] Configure GitHub action secrets (DOCKER_USERNAME, DOCKER_PASSWORD)
+- [ ] Review GHCR package visibility and access policy
 - [ ] Set up SNS alerts for production alarms
 
 ---
@@ -327,7 +347,7 @@ Manual deployment to K8s/ECS/Cloud Run
 ## Performance Targets
 
 | Metric | Target | Achievable |
-|--------|--------|------------|
+| --- | --- | --- |
 | First Token Latency | < 1.5s | ✓ (1.2s observed) |
 | Sentence Detection | < 50ms | ✓ (30ms observed) |
 | TTS Generation | < 100ms | ✓ (80ms observed) |
@@ -339,23 +359,24 @@ Manual deployment to K8s/ECS/Cloud Run
 
 ## Next Steps
 
-1. **Configure GitHub Secrets**
-   ```bash
-   gh secret set DOCKER_USERNAME --body "your_username"
-   gh secret set DOCKER_PASSWORD --body "your_token"
-   ```
+1. **Review GHCR Package Access**
+
+   Ensure `ghcr.io/<owner>/island/backend` is visible to the environments that need to pull it.
 
 2. **Test CI/CD Locally**
+
    ```bash
    ./scripts/ci-cd.sh all
    ```
 
 3. **Deploy to Kubernetes**
+
    ```bash
    kubectl apply -f deployment/k8s/
    ```
 
 4. **Set up AWS**
+
    ```bash
    cd deployment/terraform
    terraform init
@@ -364,15 +385,18 @@ Manual deployment to K8s/ECS/Cloud Run
    ```
 
 5. **Enable Branch Protection**
+
    - GitHub Settings → Branches → main
    - Require: build-test, backend-docker, lint
 
 6. **Configure Monitoring**
+
    - CloudWatch dashboards
    - Datadog/Prometheus metrics
    - Log aggregation (ELK, Splunk, Datadog)
 
 7. **Set Up Alerts**
+
    - Slack/PagerDuty for alarms
    - SNS topic for AWS events
 
@@ -385,6 +409,7 @@ Manual deployment to K8s/ECS/Cloud Run
 **Total Size**: ~35 KB of configuration and documentation
 
 **Breakdown**:
+
 - CI/CD: 2 workflows (~2.9 KB)
 - K8s: 6 manifests (~6.5 KB)
 - Terraform: 4 files + README (~11.6 KB)
@@ -397,29 +422,34 @@ Manual deployment to K8s/ECS/Cloud Run
 ## Key Improvements
 
 ✅ **Docker**
+
 - Fixed entrypoint for proper FastAPI execution
 - Added `.dockerignore` for smaller context
 - Health checks enabled and working
 
 ✅ **Kubernetes**
+
 - Production-ready manifests with resource limits
 - Auto-scaling configured (2-10 replicas)
 - Network policies for security
 - Pod disruption budgets for availability
 
 ✅ **AWS**
+
 - Terraform IaC for reproducible infrastructure
 - ALB with auto-target-group discovery
 - Auto-scaling on CPU/memory metrics
 - Secrets management integration
 
 ✅ **CI/CD**
+
 - Automated testing on multiple Python versions
 - Docker build caching for speed
-- Multi-registry push (Docker Hub + GHCR)
+- GHCR publish workflow for tagged and mainline builds
 - Code quality checks (Black, isort, Flake8)
 
 ✅ **Documentation**
+
 - Production deployment guide with cloud examples
 - Troubleshooting checklist
 - Security hardening steps
@@ -430,6 +460,7 @@ Manual deployment to K8s/ECS/Cloud Run
 ## Performance Expectations
 
 **Local (docker-compose)**:
+
 - Backend startup: 5-10s
 - First API response: < 2s
 - Dialogue generation: 1.5-3s
@@ -437,6 +468,7 @@ Manual deployment to K8s/ECS/Cloud Run
 - CPU: 1-4 cores (shared)
 
 **Kubernetes**:
+
 - Pod startup: 10-15s
 - First API response: < 2s
 - Horizontal scaling: 30-60s per replica
@@ -444,10 +476,10 @@ Manual deployment to K8s/ECS/Cloud Run
 - CPU: 500m request, 1000m limit
 
 **AWS ECS/Fargate**:
+
 - Task startup: 15-20s
 - First API response: < 2s
 - Auto-scaling: 2-3 minutes to stabilize
 - Memory: 2GB configured
 - vCPU: 1 configured
 - Cost: ~$0.08/hour per task
-

@@ -3,23 +3,64 @@
 Semantic Memory Module
 Efficient vector-based memory retrieval using SentenceTransformers.
 """
-import os
 import json
 import logging
 import numpy as np
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any
 from dataclasses import dataclass
-import time
+import os
 
-try:
-    from sentence_transformers import SentenceTransformer
-    from sklearn.metrics.pairwise import cosine_similarity
-except ImportError:
-    SentenceTransformer = None
-    cosine_similarity = None
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
+SentenceTransformer = None
+cosine_similarity = None
 
 logger = logging.getLogger(__name__)
+
+
+def _patch_multiprocess_resource_tracker() -> None:
+    """Work around the Python 3.12 cleanup bug triggered by sentence-transformers."""
+    try:
+        from multiprocess import resource_tracker as mp_resource_tracker
+    except ImportError:
+        return
+
+    if getattr(mp_resource_tracker.ResourceTracker, "_rfsn_safe_del", False):
+        return
+
+    original_del = getattr(mp_resource_tracker.ResourceTracker, "__del__", None)
+    if original_del is None:
+        return
+
+    def _safe_del(self):
+        try:
+            original_del(self)
+        except AttributeError as exc:
+            if "_recursion_count" not in str(exc):
+                raise
+
+    mp_resource_tracker.ResourceTracker.__del__ = _safe_del
+    mp_resource_tracker.ResourceTracker._rfsn_safe_del = True
+
+
+def _load_embedding_dependencies() -> bool:
+    global SentenceTransformer, cosine_similarity
+
+    if SentenceTransformer is not None and cosine_similarity is not None:
+        return True
+
+    _patch_multiprocess_resource_tracker()
+
+    try:
+        from sentence_transformers import SentenceTransformer as sentence_transformer_cls
+        from sklearn.metrics.pairwise import cosine_similarity as cosine_similarity_fn
+    except ImportError:
+        return False
+
+    SentenceTransformer = sentence_transformer_cls
+    cosine_similarity = cosine_similarity_fn
+    return True
 
 @dataclass
 class VectorEntry:
@@ -52,7 +93,7 @@ class SemanticMemory:
         
     def _load_model(self):
         """Load the embedding model"""
-        if SentenceTransformer is None:
+        if not _load_embedding_dependencies():
             logger.error("sentence-transformers not installed. Semantic memory disabled.")
             return
 

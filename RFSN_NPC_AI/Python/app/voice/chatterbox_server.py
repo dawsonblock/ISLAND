@@ -10,6 +10,7 @@ import io
 import json
 import logging
 import os
+from contextlib import asynccontextmanager
 import tempfile
 import time
 from pathlib import Path
@@ -126,10 +127,16 @@ def get_emotion_params(emotion: str, intensity: float) -> tuple[float, float]:
 # FastAPI App
 # ─────────────────────────────────────────────────────────────
 
+@asynccontextmanager
+async def app_lifespan(_app: FastAPI):
+    load_models()
+    yield
+
 app = FastAPI(
     title="RFSN Chatterbox TTS Server",
     description="Dual-model TTS with Chatterbox Full and Turbo",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=app_lifespan,
 )
 
 app.add_middleware(
@@ -138,11 +145,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup():
-    """Load models on startup"""
-    load_models()
 
 @app.get("/health")
 async def health():
