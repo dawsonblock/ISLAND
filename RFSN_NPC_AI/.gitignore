@@ -13,7 +13,6 @@ server.pid
 api_keys.json
 Models/
 Python/Models/
-memory/
 *.zip
 .DS_Store
 .pytest_cache/
@@ -26,14 +25,7 @@ dist/
 .gemini/
 .agent/
 brain/
+var/
 Python/var/
-Python/data/audit/
-Python/data/policy/
-Python/data/recordings/
-Python/data/learning/
-data/audit/
-data/policy/
-data/recordings/
-data/learning/
 web_chat_ui/backend/episodes/
 web_chat_ui/backend/var/

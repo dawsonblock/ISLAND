@@ -40,6 +40,8 @@ Make sure the active map uses:
 
 - `IslandGameMode`
 
+`MyProjectGameMode` remains in the repo as a legacy prototype surface and should not be used for the current playable slice.
+
 The game mode now sets:
 
 - `MyProjectCharacter` as the default pawn
@@ -92,6 +94,7 @@ Make sure the input mapping context on `MyProjectPlayerController` includes thos
 
 - transmission did not complete
 - the level is overriding `IslandGameMode`
+- the level was switched back to legacy `MyProjectGameMode`
 - `IslandExtractionZone` is missing
 
 ### Build script cannot find Unreal

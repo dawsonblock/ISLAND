@@ -23,17 +23,9 @@ htmlcov/
 *~
 .DS_Store
 
-# Data directories (keep patterns from .gitignore)
-data/episodes/
-data/memory/
-data/logs/
-data/audit/
-data/policy/
-data/recordings/
-data/learning/
+# Runtime output directories
 var/
 Models/
-memory/
 
 # CI/CD
 .github/

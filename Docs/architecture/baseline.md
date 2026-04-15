@@ -58,14 +58,7 @@ Observed summary: `4 failed, 27 passed`.
 
 ## Runtime data hygiene notes
 
-Before this refactor pass, committed runtime data was present under:
-
-- `RFSN_NPC_AI/Python/data/recordings/`
-- `RFSN_NPC_AI/Python/data/audit/`
-- `RFSN_NPC_AI/Python/data/policy/`
-- `RFSN_NPC_AI/data/recordings/`
-- `RFSN_NPC_AI/data/audit/`
-- `RFSN_NPC_AI/web_chat_ui/backend/episodes/`
+Before this refactor pass, committed runtime data was present under multiple repo-relative runtime output directories, including old Python-side recording, audit, policy, and episode folders.
 
 The refactor redirected new Python-side runtime output toward ignored `var/`
 directories so recordings, audit logs, policy logs, and learning snapshots stop

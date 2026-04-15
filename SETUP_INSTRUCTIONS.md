@@ -149,43 +149,26 @@ The current island loop is:
 6. survive the converging cult pressure
 7. extract after transmission completes
 
-1. **Open your project in Unreal Editor**
+### Editor setup
 
-2. **Set the GameMode**
-   - Project Settings → Maps & Modes
-   - Default GameMode → `IslandGameMode`
+1. **Open your project in Unreal Editor.**
 
-3. **Place actors in your level**
-   - Add `IslandRadioTower` actor
-   - Add `IslandExtractionZone` actor
-   - Add `IslandAISpawnManager` actor
-   - Add three `IslandPickupActor` instances for fuse, fuel, and crank
-   - Position them appropriately
+2. **Set the GameMode.**
+Project Settings → Maps & Modes.
+Default GameMode → `IslandGameMode`.
+Do not use `MyProjectGameMode`; it remains only as a legacy prototype surface.
 
-4. **Configure actors**
-   - Select the Radio Tower
-   - In Details panel, adjust:
-     - Required Parts (keep fuse, fuel, and crank for the slice)
-     - Required Repair Time
-     - Repair Noise Per Second
-     - Transmit Duration (default: 30s)
-     - Extract Window (default: 60s)
-     - Cooldown (default: 120s)
-     - Pulse Interval (default: 3s)
+3. **Place actors in your level.**
+Add `IslandRadioTower`, `IslandExtractionZone`, and `IslandAISpawnManager`.
+Add three `IslandPickupActor` instances for fuse, fuel, and crank, then position them appropriately.
 
-   - Select the Extraction Zone
-   - In Details panel, adjust:
-     - Hold Time (default: 3s)
-     - Box extent (collision volume size)
+4. **Configure actors.**
+For the Radio Tower, adjust Required Parts, Required Repair Time, Repair Noise Per Second, Transmit Duration, Extract Window, Cooldown, and Pulse Interval.
+For the Extraction Zone, adjust Hold Time and box extent.
+For the AI Spawn Manager, assign `CultistClass` to `CultistCharacter` or a Blueprint subclass.
 
-   - Select the AI Spawn Manager
-   - Assign `CultistClass` to `CultistCharacter` or a Blueprint subclass
-
-5. **Test the system**
-   - Press Play in Editor
-   - Collect the three tower parts first
-   - Return to the tower and start repair
-   - Follow the HUD prompts through transmit and extraction
+5. **Test the system.**
+Press Play in Editor, collect the three tower parts, return to the tower to start repair, and follow the HUD prompts through transmit and extraction.
 
 ## How the System Works
 
@@ -230,6 +213,7 @@ The current island loop is:
 
 1. **HUD not showing**
    - Verify GameMode is set to IslandGameMode
+   - Verify the map was not switched back to legacy `MyProjectGameMode`
    - Check that HUDClass is assigned in GameMode constructor
 
 2. **Can't interact with tower**

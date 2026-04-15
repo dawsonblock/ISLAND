@@ -53,6 +53,7 @@ These systems can enrich the slice, but do not own progression:
 A playable Island map currently needs:
 
 - `IslandGameMode` as the active game mode
+- `MyProjectGameMode` kept only as a legacy prototype surface, not the live authority
 - `IslandRadioTower`
 - `IslandExtractionZone`
 - `IslandAISpawnManager`
