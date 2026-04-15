@@ -51,6 +51,7 @@ class GovernedMemory:
     content: str
     confidence: float
     timestamp: datetime
+    admitted_at: Optional[datetime] = None
     ttl_seconds: Optional[float] = None
     evidence_spans: List[EvidenceSpan] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -68,7 +69,10 @@ class GovernedMemory:
         """Check if memory has expired based on TTL"""
         if self.ttl_seconds is None:
             return False
-        expiry_time = self.timestamp + timedelta(seconds=self.ttl_seconds)
+        # Retention starts when the memory is fully admitted to governed storage,
+        # not when the caller instantiated the object.
+        expiry_basis = self.admitted_at or self.timestamp
+        expiry_time = expiry_basis + timedelta(seconds=self.ttl_seconds)
         return datetime.now(timezone.utc) > expiry_time
     
     def to_dict(self) -> Dict[str, Any]:
@@ -80,6 +84,7 @@ class GovernedMemory:
             "content": self.content,
             "confidence": self.confidence,
             "timestamp": self.timestamp.isoformat(),
+            "admitted_at": self.admitted_at.isoformat() if self.admitted_at else None,
             "ttl_seconds": self.ttl_seconds,
             "evidence_spans": [
                 {
@@ -115,6 +120,11 @@ class GovernedMemory:
             content=data["content"],
             confidence=data["confidence"],
             timestamp=datetime.fromisoformat(data["timestamp"]),
+            admitted_at=(
+                datetime.fromisoformat(data["admitted_at"])
+                if data.get("admitted_at")
+                else None
+            ),
             ttl_seconds=data.get("ttl_seconds"),
             evidence_spans=evidence_spans,
             metadata=data.get("metadata", {}),
@@ -326,12 +336,12 @@ class MemoryGovernance:
                 logger.info(f"Memory quarantined: {memory.memory_id} - {reason}")
                 return False, reason, memory.memory_id
             
-            # Admit memory
+            # Admit memory only after semantic indexing completes so TTL begins
+            # when the memory becomes queryable to callers.
+            self.semantic.add_memory(memory.memory_id, memory.content)
+            memory.admitted_at = datetime.now(timezone.utc)
             self._memories[memory.memory_id] = memory
             self._persist_memory(memory)
-            
-            # Add to semantic index
-            self.semantic.add_memory(memory.memory_id, memory.content)
             
             logger.info(f"Memory admitted: {memory.memory_id} (confidence: {memory.confidence:.2f})")
             return True, "Admitted", memory.memory_id

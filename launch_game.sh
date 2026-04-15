@@ -29,6 +29,21 @@ find_ue_path() {
     return 1
 }
 
+configure_macos_toolchain() {
+    local preferred_xcode="/Applications/Xcode.app/Contents/Developer"
+
+    if [[ -z "${DEVELOPER_DIR:-}" && -d "$preferred_xcode" ]]; then
+        export DEVELOPER_DIR="$preferred_xcode"
+    fi
+
+    if ! xcodebuild -version >/dev/null 2>&1; then
+        echo "❌ Full Xcode is required to build the Mac editor target."
+        echo "   Install Xcode and ensure /Applications/Xcode.app is available."
+        echo "   You can also export DEVELOPER_DIR to a valid Xcode Developer directory."
+        exit 1
+    fi
+}
+
 UE_PATH="${UE_PATH:-}"
 if [[ -z "$UE_PATH" ]]; then
     if ! UE_PATH="$(find_ue_path)"; then
@@ -44,6 +59,7 @@ EDITOR_BIN=""
 
 case "$OS_NAME" in
     Darwin)
+        configure_macos_toolchain
         TARGET_PLATFORM="Mac"
         BUILD_SCRIPT="$UE_PATH/Engine/Build/BatchFiles/Mac/Build.sh"
         EDITOR_BIN="$UE_PATH/Engine/Binaries/Mac/UnrealEditor.app"
@@ -69,6 +85,9 @@ echo "🏝️  ISLAND Game Launcher"
 echo "========================"
 echo "Project: $PROJECT_FILE"
 echo "Engine:  $UE_PATH"
+if [[ -n "${DEVELOPER_DIR:-}" ]]; then
+    echo "Xcode:   $DEVELOPER_DIR"
+fi
 echo ""
 echo "🔨 Compiling C++ code..."
 

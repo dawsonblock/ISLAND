@@ -60,3 +60,6 @@ RFSN_NPC_AI/web_chat_ui/backend/var/
 __pycache__/
 *.py[cod]
 .mypy_cache/
+RFSN_NPC_AI/Python/.coverage
+RFSN_NPC_AI/Python/coverage.xml
+RFSN_NPC_AI/Python/htmlcov/

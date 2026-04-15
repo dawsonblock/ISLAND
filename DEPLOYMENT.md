@@ -55,7 +55,7 @@ OLLAMA_HOST=http://localhost:11434
 
 ```bash
 # From repo root
-docker build -t island-backend:latest -f RFSN_NPC_AI/Dockerfile .
+docker build -t island-backend:latest -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Run standalone
 docker run -p 8000:8000 \

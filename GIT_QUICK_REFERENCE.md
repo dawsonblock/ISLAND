@@ -84,7 +84,7 @@ gh pr merge <number>
 
 - [ ] Local tests pass: `./scripts/ci-cd.sh all`
 - [ ] Pre-commit hooks pass: `pre-commit run --all-files`
-- [ ] Docker builds: `docker build -t test -f RFSN_NPC_AI/Dockerfile .`
+- [ ] Docker builds: `docker build -t test -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI`
 - [ ] Push: `git push -u origin branch`
 - [ ] GitHub Actions all green ✓
 - [ ] Merge to main: `gh pr merge <number>`

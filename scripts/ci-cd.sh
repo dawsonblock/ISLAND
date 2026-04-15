@@ -5,7 +5,7 @@ set -euo pipefail
 # Automates Docker build, test, and deployment workflows
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,7 +49,7 @@ build_docker() {
     docker build \
         -f RFSN_NPC_AI/Dockerfile \
         -t "$tag" \
-        .
+        RFSN_NPC_AI
     
     log_info "Docker build complete: $tag"
 }

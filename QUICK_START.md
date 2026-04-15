@@ -2,7 +2,9 @@
 
 This repo now has a concrete first playable slice:
 
-**spawn on beach -> scavenge tower parts -> repair under cult pressure -> transmit -> survive convergence -> extract**
+## Slice Loop
+
+spawn on beach -> scavenge tower parts -> repair under cult pressure -> transmit -> survive convergence -> extract
 
 For the full current hookup guide, read:
 
@@ -29,6 +31,8 @@ export UE_PATH="/Users/Shared/Epic Games/UE_5.7"
 ```bash
 ./launch_game.sh
 ```
+
+On macOS, the launcher now prefers `/Applications/Xcode.app/Contents/Developer` automatically when Command Line Tools are active. If the build still fails, install full Xcode and open it once to finish setup.
 
 ### 3. Use the island runtime
 
@@ -73,21 +77,25 @@ Make sure the input mapping context on `MyProjectPlayerController` includes thos
 ## Main troubleshooting
 
 ### No interact prompt
+
 - the player is not using `MyProjectCharacter`
 - `InteractAction` is not assigned
 - the pickup/tower mesh is not blocking `Visibility`
 
 ### No cultists
+
 - `IslandAISpawnManager` is missing
 - `CultistClass` is not assigned
 - there is no navmesh around the spawn area
 
 ### Extraction never activates
+
 - transmission did not complete
 - the level is overriding `IslandGameMode`
 - `IslandExtractionZone` is missing
 
 ### Build script cannot find Unreal
+
 - confirm `echo $UE_PATH`
 - or rerun `./setup_environment.sh`
 

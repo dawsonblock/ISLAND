@@ -162,7 +162,7 @@ open htmlcov/index.html
 
 ```bash
 # Build
-docker build -t island-backend:latest -f RFSN_NPC_AI/Dockerfile .
+docker build -t island-backend:latest -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Tag for registry
 docker tag island-backend:latest ghcr.io/USERNAME/island-backend:latest
@@ -180,10 +180,10 @@ docker push ghcr.io/USERNAME/island-backend:latest
 
 ```bash
 # Check Dockerfile syntax
-docker build --no-cache -f RFSN_NPC_AI/Dockerfile .
+docker build --no-cache -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # View build logs
-docker buildx build --progress=plain -f RFSN_NPC_AI/Dockerfile .
+docker buildx build --progress=plain -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 ```
 
 #### Tests Fail Locally But Pass in CI

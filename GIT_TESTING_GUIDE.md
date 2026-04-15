@@ -59,7 +59,7 @@ pytest tests/ -v -m "not slow"
 
 ```bash
 # From repo root
-docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile .
+docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Check image
 docker images | grep island-backend
@@ -326,16 +326,16 @@ git push
 #### Docker Build Failure
 ```bash
 # Build locally to reproduce
-docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile .
+docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Check Dockerfile for syntax errors
-docker build --progress=plain -f RFSN_NPC_AI/Dockerfile .
+docker build --progress=plain -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Fix Dockerfile
 vim RFSN_NPC_AI/Dockerfile
 
 # Test again
-docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile .
+docker build -t island-backend:test -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Commit and push
 git add RFSN_NPC_AI/Dockerfile
@@ -548,13 +548,13 @@ pytest tests/ -v -s --tb=short
 
 ```bash
 # Show full build log
-docker build --progress=plain -f RFSN_NPC_AI/Dockerfile .
+docker build --progress=plain -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Build without cache
-docker build --no-cache -f RFSN_NPC_AI/Dockerfile .
+docker build --no-cache -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Build with specific target
-docker build --target stage_name -f RFSN_NPC_AI/Dockerfile .
+docker build --target stage_name -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Check layer history
 docker image history island-backend:test
@@ -749,10 +749,10 @@ env | grep PATH
 **Solution**:
 ```bash
 # Increase timeout
-docker build --timeout=600 -f RFSN_NPC_AI/Dockerfile .
+docker build --timeout=600 -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Or use buildx with higher timeout
-docker buildx build --timeout=600 -f RFSN_NPC_AI/Dockerfile .
+docker buildx build --timeout=600 -f RFSN_NPC_AI/Dockerfile RFSN_NPC_AI
 
 # Check internet connection (layer download)
 docker pull python:3.11-slim
