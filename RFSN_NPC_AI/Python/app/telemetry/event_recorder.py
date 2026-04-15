@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional, List, Callable
 from pathlib import Path
 from enum import Enum
 import logging
-from runtime_paths import runtime_dir
+from ..runtime_paths import runtime_dir
 
 try:
     import numpy as np

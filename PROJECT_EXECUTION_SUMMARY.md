@@ -1,8 +1,10 @@
 # Project Execution Summary
 
-## Completed Tasks
+This document summarizes the deployment and CI/CD scaffolding created during the repo repair work.
 
-All recommendations have been implemented:
+For the current verified build and test state, use `BUILD_STATE_REPORT.md` and `Docs/operations/test_matrix.md`. This file is an execution summary, not the source of truth for the latest proof verdict.
+
+## Implemented Scaffolding
 
 ### 1. ✅ Fixed Dockerfile Entrypoint
 
@@ -21,7 +23,7 @@ All recommendations have been implemented:
 
 ### 2. ✅ Docker Build Testing
 
-**Status**: Docker image builds successfully  
+**Status**: Docker image builds successfully when invoked from the repo root with `RFSN_NPC_AI` as the build context  
 **Base Image**: `python:3.11-slim`  
 **Layers**: 10 stages  
 **Key Steps**:
@@ -32,7 +34,7 @@ All recommendations have been implemented:
 - Health check: `/api/status` every 30s
 - Exposed port: 8000
 
-**Result**: Image ready for deployment
+**Result**: Image recipe and documented invocation path are aligned
 
 ---
 
@@ -80,15 +82,17 @@ All recommendations have been implemented:
    - GHA cache enabled (2-5 min cached)
    - Time: 15-30 min first run
 
-3. **Code Quality**
+3. **Python Style Advisory**
    - Black (formatting)
    - isort (imports)
    - Flake8 (linting)
+   - Explicitly advisory, not a hard gate
 
-4. **Documentation**
-   - Markdown lint (optional)
+4. **Proof Docs Advisory**
+   - Markdown lint on the proof-surface docs
+   - Explicitly advisory, not a hard gate
 
-#### `.github/workflows/docker-push.yml` - Push to Registries
+#### `.github/workflows/docker-push.yml` - Push to GitHub Container Registry
 
 **Triggers**: Push to main, git tags (v*)
 
@@ -251,8 +255,8 @@ Created `.dockerignore` files:
 ├── .dockerignore                          # Root Docker ignore
 ├── .github/
 │   └── workflows/
-│       ├── build-test.yml                # Python tests, Docker build, lint
-│       └── docker-push.yml               # Push to registries
+│       ├── build-test.yml                # Python tests, Docker build, advisory checks
+│       └── docker-push.yml               # Push to GHCR
 ├── CICD.md                               # CI/CD documentation
 ├── DEPLOYMENT.md                         # Deployment guide
 ├── deployment/
@@ -387,7 +391,8 @@ Manual deployment to K8s/ECS/Cloud Run
 5. **Enable Branch Protection**
 
    - GitHub Settings → Branches → main
-   - Require: build-test, backend-docker, lint
+   - Require the hard-gate backend test and Docker checks
+   - Leave advisory style and proof-doc jobs optional unless you intend to enforce them
 
 6. **Configure Monitoring**
 
@@ -446,7 +451,7 @@ Manual deployment to K8s/ECS/Cloud Run
 - Automated testing on multiple Python versions
 - Docker build caching for speed
 - GHCR publish workflow for tagged and mainline builds
-- Code quality checks (Black, isort, Flake8)
+- Style and proof-doc checks are explicitly advisory instead of silently masked gates
 
 ✅ **Documentation**
 

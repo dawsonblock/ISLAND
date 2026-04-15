@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional, List, Callable, Tuple
 from pathlib import Path
 from enum import Enum
 import logging
-from runtime_paths import runtime_file
+from ..runtime_paths import runtime_file
 
 logger = logging.getLogger(__name__)
 

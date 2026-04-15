@@ -1,17 +1,4 @@
-from pathlib import Path
+from app.runtime_paths import PYTHON_ROOT, VAR_ROOT, runtime_dir, runtime_file
 
 
-PYTHON_ROOT = Path(__file__).resolve().parent
-VAR_ROOT = PYTHON_ROOT / "var"
-
-
-def runtime_dir(*parts: str) -> Path:
-    path = VAR_ROOT.joinpath(*parts)
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-def runtime_file(*parts: str) -> Path:
-    path = VAR_ROOT.joinpath(*parts)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return path
+__all__ = ["PYTHON_ROOT", "VAR_ROOT", "runtime_dir", "runtime_file"]

@@ -5,7 +5,7 @@ Complete system with Kokoro TTS, Ollama LLM, security, metrics, and multi-NPC su
 """
 from ..telemetry.version import ORCHESTRATOR_VERSION, STREAMING_ENGINE_VERSION, get_version_string
 from ..dialogue.runtime_state import Runtime, RuntimeState
-from runtime_paths import runtime_dir, runtime_file
+from ..runtime_paths import PYTHON_ROOT, runtime_dir, runtime_file
 
 import asyncio
 import json
@@ -38,8 +38,8 @@ from ..dialogue.ollama_client import OllamaClient, ensure_ollama_ready
 from ..memory.memory_manager import ConversationManager, list_backups
 
 # Import enhancements
-from model_manager import ModelManager, setup_models
-from ..safety.security import setup_security, APIKeyManager, JWTManager, require_auth, optional_auth
+from ..model_manager import ModelManager, setup_models, ensure_llm_model_exists
+from ..safety.security import setup_security, APIKeyManager, JWTManager, require_auth, optional_auth, api_key_manager
 from ..telemetry.structured_logging import configure_logging, get_logger, RequestLoggingMiddleware
 from ..dialogue.multi_npc import MultiNPCManager
 from ..telemetry.prometheus_metrics import router as metrics_router, registry, inc_requests, inc_errors, observe_request_duration, inc_tokens, observe_first_token
@@ -72,16 +72,17 @@ from ..dialogue.prompts import render_action_block
 import re
 
 # Import latency optimizations (Gemini recommendations)
-from latency_optimizations import (
+from ..latency_optimizations import (
     InstantBarkSystem, UserCentricRewardSystem, OptimizedPipeline,
     ClauseTokenizer, BarkCategory, create_user_reward_system
 )
 
 # Configuration
-CONFIG_PATH = Path(__file__).parent.parent / "config.json"
-MEMORY_DIR = Path(__file__).parent.parent / "memory"
+SERVICE_ROOT = PYTHON_ROOT.parent
+CONFIG_PATH = SERVICE_ROOT / "config.json"
+MEMORY_DIR = SERVICE_ROOT / "memory"
 MEMORY_DIR.mkdir(exist_ok=True)
-API_KEYS_PATH = Path(__file__).parent.parent / "api_keys.json"
+API_KEYS_PATH = SERVICE_ROOT / "api_keys.json"
 
 # Initialize Hot Config
 config_watcher = init_config(str(CONFIG_PATH))
@@ -196,12 +197,11 @@ async def startup_event():
     
     if tts_backend == "kokoro":
         try:
-            project_root = Path(__file__).parent.parent
             kokoro_model = tts_config.get("kokoro_model", "Models/kokoro/kokoro-v1.0.onnx")
             kokoro_voices = tts_config.get("kokoro_voices", "Models/kokoro/voices-v1.0.bin")
             
-            model_path = str(project_root / kokoro_model)
-            voices_path = str(project_root / kokoro_voices)
+            model_path = str(SERVICE_ROOT / kokoro_model)
+            voices_path = str(SERVICE_ROOT / kokoro_voices)
             
             # Auto-download if not present
             if not Path(model_path).exists() or not Path(voices_path).exists():
@@ -251,7 +251,6 @@ async def startup_event():
         logger.info(f"Ollama LLM initialized (model={ollama_config['ollama_model']})")
     else:
         # Fallback to llama-cpp
-        from model_manager import ensure_llm_model_exists
         cfg_model_path = llm_config.get("model_path", config_watcher.get("model_path"))
         resolved = ensure_llm_model_exists(cfg_model_path)
         
@@ -269,7 +268,6 @@ async def startup_event():
         streaming_engine.voice.set_tts_engine(tts_engine)
     
     # Sync global API Key Manager
-    from security import api_key_manager
     api_key_manager.keys_file = str(API_KEYS_PATH)
     api_key_manager._load_keys()
     
@@ -297,7 +295,7 @@ async def startup_event():
     # For now, we'll try to use a simple completion via llama-cpp (if available) or mock it.
     # In full production, we'd hook into the streaming engine's queue or a separate model.
     # For now, consolidation is manual or placeholder.
-    from memory_consolidator import MemoryConsolidator
+    from ..memory.memory_consolidator import MemoryConsolidator
 
     def _blocking_llm_generate(prompt: str, max_tokens: int = 220, temperature: float = 0.2) -> str:
         """
@@ -387,6 +385,7 @@ async def startup_event():
         streaming_engine=streaming_engine,
         tts_engine=tts_engine,
         xva_engine=xva_engine,
+        config=config_watcher.get_all(),
         policy_adapter=policy_adapter,
         trainer=trainer,
         reward_model=reward_model,
@@ -399,7 +398,8 @@ async def startup_event():
         state_machine=state_machine,
         world_model=world_model,
         action_scorer=action_scorer,
-        npc_action_bandit=npc_action_bandit
+        npc_action_bandit=npc_action_bandit,
+        hot_config=config_watcher,
     ))
     logger.info("Runtime state initialized atomically")
 
@@ -418,16 +418,52 @@ async def startup_event():
     logger.info("Startup complete!")
 
 
+async def _close_active_websockets():
+    sockets = list(active_ws)
+    active_ws.clear()
+
+    for websocket in sockets:
+        try:
+            await websocket.close()
+        except Exception:
+            logger.debug("Websocket already closed during shutdown", exc_info=True)
+
+
+async def _clear_conversation_managers():
+    async with conversation_managers_lock:
+        conversation_managers.clear()
+
+
 async def shutdown_event():
     """Graceful shutdown"""
+    global streaming_engine, tts_engine, xva_engine
+
     logger.info("Shutting down engines...")
-    
-    if tts_engine:
-        tts_engine.shutdown()
-    if xva_engine:
-        xva_engine.shutdown()
-    if streaming_engine:
-        streaming_engine.shutdown()
+
+    await _close_active_websockets()
+    await _clear_conversation_managers()
+
+    try:
+        config_watcher.stop()
+    except Exception:
+        logger.exception("Failed to stop config watcher cleanly")
+
+    for component_name, component in (
+        ("tts_engine", tts_engine),
+        ("xva_engine", xva_engine),
+        ("streaming_engine", streaming_engine),
+    ):
+        if component is None:
+            continue
+        try:
+            component.shutdown()
+        except Exception:
+            logger.exception("Failed to shut down %s", component_name)
+
+    runtime.swap(RuntimeState())
+    streaming_engine = None
+    tts_engine = None
+    xva_engine = None
     
     logger.info("Shutdown complete")
 
@@ -468,7 +504,8 @@ async def broadcast_metrics(metrics: StreamingMetrics):
                 "dropped_sentences": metrics.dropped_sentences
             })
         except Exception:
-            pass
+            if ws in active_ws:
+                active_ws.remove(ws)
 
 
 def _extract_tail_json_payload(raw_text: str) -> Optional[Dict[str, Any]]:
@@ -864,7 +901,6 @@ async def stream_dialogue(request: DialogueRequest):
             instant_bark_text = ""
             instant_bark_duration = 500
             if instant_bark_system and selected_npc_action:
-                from latency_optimizations import BarkCategory
                 # Map NPC action to bark category
                 action_to_bark = {
                     "greet": BarkCategory.GREET,

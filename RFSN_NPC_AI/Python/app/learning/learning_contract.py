@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Set, Tuple
 from enum import Enum
 import logging
-from runtime_paths import runtime_dir
+from ..runtime_paths import runtime_dir
 
 logger = logging.getLogger(__name__)
 

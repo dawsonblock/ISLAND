@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from ..dialogue.world_model import NPCAction, PlayerSignal, StateSnapshot
-from runtime_paths import runtime_file
+from ..runtime_paths import runtime_file
 
 
 @dataclass(frozen=True)

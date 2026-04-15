@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 from .schemas import FeatureVector, ActionMode, TurnLog
 import logging
-from runtime_paths import runtime_file
+from ..runtime_paths import runtime_file
 
 logger = logging.getLogger(__name__)
 

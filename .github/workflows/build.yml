@@ -1,105 +1,136 @@
 name: ISLAND Build Verification
 
 on:
-    push:
-        branches: [main, develop]
-        paths:
-            - "Source/**"
-            - "*.uproject"
-            - ".github/workflows/**"
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main, develop]
+    paths:
+      - "Source/**"
+      - "*.uproject"
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main]
 
 jobs:
-    # ─────────────────────────────────────────────────────────────
-    # C++ Syntax Check
-    # ─────────────────────────────────────────────────────────────
-    cpp-check:
-        name: C++ Syntax Check
-        runs-on: ubuntu-latest
+  # ─────────────────────────────────────────────────────────────
+  # C++ Syntax Check
+  # ─────────────────────────────────────────────────────────────
+  cpp-check:
+    name: C++ Syntax Check
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Install cppcheck
-              run: sudo apt-get install -y cppcheck
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
 
-            - name: Run cppcheck
-              run: |
-                  cppcheck --enable=warning,style,performance \
-                    --suppress=missingIncludeSystem \
-                    --suppress=unknownMacro \
-                    --error-exitcode=1 \
-                    --inline-suppr \
-                    Source/MyProject/
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=warning,style,performance \
+            --suppress=missingIncludeSystem \
+            --suppress=unknownMacro \
+            --error-exitcode=1 \
+            --inline-suppr \
+            Source/MyProject/
 
-    # ─────────────────────────────────────────────────────────────
-    # Clang Format Check
-    # ─────────────────────────────────────────────────────────────
-    format-check:
-        name: Code Format Check
-        runs-on: ubuntu-latest
+  # ─────────────────────────────────────────────────────────────
+  # Clang Format Advisory
+  # ─────────────────────────────────────────────────────────────
+  format-advisory:
+    name: Code Format Advisory
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Check clang-format
-              run: |
-                  find Source/MyProject -name "*.h" -o -name "*.cpp" | head -20 | xargs clang-format --dry-run --Werror || echo "Format issues found (non-blocking)"
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
 
-    # ─────────────────────────────────────────────────────────────
-    # Python RFSN Server Check
-    # ─────────────────────────────────────────────────────────────
-    python-check:
-        name: RFSN Python Check
-        runs-on: ubuntu-latest
+      - name: Report clang-format status (advisory)
+        run: |
+          files=$(find Source/MyProject \( -name "*.h" -o -name "*.cpp" \) | head -20)
+          if [ -z "$files" ]; then
+            echo "No C++ files found for clang-format advisory."
+            exit 0
+          fi
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+          set +e
+          printf '%s\n' "$files" | xargs clang-format --dry-run --Werror
+          status=$?
+          set -e
 
-            - name: Set up Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.11"
+          if [ $status -eq 0 ]; then
+            echo "clang-format advisory: clean"
+          else
+            echo "::warning::clang-format advisory found deviations. This job is informational and does not gate merges."
+          fi
 
-            - name: Install dependencies
-              run: |
-                  cd RFSN_NPC_AI/Python
-                  pip install fastapi uvicorn
+  # ─────────────────────────────────────────────────────────────
+  # Python RFSN Server Check
+  # ─────────────────────────────────────────────────────────────
+  python-check:
+    name: RFSN Python Check
+    runs-on: ubuntu-latest
 
-            - name: Syntax check
-              run: |
-                  python -m py_compile RFSN_NPC_AI/Python/mock_server.py
-                  python -m py_compile RFSN_NPC_AI/Python/orchestrator.py || true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Test mock server import
-              run: |
-                  cd RFSN_NPC_AI/Python
-                  python -c "from mock_server import app; print('Mock server OK')"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    # ─────────────────────────────────────────────────────────────
-    # Documentation Check
-    # ─────────────────────────────────────────────────────────────
-    docs-check:
-        name: Documentation Check
-        runs-on: ubuntu-latest
+      - name: Install dependencies
+        run: |
+          cd RFSN_NPC_AI/Python
+          pip install fastapi uvicorn
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+      - name: Syntax check
+        run: |
+          python -m py_compile RFSN_NPC_AI/Python/mock_server.py
+          python -m py_compile RFSN_NPC_AI/Python/orchestrator.py
+          python -m py_compile RFSN_NPC_AI/Python/app/api/main.py
 
-            - name: Check required docs exist
-              run: |
-                  test -f README.md || exit 1
-                  test -f SETUP_INSTRUCTIONS.md || exit 1
-                  test -f RFSN_BLUEPRINT_GUIDE.md || exit 1
-                  echo "All required documentation present"
+      - name: Test mock server import
+        run: |
+          cd RFSN_NPC_AI/Python
+          python -c "from mock_server import app; print('Mock server OK')"
 
-            - name: Markdown lint
-              uses: DavidAnson/markdownlint-cli2-action@v17
-              with:
-                  globs: "*.md"
-              continue-on-error: true
+  # ─────────────────────────────────────────────────────────────
+  # Documentation Check
+  # ─────────────────────────────────────────────────────────────
+  docs-check:
+    name: Documentation Presence and Advisory
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required docs exist
+        run: |
+          test -f README.md || exit 1
+          test -f SETUP_INSTRUCTIONS.md || exit 1
+          test -f RFSN_BLUEPRINT_GUIDE.md || exit 1
+          echo "All required documentation present"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Report markdown lint status (advisory)
+        run: |
+          set +e
+          npx markdownlint-cli2 "*.md"
+          status=$?
+          set -e
+
+          if [ $status -eq 0 ]; then
+            echo "Markdown advisory: clean"
+          else
+            echo "::warning::Markdown advisory found issues in root documentation. This job is informational and does not gate merges."
+          fi

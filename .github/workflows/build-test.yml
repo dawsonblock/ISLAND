@@ -66,8 +66,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  lint:
-    name: Code Quality
+  style-advisory:
+    name: Python Style Advisory
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -86,30 +86,62 @@ jobs:
           python -m pip install --upgrade pip
           pip install pylint black isort flake8
 
-      - name: Run black check
+      - name: Report Python style status (advisory)
         working-directory: RFSN_NPC_AI/Python
-        run: black --check . || true
+        run: |
+          set +e
+          black --check .
+          black_status=$?
+          isort --check-only .
+          isort_status=$?
+          flake8 . --max-line-length=120 --extend-ignore=E203,W503
+          flake8_status=$?
+          set -e
 
-      - name: Run isort check
-        working-directory: RFSN_NPC_AI/Python
-        run: isort --check-only . || true
+          if [ $black_status -eq 0 ] && [ $isort_status -eq 0 ] && [ $flake8_status -eq 0 ]; then
+            echo "Python style advisory: clean"
+            exit 0
+          fi
 
-      - name: Run flake8
-        working-directory: RFSN_NPC_AI/Python
-        run: flake8 . --max-line-length=120 --extend-ignore=E203,W503 || true
+          if [ $black_status -ne 0 ]; then
+            echo "::warning::black advisory found formatting drift."
+          fi
+          if [ $isort_status -ne 0 ]; then
+            echo "::warning::isort advisory found import ordering drift."
+          fi
+          if [ $flake8_status -ne 0 ]; then
+            echo "::warning::flake8 advisory found style violations."
+          fi
 
-  docs:
-    name: Documentation Build
+          echo "Python style advisory reported issues. This job is informational and does not gate merges."
+
+  proof-docs-advisory:
+    name: Proof Docs Advisory
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check markdown files
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Report proof-surface markdown status (advisory)
         run: |
-          if ! command -v mdl &> /dev/null; then
-            echo "Markdown linter not available, skipping"
-            exit 0
+          set +e
+          npx markdownlint-cli2 \
+            README.md \
+            BUILD_STATE_REPORT.md \
+            PROJECT_EXECUTION_SUMMARY.md \
+            Docs/ai/current_backend_state.md \
+            Docs/operations/test_matrix.md
+          status=$?
+          set -e
+
+          if [ $status -eq 0 ]; then
+            echo "Proof-surface markdown advisory: clean"
+          else
+            echo "::warning::Proof-surface markdown advisory found issues. This job is informational and does not gate merges."
           fi
-          find . -name "*.md" -type f | head -10 | xargs mdl || true

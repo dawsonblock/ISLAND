@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from runtime_paths import runtime_file
+from ..runtime_paths import runtime_file
 
 
 @dataclass

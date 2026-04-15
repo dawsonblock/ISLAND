@@ -286,6 +286,10 @@ class XVASynthEngine:
         while not self._shutdown:
             try:
                 audio_path = self.audio_queue.get(timeout=0.5)
+                if self._shutdown:
+                    break
+                if audio_path is None:
+                    continue
                 
                 if audio_path and audio_path.exists():
                     self._play_audio(audio_path)
@@ -336,15 +340,26 @@ class XVASynthEngine:
     def shutdown(self):
         """Shutdown the engine"""
         self._shutdown = True
+
+        try:
+            self.audio_queue.put_nowait(None)
+        except queue.Full:
+            pass
+
+        if self.worker.is_alive():
+            self.worker.join(timeout=2.0)
+            if self.worker.is_alive():
+                logger.warning("xVASynth playback worker did not stop before timeout")
         
         # Clear queue
         while not self.audio_queue.empty():
             try:
                 audio_path = self.audio_queue.get_nowait()
-                try:
-                    audio_path.unlink()
-                except OSError:
-                    pass
+                if audio_path:
+                    try:
+                        audio_path.unlink()
+                    except OSError:
+                        pass
             except queue.Empty:
                 break
         
