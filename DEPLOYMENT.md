@@ -28,8 +28,9 @@ docker compose up --pull always
 ```
 
 **Services**:
-- Backend: http://127.0.0.1:8000
-- Dashboard: http://127.0.0.1:8080
+
+- Backend: <http://127.0.0.1:8000>
+- Dashboard: <http://127.0.0.1:8080>
 - Health check: GET /api/status
 
 ### Environment Variables
@@ -77,7 +78,7 @@ docker run -p 8000:8000 \
 
 ## Kubernetes Deployment
 
-### Prerequisites
+### Kubernetes Prerequisites
 
 - Kubernetes 1.24+ cluster
 - kubectl configured
@@ -129,6 +130,7 @@ terraform apply -var image_uri=$ECR_REGISTRY/island-backend:latest
 ```
 
 **Recommended Settings**:
+
 - Memory: 2GB
 - vCPU: 0.5–1
 - Environment: Fargate on-demand
@@ -276,6 +278,7 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 For multiple replicas, use:
 
 **Docker Compose**:
+
 ```yaml
 services:
   orchestrator:
@@ -284,6 +287,7 @@ services:
 ```
 
 **Kubernetes HPA**:
+
 ```bash
 kubectl autoscale deployment island-backend \
   --min=1 --max=10 \
@@ -291,6 +295,7 @@ kubectl autoscale deployment island-backend \
 ```
 
 **AWS ECS**:
+
 - Set desired count to 2+
 - Enable Service Auto Scaling based on CPU/memory
 
@@ -396,6 +401,7 @@ curl http://127.0.0.1:8000/api/status
 ### Offline Mode
 
 The Unreal slice remains fully playable if the backend is down:
+
 - Tower progression works offline
 - Dialogue falls back to local barks
 - No gameplay blocking on network errors
@@ -419,4 +425,3 @@ The Unreal slice remains fully playable if the backend is down:
 - **Python Tests**: `RFSN_NPC_AI/Python/tests/`
 - **Config Reference**: `RFSN_NPC_AI/config.json`
 - **API Docs**: `http://<backend-url>:8000/docs` (Swagger UI)
-

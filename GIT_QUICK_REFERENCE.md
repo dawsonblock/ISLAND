@@ -53,6 +53,7 @@ git push -u origin feature/my-feature
 ## 4. GitHub Actions Auto-Run
 
 When you push:
+
 - `.github/workflows/build-test.yml` runs automatically
   - Python tests (3.10, 3.11, 3.12)
   - Docker build
@@ -60,6 +61,7 @@ When you push:
   - Status visible in PR
 
 View results:
+
 ```bash
 gh run list
 gh run watch
@@ -77,7 +79,7 @@ gh pr create --title "My Feature"
 gh pr merge <number>
 
 # `.github/workflows/docker-push.yml` runs
-# Docker image pushed to registries
+# Docker image pushed to GHCR
 ```
 
 ## Test Checklist
@@ -89,4 +91,3 @@ gh pr merge <number>
 - [ ] GitHub Actions all green ✓
 - [ ] Merge to main: `gh pr merge <number>`
 - [ ] Docker image in registry: `docker pull ghcr.io/.../backend:main`
-
